@@ -1,433 +1,548 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#f8fafc">
+    <meta name="theme-color" content="#10b981">
     <title>Đăng nhập | TMS</title>
+    
+    <!-- Using Inter font for a very clean, professional enterprise look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
         :root {
-            color-scheme: light;
-            /* Thay đổi bảng màu sang tông Blue/Slate hiện đại */
-            --ink: #0f172a;
-            --muted: #64748b;
-            --line: #e2e8f0;
-            --paper: #ffffff;
-            --canvas: #f8fafc;
-            --primary: #2563eb;       /* Xanh dương chủ đạo */
-            --primary-dark: #1d4ed8;  /* Xanh dương đậm khi hover */
-            --accent: #f59e0b;        /* Màu nhấn (Vàng Hổ Phách) */
+            --primary: #10b981; /* Vibrant green */
+            --primary-hover: #059669; /* Darker green */
+            --primary-light: rgba(16, 185, 129, 0.15);
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --bg-white: #ffffff;
+            --bg-gray: #f9fafb;
             --error: #ef4444;
-            --shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.1);
+            --success: #10b981;
+            --radius-md: 8px;
+            --radius-lg: 12px;
         }
 
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            min-width: 320px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-main);
+            background-color: var(--bg-white);
+            -webkit-font-smoothing: antialiased;
             min-height: 100vh;
-            margin: 0;
-            color: var(--ink);
-            background-color: var(--canvas);
-            /* Đổi nền chấm bi thành linear gradient mượt mà */
-            background-image: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
-        button,
-        input {
-            font: inherit;
+        a {
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
         }
 
         button {
+            font: inherit;
             cursor: pointer;
-        }
-
-        .page {
-            display: grid;
-            min-height: 100vh;
-            grid-template-columns: minmax(0, 1fr) minmax(360px, 0.92fr);
-            align-items: center;
-            gap: clamp(36px, 8vw, 120px);
-            width: min(1120px, calc(100% - 64px));
-            margin: 0 auto;
-            padding: 64px 0;
-        }
-
-        .intro {
-            max-width: 460px;
-            animation: rise-in 550ms ease-out both;
-        }
-
-        .wordmark {
-            display: inline-flex;
-            align-items: center;
-            gap: 11px;
-            margin-bottom: 78px;
-            color: var(--ink);
-            font-size: 15px;
-            font-weight: 750;
-            letter-spacing: 0.08em;
-            text-decoration: none;
-        }
-
-        .mark {
-            display: grid;
-            width: 36px;
-            aspect-ratio: 1;
-            place-items: center;
-            border-radius: 11px 11px 11px 3px;
-            color: white;
-            background: var(--primary);
-            font-size: 20px;
-            font-weight: 800;
-        }
-
-        .eyebrow {
-            margin: 0 0 17px;
-            color: var(--accent);
-            font-size: 12px;
-            font-weight: 750;
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
-        }
-
-        h1 {
-            max-width: 440px;
-            margin: 0;
-            font-size: clamp(42px, 5vw, 64px);
-            font-weight: 800;
-            line-height: 1.1;
-            letter-spacing: -0.02em;
-        }
-
-        .intro-copy {
-            max-width: 390px;
-            margin: 24px 0 0;
-            color: var(--muted);
-            font-size: 16px;
-            line-height: 1.75;
-        }
-
-        .trust-note {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 42px;
-            color: var(--muted);
-            font-size: 13px;
-        }
-
-        .trust-note svg {
-            flex: 0 0 19px;
-            color: var(--primary);
-        }
-
-        .panel {
-            width: 100%;
-            max-width: 440px;
-            justify-self: end;
-            padding: clamp(28px, 4.5vw, 48px);
-            border: 1px solid var(--line);
-            border-radius: 12px;
-            background: var(--paper);
-            box-shadow: var(--shadow);
-            animation: rise-in 650ms 90ms ease-out both;
-        }
-
-        .panel h2 {
-            margin: 0;
-            font-size: 32px;
-            font-weight: 700;
-            letter-spacing: -0.01em;
-        }
-
-        .panel-lead {
-            margin: 9px 0 30px;
-            color: var(--muted);
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        .field {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 13px;
-            font-weight: 700;
+            border: none;
+            background: transparent;
         }
 
         input {
-            width: 100%;
-            min-height: 49px;
-            padding: 0 14px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            outline: none;
-            color: var(--ink);
-            background: white;
-            transition: border-color 150ms ease, box-shadow 150ms ease;
-        }
-
-        input::placeholder {
-            color: #94a3b8;
-        }
-
-        input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-        }
-
-        input:disabled {
-            color: var(--muted);
-            background: #f1f5f9;
-        }
-
-        .password-wrap {
-            position: relative;
-        }
-
-        .password-wrap input {
-            padding-right: 72px;
-        }
-
-        .text-button {
-            padding: 0;
-            border: 0;
-            color: var(--primary);
-            background: transparent;
-            font-size: 13px;
-            font-weight: 600;
-            transition: color 150ms ease;
-        }
-
-        .text-button:hover {
-            color: var(--primary-dark);
-            text-decoration: underline;
-        }
-
-        .password-toggle {
-            position: absolute;
-            top: 50%;
-            right: 13px;
-            transform: translateY(-50%);
-        }
-
-        .form-options {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: -6px;
-            margin-bottom: 23px;
-        }
-
-        .submit-button {
-            display: inline-flex;
-            width: 100%;
-            min-height: 50px;
-            align-items: center;
-            justify-content: center;
-            gap: 9px;
-            border: 0;
-            border-radius: 6px;
-            color: white;
-            background: var(--primary);
-            font-weight: 600;
-            font-size: 15px;
-            transition: background 150ms ease, transform 150ms ease, box-shadow 150ms ease;
-        }
-
-        .submit-button:hover:not(:disabled) {
-            transform: translateY(-1px);
-            background: var(--primary-dark);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
-        }
-
-        .submit-button:disabled {
-            cursor: wait;
-            opacity: 0.72;
-        }
-
-        .message {
-            min-height: 20px;
-            margin: 14px 0 0;
-            color: var(--error);
-            font-size: 13px;
-            line-height: 1.55;
-        }
-
-        .message.success {
-            color: #15803d; /* Xanh lá thẫm cho thông báo thành công */
-        }
-
-        .message:empty {
-            display: none;
-        }
-
-        .panel-footer {
-            margin: 25px 0 0;
-            padding-top: 19px;
-            border-top: 1px solid var(--line);
-            color: var(--muted);
-            font-size: 12px;
-            line-height: 1.6;
-            text-align: center;
-        }
-
-        .back-link {
-            display: inline-block;
-            margin: 0 0 24px;
+            font: inherit;
         }
 
         [hidden] {
             display: none !important;
         }
 
-        @keyframes rise-in {
-            from {
-                opacity: 0;
-                transform: translateY(12px);
-            }
+        .split-layout {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
+        .left-panel {
+            flex: 1;
+            position: relative;
+            background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 4rem clamp(2rem, 5vw, 6rem);
+            color: white;
+        }
+
+        .left-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.7));
+            z-index: 1;
+        }
+
+        .left-content {
+            position: relative;
+            z-index: 2;
+            max-width: 540px;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        .right-panel {
+            flex: 1;
+            background: var(--bg-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 420px;
+            animation: slideUp 0.6s ease-out forwards;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3rem;
+            color: white;
+            font-size: 1.125rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .brand-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: var(--radius-md);
+            font-size: 1.25rem;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            font-size: 0.875rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .left-content h1 {
+            font-size: clamp(2.5rem, 4vw, 3.5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+        }
+
+        .left-content p {
+            font-size: 1.125rem;
+            line-height: 1.6;
+            color: #cbd5e1;
+            margin-bottom: 3rem;
+        }
+
+        .trust-badge {
+            display: inline-flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 1rem 1.25rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-lg);
+            font-size: 0.875rem;
+            line-height: 1.5;
+            color: #f1f5f9;
+        }
+
+        .trust-badge svg {
+            flex-shrink: 0;
+            color: var(--primary);
+        }
+
+        .form-header {
+            margin-bottom: 2rem;
+        }
+
+        .form-header h2 {
+            font-size: 1.875rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .form-header p {
+            color: var(--text-muted);
+            font-size: 0.9375rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .input-group label .required {
+            color: var(--error);
+            margin-left: 0.125rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            font-size: 0.9375rem;
+            color: var(--text-main);
+            background: var(--bg-white);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-md);
+            outline: none;
+            transition: all 0.2s ease-in-out;
+        }
+
+        input[type="email"]::placeholder,
+        input[type="password"]::placeholder {
+            color: #9ca3af;
+        }
+
+        /* Magic green focus and filled states */
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        input[type="email"]:not(:placeholder-shown),
+        input[type="password"]:not(:placeholder-shown) {
+            border-color: var(--primary);
+        }
+
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            box-shadow: 0 0 0 4px var(--primary-light);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            font-weight: 600;
+            padding: 0.25rem;
+        }
+
+        .password-toggle:hover {
+            color: var(--text-main);
+        }
+
+        .form-options {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            font-size: 0.875rem;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #4b5563;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .remember-me input {
+            width: 1rem;
+            height: 1rem;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 0.875rem;
+            background: var(--primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px var(--primary-light);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 8px -1px rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: wait;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 2rem 0;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .divider span {
+            padding: 0 1rem;
+        }
+
+        .social-login {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .btn-social {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-main);
+            transition: background 0.2s;
+        }
+
+        .btn-social:hover {
+            background: var(--bg-gray);
+        }
+
+        .message {
+            min-height: 1.25rem;
+            margin-top: 1rem;
+            color: var(--error);
+            font-size: 0.875rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .message.success {
+            color: var(--success);
+        }
+
+        .message:empty {
+            display: none;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            color: var(--text-main);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive Layout */
+        @media (max-width: 900px) {
+            .split-layout {
+                flex-direction: column;
+            }
+            .left-panel {
+                min-height: 40vh;
+                padding: 3rem 2rem;
+                justify-content: center;
+            }
+            .left-content {
+                text-align: center;
+                margin: 0 auto;
+            }
+            .trust-badge {
+                text-align: left;
+            }
+            .right-panel {
+                padding: 3rem 1.5rem;
+                align-items: flex-start;
+            }
+            .form-container {
+                max-width: 100%;
             }
         }
 
-        @media (max-width: 760px) {
-            .page {
-                width: min(500px, calc(100% - 36px));
+        @media (max-width: 480px) {
+            .social-login {
                 grid-template-columns: 1fr;
-                gap: 30px;
-                padding: 32px 0 40px;
-            }
-
-            .intro {
-                max-width: none;
-            }
-
-            .wordmark {
-                margin-bottom: 34px;
-            }
-
-            h1 {
-                max-width: 500px;
-                font-size: 43px;
-            }
-
-            .intro-copy {
-                margin-top: 13px;
-                font-size: 14px;
-            }
-
-            .trust-note {
-                margin-top: 18px;
-            }
-
-            .panel {
-                max-width: none;
-                justify-self: stretch;
-            }
-        }
-
-        @media (max-width: 420px) {
-            .page {
-                width: calc(100% - 28px);
-                gap: 24px;
-            }
-
-            .panel {
-                padding: 25px 21px;
-            }
-
-            h1 {
-                font-size: 38px;
-            }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-
-            *,
-            *::before,
-            *::after {
-                scroll-behavior: auto !important;
-                animation-duration: 0.01ms !important;
-                transition-duration: 0.01ms !important;
             }
         }
     </style>
 </head>
-
 <body>
-    <main class="page">
-        <section class="intro" aria-labelledby="welcome-title">
-            <a class="wordmark" href="./Login.html" aria-label="TMS, trang đăng nhập">
-                <span class="mark" aria-hidden="true">T</span>
-                <span>ĐÀO TẠO TMS</span>
-            </a>
-            <p class="eyebrow">Một không gian học tập</p>
-            <h1 id="welcome-title">Mọi việc học, trong tầm tay.</h1>
-            <p class="intro-copy">Đăng nhập để tiếp tục công việc và xem thông tin đào tạo được phân quyền riêng cho
-                bạn.</p>
-            <div class="trust-note">
-                <svg viewBox="0 0 24 24" width="19" height="19" fill="none" aria-hidden="true">
-                    <path d="M12 3 5 6v5c0 4.7 2.9 8.1 7 10 4.1-1.9 7-5.3 7-10V6l-7-3Z" stroke="currentColor"
-                        stroke-width="1.7" stroke-linejoin="round" />
-                    <path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
-                        stroke-linejoin="round" />
-                </svg>
-                Dữ liệu lớp học chỉ hiển thị theo quyền truy cập.
+    <main class="split-layout">
+        <!-- Left Panel: Brand & Introduction -->
+        <section class="left-panel">
+            <div class="left-content">
+                <a href="./Login.html" class="brand">
+                    <span class="brand-icon">T</span>
+                    ĐÀO TẠO TMS
+                </a>
+                
+                <span class="eyebrow">Một không gian học tập</span>
+                <h1>Mọi việc học,<br>trong tầm tay.</h1>
+                <p>Đăng nhập để tiếp tục công việc và xem thông tin đào tạo được phân quyền riêng cho bạn trên hệ thống hiện đại của chúng tôi.</p>
+                
+                <div class="trust-badge">
+                    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                    <span>Dữ liệu lớp học được bảo mật chuẩn doanh nghiệp và chỉ hiển thị theo quyền truy cập.</span>
+                </div>
             </div>
         </section>
 
-        <section class="panel" aria-labelledby="form-title">
-            <div id="login-view">
-                <h2 id="form-title">Chào mừng trở lại</h2>
-                <p class="panel-lead">Đăng nhập bằng email và mật khẩu của bạn.</p>
-                <form id="login-form" novalidate>
-                    <div class="field">
-                        <label for="email">Email</label>
-                        <input id="email" name="email" type="email" autocomplete="username" placeholder="ten@vidu.vn"
-                            required>
+        <!-- Right Panel: Login / Recovery Forms -->
+        <section class="right-panel">
+            <div class="form-container">
+                
+                <!-- LOGIN VIEW -->
+                <div id="login-view">
+                    <div class="form-header">
+                        <h2>Đăng nhập</h2>
+                        <p>Vui lòng điền thông tin để truy cập tài khoản</p>
                     </div>
-                    <div class="field">
-                        <label for="password">Mật khẩu</label>
-                        <div class="password-wrap">
-                            <input id="password" name="password" type="password" autocomplete="current-password"
-                                placeholder="Nhập mật khẩu" required>
-                            <button class="text-button password-toggle" id="toggle-password" type="button"
-                                aria-label="Hiện mật khẩu" aria-pressed="false">Hiện</button>
-                        </div>
-                    </div>
-                    <div class="form-options">
-                        <button class="text-button" id="show-recovery" type="button">Quên mật khẩu?</button>
-                    </div>
-                    <button class="submit-button" id="login-submit" type="submit">Đăng nhập</button>
-                    <p class="message" id="login-message" role="alert" aria-live="polite"></p>
-                </form>
-                <p class="panel-footer">Tài khoản được cấp bởi trung tâm đào tạo.</p>
-            </div>
 
-            <div id="recovery-view" hidden>
-                <button class="text-button back-link" id="back-to-login" type="button">← Quay lại đăng nhập</button>
-                <h2 id="recovery-title">Khôi phục mật khẩu</h2>
-                <p class="panel-lead">Nhập email tài khoản. Nếu thông tin phù hợp, hướng dẫn khôi phục sẽ được gửi đến
-                    bạn.</p>
-                <form id="recovery-form" novalidate>
-                    <div class="field">
-                        <label for="recovery-email">Email</label>
-                        <input id="recovery-email" name="email" type="email" autocomplete="email"
-                            placeholder="ten@vidu.vn" required>
+                    <form id="login-form" novalidate>
+                        <div class="input-group">
+                            <label for="email">Tài khoản <span class="required">*</span></label>
+                            <!-- Note: Placeholder is needed for :not(:placeholder-shown) CSS trick to work properly -->
+                            <input id="email" name="email" type="email" autocomplete="username" placeholder="Mã sinh viên hoặc email" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="password">Mật khẩu <span class="required">*</span></label>
+                            <div class="input-wrapper">
+                                <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu của bạn" required>
+                                <button type="button" class="password-toggle" id="toggle-password" aria-label="Hiện mật khẩu">Hiện</button>
+                            </div>
+                        </div>
+
+                        <div class="form-options">
+                            <label class="remember-me">
+                                <input type="checkbox" name="remember">
+                                Ghi nhớ thiết bị
+                            </label>
+                            <a href="#" id="show-recovery">Quên mật khẩu?</a>
+                        </div>
+
+                        <button class="btn-primary" id="login-submit" type="submit">Đăng nhập</button>
+                        
+                        <div class="register-link">
+                            Chưa có tài khoản? <a href="#">Đăng ký ngay</a>
+                        </div>
+
+                        <p class="message" id="login-message" role="alert" aria-live="polite"></p>
+                    </form>
+
+                    <div class="divider">
+                        <span>Hoặc tiếp tục với</span>
                     </div>
-                    <button class="submit-button" id="recovery-submit" type="submit">Gửi hướng dẫn</button>
-                    <p class="message" id="recovery-message" role="status" aria-live="polite"></p>
-                </form>
+
+                    <div class="social-login">
+                        <button type="button" class="btn-social">
+                            <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                            Google
+                        </button>
+                        <button type="button" class="btn-social">
+                            <svg viewBox="0 0 21 21" width="20" height="20" xmlns="http://www.w3.org/2000/svg"><path d="M10 0H0v10h10V0z" fill="#f25022"/><path d="M21 0H11v10h10V0z" fill="#7fba00"/><path d="M10 11H0v10h10V11z" fill="#00a4ef"/><path d="M21 11H11v10h10V11z" fill="#ffb900"/></svg>
+                            Microsoft
+                        </button>
+                    </div>
+                </div>
+
+                <!-- RECOVERY VIEW -->
+                <div id="recovery-view" hidden>
+                    <button class="back-link" id="back-to-login" type="button">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                        Quay lại đăng nhập
+                    </button>
+                    
+                    <div class="form-header">
+                        <h2>Khôi phục mật khẩu</h2>
+                        <p>Nhập email liên kết với tài khoản. Chúng tôi sẽ gửi hướng dẫn khôi phục cho bạn.</p>
+                    </div>
+
+                    <form id="recovery-form" novalidate>
+                        <div class="input-group">
+                            <label for="recovery-email">Email <span class="required">*</span></label>
+                            <input id="recovery-email" name="email" type="email" autocomplete="email" placeholder="Nhập email của bạn" required>
+                        </div>
+                        
+                        <button class="btn-primary" id="recovery-submit" type="submit">Gửi hướng dẫn</button>
+                        <p class="message" id="recovery-message" role="status" aria-live="polite"></p>
+                    </form>
+                </div>
+                
             </div>
         </section>
     </main>
@@ -488,7 +603,8 @@
             event.currentTarget.setAttribute("aria-pressed", String(visible));
         });
 
-        document.querySelector("#show-recovery").addEventListener("click", () => {
+        document.querySelector("#show-recovery").addEventListener("click", (event) => {
+            event.preventDefault(); // Prevent default link behavior
             document.querySelector("#login-view").hidden = true;
             document.querySelector("#recovery-view").hidden = false;
             recoveryMessage.textContent = "";
@@ -581,5 +697,4 @@
         });
     </script>
 </body>
-
 </html>
