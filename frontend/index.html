@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trang chủ - Mona Royal Hotel & Resort</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="./assets/hotel-e1701255831111.png">
+
+  <!-- Google Fonts: Inter & Montserrat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            royal: {
+              dark: '#1e1e1e',
+              black: '#121212',
+              gray: '#444444',
+              lightGray: '#f8f9fa',
+              border: '#e5e7eb'
+            }
+          },
+          fontFamily: {
+            sans: ['"Inter"', 'sans-serif'],
+            heading: ['"Montserrat"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      color: #333333;
+      background-color: #ffffff;
+      overflow-x: hidden;
+      margin: 0;
+      padding: 0;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Montserrat', sans-serif;
+    }
+    
+    /* Global Snow / Flake particle overlay across page as shown in screenshots */
+    #global-snow-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* Booking box styling exactly matching Image 1 */
+    .hero-booking-box {
+      background: rgba(45, 45, 45, 0.78);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 28px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+      padding: 32px 30px;
+    }
+
+    .hero-booking-input {
+      background-color: rgba(55, 55, 55, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 6px;
+      color: #ffffff;
+      font-size: 13px;
+      padding: 10px 14px;
+      width: 100%;
+      outline: none;
+      transition: all 0.25s ease;
+    }
+    .hero-booking-input:focus {
+      border-color: #ffffff;
+      background-color: rgba(65, 65, 65, 0.85);
+    }
+    .hero-booking-input::placeholder {
+      color: #bbbbbb;
+    }
+
+    /* Room cards */
+    .room-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border-radius: 18px;
+    }
+    .room-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 16px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Service cards */
+    .service-card {
+      border-radius: 22px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .service-card img {
+      transition: transform 0.4s ease;
+    }
+    .service-card:hover img {
+      transform: scale(1.06);
+    }
+
+    /* Pill counter styling exactly matching Image 5 */
+    .pill-counter-card {
+      background-color: #ffffff;
+      border-radius: 9999px;
+      padding: 24px 32px;
+      text-align: center;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+      transition: transform 0.3s ease;
+    }
+    .pill-counter-card:hover {
+      transform: translateY(-4px);
+    }
+
+    /* Back to top & floating buttons */
+    .circle-floating-btn {
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .circle-floating-btn:hover {
+      transform: scale(1.08);
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #999;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #666;
+    }
+  </style>
+</head>
+<body class="relative text-gray-800">
+
+  <!-- GLOBAL SNOWFALL EFFECT -->
+  <canvas id="global-snow-canvas"></canvas>
+
+  <!-- TOP BAR (Exact layout from Image 1) -->
+  <div class="bg-white border-b border-gray-100 text-[13px] text-gray-700 py-2.5 px-4 md:px-14">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+      <!-- Left: Phone & Email -->
+      <div class="flex items-center gap-6 text-xs md:text-sm">
+        <a href="tel:0313728397" class="flex items-center gap-2 hover:text-black transition">
+          <i class="fa-solid fa-phone text-gray-500 text-xs"></i>
+          <span>0313728397</span>
+        </a>
+        <a href="mailto:info@themona.global" class="flex items-center gap-2 hover:text-black transition">
+          <i class="fa-solid fa-envelope text-gray-500 text-xs"></i>
+          <span>info@themona.global</span>
+        </a>
+      </div>
+      <!-- Right: Welcome text -->
+      <div class="text-xs md:text-sm text-gray-600">
+        <span>Chào mừng bạn đến với Mona Royal</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN NAVIGATION (Exact layout from Image 1) -->
+  <header class="sticky top-0 z-40 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.04)]">
+    <div class="max-w-7xl mx-auto px-4 md:px-14 flex justify-between items-center h-20">
+      
+      <!-- LOGO -->
+      <a href="index.html" class="flex items-center">
+        <img src="./assets/hotel-e1701255831111.png" alt="MONA ROYAL HOTEL & RESORT" class="h-14 w-auto object-contain">
+      </a>
+
+      <!-- DESKTOP NAV -->
+      <nav class="hidden lg:flex items-center gap-8 text-[13px] font-bold tracking-wider uppercase text-gray-800">
+        <a href="index.html" class="hover:text-black transition">TRANG CHỦ</a>
+        <a href="#about" class="hover:text-black transition">GIỚI THIỆU</a>
+        <a href="#rooms-modern" class="hover:text-black transition">PHÒNG</a>
+        <a href="#news" class="hover:text-black transition">TIN TỨC</a>
+        <a href="#contact" class="hover:text-black transition">LIÊN HỆ</a>
+      </nav>
+
+      <!-- RIGHT ACTIONS -->
+      <div class="hidden lg:flex items-center gap-5">
+        <!-- Search Button -->
+        <button onclick="toggleSearch()" class="p-1.5 text-gray-700 hover:text-black transition" title="Tìm kiếm">
+          <i class="fa-solid fa-magnifying-glass text-base"></i>
+        </button>
+        
+        <!-- Đặt phòng Button -->
+        <a href="#hero-booking" class="bg-[#3e3e3e] hover:bg-black text-white text-xs font-bold uppercase tracking-wider px-6 py-2.5 rounded transition">
+          ĐẶT PHÒNG
+        </a>
+
+        <!-- Portal Link -->
+        <a href="./Login.html" class="bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold uppercase tracking-wider px-4 py-2.5 rounded transition flex items-center gap-1.5">
+          <i class="fa-regular fa-user"></i>
+          <span>Đăng nhập</span>
+        </a>
+      </div>
+
+      <!-- MOBILE HAMBURGER -->
+      <div class="flex items-center gap-3 lg:hidden">
+        <a href="./Login.html" class="text-xs bg-gray-100 text-gray-800 px-3 py-1.5 rounded font-semibold">Đăng nhập</a>
+        <button onclick="toggleMobileMenu()" class="p-2 text-gray-800 text-xl focus:outline-none">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- MOBILE MENU DRAWER -->
+    <div id="mobile-menu" class="hidden lg:hidden bg-white border-t border-gray-100 px-6 py-4 shadow-lg">
+      <nav class="flex flex-col gap-3 text-sm font-semibold tracking-wide uppercase text-gray-700">
+        <a href="index.html" class="text-black py-1">TRANG CHỦ</a>
+        <a href="#about" class="hover:text-black py-1">GIỚI THIỆU</a>
+        <a href="#rooms-modern" class="hover:text-black py-1">PHÒNG</a>
+        <a href="#news" class="hover:text-black py-1">TIN TỨC</a>
+        <a href="#contact" class="hover:text-black py-1">LIÊN HỆ</a>
+        <a href="#hero-booking" class="bg-[#3e3e3e] text-white text-center py-2.5 rounded text-xs font-bold mt-2">ĐẶT PHÒNG</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- SEARCH OVERLAY MODAL -->
+  <div id="search-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg relative">
+      <button onclick="toggleSearch()" class="absolute top-4 right-4 text-gray-400 hover:text-black">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
+      <h3 class="text-lg font-bold mb-4 text-gray-800">Tìm kiếm phòng & Dịch vụ</h3>
+      <div class="flex gap-2">
+        <input type="text" placeholder="Nhập tên phòng, loại giường, tiện ích..." class="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:border-black text-sm">
+        <button class="bg-[#333] hover:bg-black text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition">Tìm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO SECTION WITH RECEPTION LOUNGE BACKGROUND & BOOKING BOX (Exact Image 1) -->
+  <section class="relative min-h-[580px] md:min-h-[660px] flex items-center bg-cover bg-center overflow-hidden" 
+           style="background-image: url('./assets/reception-lounge.jpg');" id="hero-booking">
+    
+    <div class="max-w-7xl mx-auto px-4 md:px-14 w-full py-12 flex justify-end">
+      
+      <!-- BOOKING FORM WIDGET (Overlayed on the right side) -->
+      <div class="w-full sm:w-[380px] md:w-[410px]">
+        <div class="hero-booking-box text-white">
+          
+          <h2 class="text-2xl font-bold uppercase tracking-wider text-center mb-6 text-white">
+            ĐẶT PHÒNG
+          </h2>
+
+          <form id="hero-booking-form" onsubmit="handleBookingSubmit(event)" class="space-y-4 text-xs">
+            <!-- Họ & Tên -->
+            <div>
+              <label class="block font-semibold text-gray-200 mb-1.5 text-[13px]">Họ & Tên</label>
+              <input type="text" name="fullname" required placeholder=""
+                     class="hero-booking-input">
+            </div>
+
+            <!-- Số điện thoại -->
+            <div>
+              <label class="block font-semibold text-gray-200 mb-1.5 text-[13px]">Số điện thoại</label>
+              <input type="tel" name="phone" required placeholder=""
+                     class="hero-booking-input">
+            </div>
+
+            <!-- Ngày nhận -->
+            <div>
+              <label class="block font-semibold text-gray-200 mb-1.5 text-[13px]">Ngày nhận</label>
+              <input type="date" name="checkin" required
+                     class="hero-booking-input">
+            </div>
+
+            <!-- Ngày trả -->
+            <div>
+              <label class="block font-semibold text-gray-200 mb-1.5 text-[13px]">Ngày trả</label>
+              <input type="date" name="checkout" required
+                     class="hero-booking-input">
+            </div>
+
+            <!-- Số người -->
+            <div>
+              <label class="block font-semibold text-gray-200 mb-1.5 text-[13px]">Số người</label>
+              <select name="guests" required class="hero-booking-input">
+                <option value="" disabled selected>—Vui lòng chọn—</option>
+                <option value="1">1 người</option>
+                <option value="2">2 người</option>
+                <option value="3">3 người</option>
+                <option value="4">4 người</option>
+                <option value="5+">5 người trở lên</option>
+              </select>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="pt-2">
+              <button type="submit" 
+                      class="w-full bg-[#1b1b1b] hover:bg-black text-white font-bold py-3 rounded uppercase tracking-wider text-[13px] transition shadow">
+                GỬI
+              </button>
+            </div>
+          </form>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION: DỊCH VỤ HẤP DẪN (Exact Image 2) -->
+  <section class="py-16 md:py-20 bg-white" id="services">
+    <div class="max-w-7xl mx-auto px-4 md:px-14">
+      
+      <!-- Title & Subtitle -->
+      <div class="text-center mb-12">
+        <h2 class="text-2xl md:text-3xl font-extrabold uppercase tracking-wide text-gray-900">
+          DỊCH VỤ HẤP DẪN
+        </h2>
+        <p class="text-gray-500 text-sm mt-2 font-normal">
+          Tận hưởng trải nghiệm dịch vụ cao cấp
+        </p>
+      </div>
+
+      <!-- 3 Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+        
+        <!-- Card 1: Phòng nghỉ -->
+        <div class="service-card relative aspect-[4/3] bg-gray-100" onclick="scrollToSection('rooms-modern')">
+          <img src="./assets/room1-1.jpg" alt="Phòng nghỉ" class="w-full h-full object-cover">
+          <div class="absolute inset-0 bg-black/25 hover:bg-black/15 transition duration-300"></div>
+          <div class="absolute bottom-6 inset-x-0 text-center">
+            <h3 class="text-white text-2xl font-bold tracking-wide drop-shadow-md">Phòng nghỉ</h3>
+          </div>
+        </div>
+
+        <!-- Card 2: Điểm Tâm -->
+        <div class="service-card relative aspect-[4/3] bg-gray-100" onclick="showServiceModal('Điểm Tâm', 'Thưởng thức buffet sáng phong phú với các món ăn tươi ngon chuẩn 5 sao phục vụ từ 6:00 đến 10:00 hàng ngày.')">
+          <img src="./assets/20a4efc18168aebde2ff316ea165bdd6.jpg" alt="Điểm Tâm" class="w-full h-full object-cover">
+          <div class="absolute inset-0 bg-black/25 hover:bg-black/15 transition duration-300"></div>
+          <div class="absolute bottom-6 inset-x-0 text-center">
+            <h3 class="text-white text-2xl font-bold tracking-wide drop-shadow-md">Điểm Tâm</h3>
+          </div>
+        </div>
+
+        <!-- Card 3: Coffee -->
+        <div class="service-card relative aspect-[4/3] bg-gray-100" onclick="showServiceModal('Coffee Lounge', 'Không gian cà phê sang trọng, tách cà phê đậm đà kết hợp âm nhạc thư thái giúp bạn khởi đầu ngày mới trọn vẹn.')">
+          <img src="./assets/top-view-hot-espresso-with-brown-coffee-seeds-brown-wooden-desk-coffee-cup-drink.jpg" alt="Coffee" class="w-full h-full object-cover">
+          <div class="absolute inset-0 bg-black/25 hover:bg-black/15 transition duration-300"></div>
+          <div class="absolute bottom-6 inset-x-0 text-center">
+            <h3 class="text-white text-2xl font-bold tracking-wide drop-shadow-md">Coffee</h3>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION: PHÒNG NGHỈ HIỆN ĐẠI (Exact Image 3) -->
+  <section class="py-14 md:py-18 bg-white border-t border-gray-100" id="rooms-modern">
+    <div class="max-w-7xl mx-auto px-4 md:px-14">
+      
+      <!-- Section Header -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-10 gap-4">
+        <div>
+          <h2 class="text-2xl md:text-3xl font-extrabold uppercase tracking-wide text-gray-900">
+            PHÒNG NGHỈ HIỆN ĐẠI
+          </h2>
+          <p class="text-gray-500 text-sm mt-1.5 font-normal">
+            Chọn phòng phù hợp với bạn
+          </p>
+        </div>
+        <button onclick="showToast('Hiển thị toàn bộ danh sách phòng nghỉ hiện đại!')" 
+                class="bg-[#4a4a4a] hover:bg-black text-white text-xs font-bold px-6 py-2.5 rounded uppercase tracking-wider transition">
+          Xem tất cả
+        </button>
+      </div>
+
+      <!-- 3 Room Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+        
+        <!-- Modern Room 1: DELUXE -->
+        <div class="room-card bg-white rounded-2xl overflow-hidden border border-gray-200/80 shadow-sm flex flex-col">
+          <div class="h-64 overflow-hidden">
+            <img src="./assets/d5190ab5af19ce3b69a467f283ed91a8.jpg" alt="DELUXE" class="w-full h-full object-cover">
+          </div>
+          <div class="p-6 text-center flex-1 flex flex-col justify-between">
+            <div>
+              <h3 class="text-xl font-extrabold text-gray-900 mb-4 tracking-wide">DELUXE</h3>
+              <div class="space-y-1 text-xs text-gray-600 mb-6">
+                <p><span class="font-bold text-gray-800">Hướng phòng:</span> View thành phố</p>
+                <p><span class="font-bold text-gray-800">Diện tích phòng:</span> 28-38m2</p>
+                <p><span class="font-bold text-gray-800">Kích thước giường:</span> 1 giường 2mx2m2</p>
+                <p><span class="font-bold text-gray-800">Số lượng khách/phòng:</span> 2 người/phòng</p>
+              </div>
+            </div>
+            <div>
+              <button onclick="openRoomModal('DELUXE HIỆN ĐẠI', 'View thành phố', '28-38m2', '1 giường 2mx2m2', '2 người/phòng', './assets/d5190ab5af19ce3b69a467f283ed91a8.jpg', '1.200.000 VNĐ / đêm')" 
+                      class="bg-[#4a4a4a] hover:bg-black text-white text-xs font-bold px-6 py-2.5 rounded uppercase tracking-wider transition">
+                Xem chi tiết
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modern Room 2: DELUXE VIP -->
+        <div class="room-card bg-white rounded-2xl overflow-hidden border border-gray-200/80 shadow-sm flex flex-col">
+          <div class="h-64 overflow-hidden">
+            <img src="./assets/DELUXE-VIP-1-scaled.jpg" alt="DELUXE VIP" class="w-full h-full object-cover">
+          </div>
+          <div class="p-6 text-center flex-1 flex flex-col justify-between">
+            <div>
+              <h3 class="text-xl font-extrabold text-gray-900 mb-4 tracking-wide">DELUXE VIP</h3>
+              <div class="space-y-1 text-xs text-gray-600 mb-6">
+                <p><span class="font-bold text-gray-800">Hướng phòng:</span> View thành phố</p>
+                <p><span class="font-bold text-gray-800">Diện tích phòng:</span> 28-38m2</p>
+                <p><span class="font-bold text-gray-800">Kích thước giường:</span> 1 giường 2mx2m2</p>
+                <p><span class="font-bold text-gray-800">Số lượng khách/phòng:</span> 2 người/phòng</p>
+              </div>
+            </div>
+            <div>
+              <button onclick="openRoomModal('DELUXE VIP HIỆN ĐẠI', 'View thành phố', '28-38m2', '1 giường 2mx2m2', '2 người/phòng', './assets/DELUXE-VIP-1-scaled.jpg', '1.600.000 VNĐ / đêm')" 
+                      class="bg-[#4a4a4a] hover:bg-black text-white text-xs font-bold px-6 py-2.5 rounded uppercase tracking-wider transition">
+                Xem chi tiết
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modern Room 3: FAMILY -->
+        <div class="room-card bg-white rounded-2xl overflow-hidden border border-gray-200/80 shadow-sm flex flex-col">
+          <div class="h-64 overflow-hidden">
+            <img src="./assets/a59f6f3ba0b72f174c599fcf7c6f8963.jpg" alt="FAMILY" class="w-full h-full object-cover">
+          </div>
+          <div class="p-6 text-center flex-1 flex flex-col justify-between">
+            <div>
+              <h3 class="text-xl font-extrabold text-gray-900 mb-4 tracking-wide">FAMILY</h3>
+              <div class="space-y-1 text-xs text-gray-600 mb-6">
+                <p><span class="font-bold text-gray-800">Hướng phòng:</span> View thành phố</p>
+                <p><span class="font-bold text-gray-800">Diện tích phòng:</span> 42-47m2</p>
+                <p><span class="font-bold text-gray-800">Kích thước giường:</span> 2 giường</p>
+                <p><span class="font-bold text-gray-800">Số lượng khách/phòng:</span> 4 người/phòng</p>
+              </div>
+            </div>
+            <div>
+              <button onclick="openRoomModal('FAMILY HIỆN ĐẠI', 'View thành phố', '42-47m2', '2 giường', '4 người/phòng', './assets/a59f6f3ba0b72f174c599fcf7c6f8963.jpg', '2.400.000 VNĐ / đêm')" 
+                      class="bg-[#4a4a4a] hover:bg-black text-white text-xs font-bold px-6 py-2.5 rounded uppercase tracking-wider transition">
+                Xem chi tiết
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION: PHÒNG NGHỈ CAO CẤP (Exact Image 4) -->
+  <section class="py-14 md:py-18 bg-white border-t border-gray-100" id="rooms-luxury">
+    <div class="max-w-7xl mx-auto px-4 md:px-14">
+      
+      <!-- Section Header -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-10 gap-4">
+        <div>
+          <h2 class="text-2xl md:text-3xl font-extrabold uppercase tracking-wide text-gray-900">
+            PHÒNG NGHỈ CAO CẤP
+          </h2>
+          <p class="text-gray-500 text-sm mt-1.5 font-normal">
+            Chọn phòng phù hợp với bạn
+          </p>
+        </div>
+        <button onclick="showToast('Hiển thị toàn bộ danh sách phòng nghỉ cao cấp!')" 
+                class="bg-[#4a4a4a] hover:bg-black text-white text-xs font-bold px-6 py-2.5 rounded uppercase tracking-wider transition">
+          Xem tất cả
+        </button>
+      </div>
+
+      <!-- 3 Room Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+        
+        <!-- Luxury Room 1: DELUXE -->
+        <div class="room-card bg-white rounded-2xl overflow-hidden border border-gray-200/80 shadow-sm flex flex-col">
+          <div class="h-64 overflow-hidden">
+            <img src="./assets/room1-2.jpg" alt="DELUXE CAO CẤP" class="w-full h-full object-cover">
+          </div>
+          <div class="p-6 text-center flex-1 flex flex-col justify-between">
+            <div>
+              <h3 class="text-xl font-extrabold text-gray-900 mb-4 tracking-wide">DELUXE</h3>
+              <div class="space-y-1 text-xs text-gray-600 mb-6">
+                <p><span class="font-bold text-gray-800">Hướng phòng:</span> View thành phố</p>
+                <p><span class="font-bold text-gray-800">Diện tích phòng:</span> 28-38m2</p>
+                <p><span class="font-bold text-gray-800">Kích thước giường:</span> 1 giường 2mx2m2</p>
+                <p><span class="font-bold text-gray-800">Số lượng khách/phòng:</span> 2 người/phòng</p>
+              </div>
+            </div>
+            <div>
+              <button onclick="openRoomModal('DELUXE CAO CẤP', 'View thành phố', '28-38m2', '1 giường 2mx2m2', '2 người/phòng', './assets/room1-2.jpg', '2.000.000 VNĐ / đêm')" 
+                      class="bg-[#4a4a4a] hover:bg-black text-white text-xs font-bold px-6 py-2.5 rounded uppercase tracking-wider transition">
+                Xem chi tiết
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Luxury Room 2: DELUXE VIP -->
+        <div class="room-card bg-white rounded-2xl overflow-hidden border border-gray-200/80 shadow-sm flex flex-col">
+          <div class="h-64 overflow-hidden">
+            <img src="./assets/c90d6776a0aba2bfa75c3427238f5ba9.jpg" alt="DELUXE VIP CAO CẤP" class="w-full h-full object-cover">
+          </div>
+          <div class="p-6 text-center flex-1 flex flex-col justify-between">
+            <div>
+              <h3 class="text-xl font-extrabold text-gray-900 mb-4 tracking-wide">DELUXE VIP</h3>
+              <div class="space-y-1 text-xs text-gray-600 mb-6">
+                <p><span class="font-bold text-gray-800">Hướng phòng:</span> View thành phố</p>
+                <p><span class="font-bold text-gray-800">Diện tích phòng:</span> 28-38m2</p>
+                <p><span class="font-bold text-gray-800">Kích thước giường:</span> 1 giường 2mx2m2</p>
+                <p><span class="font-bold text-gray-800">Số lượng khách/phòng:</span> 2 người/phòng</p>
+              </div>
+            </div>
+            <div>
+              <button onclick="openRoomModal('DELUXE VIP CAO CẤP', 'View thành phố', '28-38m2', '1 giường 2mx2m2', '2 người/phòng', './assets/c90d6776a0aba2bfa75c3427238f5ba9.jpg', '2.700.000 VNĐ / đêm')" 
+                      class="bg-[#4a4a4a] hover:bg-black text-white text-xs font-bold px-6 py-2.5 rounded uppercase tracking-wider transition">
+                Xem chi tiết
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Luxury Room 3: FAMILY -->
+        <div class="room-card bg-white rounded-2xl overflow-hidden border border-gray-200/80 shadow-sm flex flex-col">
+          <div class="h-64 overflow-hidden">
+            <img src="./assets/aac2a44fe02a5d903584f16c5c994b61.jpg" alt="FAMILY CAO CẤP" class="w-full h-full object-cover">
+          </div>
+          <div class="p-6 text-center flex-1 flex flex-col justify-between">
+            <div>
+              <h3 class="text-xl font-extrabold text-gray-900 mb-4 tracking-wide">FAMILY</h3>
+              <div class="space-y-1 text-xs text-gray-600 mb-6">
+                <p><span class="font-bold text-gray-800">Hướng phòng:</span> View thành phố</p>
+                <p><span class="font-bold text-gray-800">Diện tích phòng:</span> 42-47m2</p>
+                <p><span class="font-bold text-gray-800">Kích thước giường:</span> 2 giường</p>
+                <p><span class="font-bold text-gray-800">Số lượng khách/phòng:</span> 4 người/phòng</p>
+              </div>
+            </div>
+            <div>
+              <button onclick="openRoomModal('FAMILY CAO CẤP', 'View thành phố', '42-47m2', '2 giường', '4 người/phòng', './assets/aac2a44fe02a5d903584f16c5c994b61.jpg', '3.600.000 VNĐ / đêm')" 
+                      class="bg-[#4a4a4a] hover:bg-black text-white text-xs font-bold px-6 py-2.5 rounded uppercase tracking-wider transition">
+                Xem chi tiết
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- SECTION: COUNTER / STATS PILLS (Exact Image 5) -->
+  <section class="relative py-28 md:py-36 bg-cover bg-center overflow-hidden" 
+           style="background-image: url('./assets/room1-1-1.jpg');">
+    
+    <!-- Background overlay -->
+    <div class="absolute inset-0 bg-black/20"></div>
+
+    <div class="max-w-6xl mx-auto px-4 relative z-10">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 items-center">
+        
+        <!-- Pill 1: 702 + KHÁCH HÀNG -->
+        <div class="pill-counter-card">
+          <div class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">
+            702 +
+          </div>
+          <div class="text-[11px] font-bold uppercase tracking-widest text-gray-500 mt-1">
+            KHÁCH HÀNG
+          </div>
+        </div>
+
+        <!-- Pill 2: 500 + ĐÁNH GIÁ 5 SAO -->
+        <div class="pill-counter-card">
+          <div class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">
+            500 +
+          </div>
+          <div class="text-[11px] font-bold uppercase tracking-widest text-gray-500 mt-1">
+            ĐÁNH GIÁ 5 SAO
+          </div>
+        </div>
+
+        <!-- Pill 3: 200 + KHÁCH HÀNG QUỐC TẾ -->
+        <div class="pill-counter-card">
+          <div class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">
+            200 +
+          </div>
+          <div class="text-[11px] font-bold uppercase tracking-widest text-gray-500 mt-1">
+            KHÁCH HÀNG QUỐC TẾ
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="bg-white border-t border-gray-200 text-gray-600 text-xs" id="contact">
+    <div class="max-w-7xl mx-auto px-4 md:px-14 py-14">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+        
+        <!-- Col 1: Brand & Logo -->
+        <div class="space-y-4">
+          <a href="index.html" class="inline-block">
+            <img src="./assets/hotel-e1701255831111.png" alt="MONA ROYAL" class="h-16 w-auto object-contain">
+          </a>
+          <p class="text-gray-500 leading-relaxed text-xs">
+            Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
+          </p>
+        </div>
+
+        <!-- Col 2: MONA ROYAL Global Apartment -->
+        <div>
+          <h4 class="text-sm font-bold uppercase tracking-wider text-gray-700 mb-5">
+            MONA ROYAL Global Apartment
+          </h4>
+          <div class="space-y-3 text-xs text-gray-600">
+            <div class="flex items-start gap-2.5">
+              <i class="fa-solid fa-location-dot mt-0.5 text-gray-500"></i>
+              <span>1073/23 Cách Mạng Tháng 8, P.7, Q.Tân Bình, TP.HCM</span>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <i class="fa-solid fa-phone text-gray-500"></i>
+              <a href="tel:0313728397" class="hover:text-black transition">0313728397</a>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <i class="fa-solid fa-envelope text-gray-500"></i>
+              <a href="mailto:info@themona.global" class="hover:text-black transition">info@themona.global</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Col 3: LIÊN KẾT -->
+        <div>
+          <h4 class="text-sm font-bold uppercase tracking-wider text-gray-700 mb-5">
+            LIÊN KẾT
+          </h4>
+          <ul class="space-y-2.5 text-xs">
+            <li><a href="index.html" class="hover:text-black transition">Trang chủ</a></li>
+            <li><a href="#about" class="hover:text-black transition">Giới thiệu</a></li>
+            <li><a href="#news" class="hover:text-black transition">Tin tức</a></li>
+            <li><a href="#contact" class="hover:text-black transition">Liên hệ</a></li>
+            <li><a href="./Login.html" class="hover:text-black transition font-semibold text-gray-800">Đăng nhập tài khoản</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: LIÊN HỆ -->
+        <div>
+          <h4 class="text-sm font-bold uppercase tracking-wider text-gray-700 mb-5">
+            LIÊN HỆ
+          </h4>
+          <ul class="space-y-2.5 text-xs">
+            <li><a href="#hero-booking" class="hover:text-black transition">Đặt Phòng</a></li>
+            <li><a href="#contact" class="hover:text-black transition">Liên Hệ</a></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- COPYRIGHT BAR: CHANGED AS USER REQUESTED TO REPLACE "© Thiết kế và lập trình bởi MonaMedia" -->
+    <div class="bg-[#242424] text-gray-400 py-4 px-4 text-center text-xs">
+      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+        <div class="copyright-footer text-gray-300">
+          © Thiết kế và lập trình bởi <span class="font-bold text-white tracking-wide">DevSquad</span>
+        </div>
+        <div class="flex items-center gap-4 text-xs text-gray-400">
+          <a href="#" class="hover:text-white transition">Chính sách bảo mật</a>
+          <span>•</span>
+          <a href="#" class="hover:text-white transition">Điều khoản dịch vụ</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- FLOATING ACTION BUTTONS (Exact Image matching) -->
+  <div class="fixed right-5 bottom-6 z-50 flex flex-col items-center gap-3">
+    
+    <!-- Red Floating Envelope Button (As in all user images) -->
+    <button onclick="toggleQuickMessageModal()" 
+            class="circle-floating-btn w-12 h-12 rounded-full bg-[#e53935] hover:bg-[#d32f2f] text-white flex items-center justify-center shadow-xl" 
+            title="Liên hệ / Hỗ trợ">
+      <i class="fa-solid fa-envelope text-lg"></i>
+    </button>
+
+    <!-- Scroll to Top Button (Circle with angle-up icon, hidden until scroll) -->
+    <button id="back-to-top" onclick="scrollToTop()" 
+            class="circle-floating-btn w-10 h-10 rounded-full bg-white border border-gray-300 text-gray-700 flex items-center justify-center shadow-md hover:bg-gray-100 transition opacity-0 pointer-events-none" 
+            title="Lên đầu trang">
+      <i class="fa-solid fa-angle-up text-sm"></i>
+    </button>
+  </div>
+
+  <!-- ROOM DETAIL MODAL -->
+  <div id="room-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden relative">
+      <button onclick="closeRoomModal()" class="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-black/60 hover:bg-black text-white flex items-center justify-center transition">
+        <i class="fa-solid fa-xmark text-sm"></i>
+      </button>
+      
+      <div class="h-64 sm:h-72 overflow-hidden relative">
+        <img id="modal-room-img" src="" alt="Room Image" class="w-full h-full object-cover">
+        <div class="absolute bottom-4 left-4 bg-black/70 backdrop-blur-md text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold" id="modal-room-price">
+          1.500.000 VNĐ / đêm
+        </div>
+      </div>
+
+      <div class="p-6">
+        <h3 id="modal-room-title" class="text-2xl font-extrabold text-gray-900 mb-3">TÊN PHÒNG</h3>
+        
+        <div class="grid grid-cols-2 gap-3 text-xs text-gray-600 bg-gray-50 p-4 rounded-xl mb-4">
+          <div><span class="font-bold text-gray-800">Hướng phòng:</span> <span id="modal-room-view">View thành phố</span></div>
+          <div><span class="font-bold text-gray-800">Diện tích phòng:</span> <span id="modal-room-area">28-38m2</span></div>
+          <div><span class="font-bold text-gray-800">Kích thước giường:</span> <span id="modal-room-bed">1 giường 2mx2m2</span></div>
+          <div><span class="font-bold text-gray-800">Số lượng khách/phòng:</span> <span id="modal-room-capacity">2 người/phòng</span></div>
+        </div>
+
+        <div class="mb-5">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">Tiện nghi bao gồm:</h4>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-gray-600">
+            <span class="flex items-center gap-1.5"><i class="fa-solid fa-wifi text-emerald-600"></i> Wifi tốc độ cao</span>
+            <span class="flex items-center gap-1.5"><i class="fa-solid fa-tv text-emerald-600"></i> TV 55 inch Smart 4K</span>
+            <span class="flex items-center gap-1.5"><i class="fa-solid fa-snowflake text-emerald-600"></i> Điều hòa 2 chiều</span>
+            <span class="flex items-center gap-1.5"><i class="fa-solid fa-bath text-emerald-600"></i> Bồn tắm cao cấp</span>
+            <span class="flex items-center gap-1.5"><i class="fa-solid fa-utensils text-emerald-600"></i> Bữa sáng miễn phí</span>
+            <span class="flex items-center gap-1.5"><i class="fa-solid fa-mug-hot text-emerald-600"></i> Trà & Cafe đón tiếp</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
+          <button onclick="closeRoomModal()" class="px-5 py-2.5 rounded-lg border border-gray-300 text-xs font-semibold text-gray-700 hover:bg-gray-100 transition">
+            Đóng
+          </button>
+          <button onclick="selectRoomAndBook()" class="px-6 py-2.5 rounded-lg bg-[#333] hover:bg-black text-white text-xs font-bold uppercase tracking-wider transition shadow">
+            Đặt phòng này
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK MESSAGE POPUP -->
+  <div id="quick-msg-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
+      <button onclick="toggleQuickMessageModal()" class="absolute top-4 right-4 text-gray-400 hover:text-black">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center">
+          <i class="fa-solid fa-envelope"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-gray-900 text-base">Hỗ Trợ & Đặt Phòng</h3>
+          <p class="text-xs text-gray-500">Mona Royal sẵn sàng tư vấn quý khách 24/7</p>
+        </div>
+      </div>
+      <form onsubmit="handleQuickMsg(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-medium text-gray-700 mb-1">Họ tên của bạn</label>
+          <input type="text" required placeholder="Nhập họ và tên..." class="w-full border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:border-black">
+        </div>
+        <div>
+          <label class="block font-medium text-gray-700 mb-1">Số điện thoại</label>
+          <input type="tel" required placeholder="Nhập số điện thoại..." class="w-full border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:border-black">
+        </div>
+        <div>
+          <label class="block font-medium text-gray-700 mb-1">Nhu cầu / Tin nhắn</label>
+          <textarea rows="3" placeholder="Quý khách cần hỗ trợ phòng hoặc dịch vụ gì..." class="w-full border border-gray-300 rounded px-3 py-2 text-xs focus:outline-none focus:border-black"></textarea>
+        </div>
+        <button type="submit" class="w-full bg-[#e53935] hover:bg-[#d32f2f] text-white font-bold py-2.5 rounded uppercase tracking-wider text-xs transition shadow">
+          Gửi yêu cầu ngay
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed top-6 right-6 z-50 bg-[#1e1e1e] text-white text-xs px-5 py-3.5 rounded-xl shadow-2xl border border-white/10 hidden flex items-center gap-3 transition-all duration-300 transform translate-y-[-20px] opacity-0">
+    <i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
+    <span id="toast-message">Yêu cầu đã được gửi thành công!</span>
+  </div>
+
+  <!-- JAVASCRIPT -->
+  <script>
+    // Snowflake Animation over full page
+    (function initSnowfall() {
+      const canvas = document.getElementById('global-snow-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      
+      let width = canvas.width = window.innerWidth;
+      let height = canvas.height = window.innerHeight;
+
+      window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      const flakes = [];
+      const flakeCount = 60;
+
+      for (let i = 0; i < flakeCount; i++) {
+        flakes.push({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          radius: Math.random() * 2.5 + 1.2,
+          speedY: Math.random() * 0.9 + 0.35,
+          speedX: Math.random() * 0.5 - 0.25,
+          opacity: Math.random() * 0.6 + 0.4
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, width, height);
+
+        for (let i = 0; i < flakeCount; i++) {
+          const f = flakes[i];
+          ctx.beginPath();
+          ctx.arc(f.x, f.y, f.radius, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${f.opacity})`;
+          ctx.shadowBlur = 4;
+          ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+          ctx.fill();
+
+          f.y += f.speedY;
+          f.x += f.speedX;
+
+          if (f.y > height) {
+            f.y = -5;
+            f.x = Math.random() * width;
+          }
+          if (f.x > width) f.x = 0;
+          if (f.x < 0) f.x = width;
+        }
+
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+
+    // Back to top button
+    const backToTopBtn = document.getElementById('back-to-top');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 300) {
+        backToTopBtn.classList.remove('opacity-0', 'pointer-events-none');
+        backToTopBtn.classList.add('opacity-100');
+      } else {
+        backToTopBtn.classList.add('opacity-0', 'pointer-events-none');
+        backToTopBtn.classList.remove('opacity-100');
+      }
+    });
+
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function scrollToSection(id) {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Mobile Menu
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      menu.classList.toggle('hidden');
+    }
+
+    // Search Modal
+    function toggleSearch() {
+      const modal = document.getElementById('search-modal');
+      modal.classList.toggle('hidden');
+    }
+
+    // Quick Message Modal
+    function toggleQuickMessageModal() {
+      const modal = document.getElementById('quick-msg-modal');
+      modal.classList.toggle('hidden');
+    }
+
+    // Room Modal
+    let selectedRoomName = '';
+    function openRoomModal(title, view, area, bed, capacity, img, price) {
+      selectedRoomName = title;
+      document.getElementById('modal-room-title').textContent = title;
+      document.getElementById('modal-room-view').textContent = view;
+      document.getElementById('modal-room-area').textContent = area;
+      document.getElementById('modal-room-bed').textContent = bed;
+      document.getElementById('modal-room-capacity').textContent = capacity;
+      document.getElementById('modal-room-img').src = img;
+      document.getElementById('modal-room-price').textContent = price;
+      document.getElementById('room-modal').classList.remove('hidden');
+    }
+
+    function closeRoomModal() {
+      document.getElementById('room-modal').classList.add('hidden');
+    }
+
+    function selectRoomAndBook() {
+      closeRoomModal();
+      const bookingSection = document.getElementById('hero-booking');
+      bookingSection.scrollIntoView({ behavior: 'smooth' });
+      showToast(`Đã chọn phòng ${selectedRoomName}. Quý khách vui lòng hoàn tất thông tin!`);
+    }
+
+    // Service Modal
+    function showServiceModal(title, desc) {
+      alert(`${title}\n\n${desc}`);
+    }
+
+    // Toast Notification helper
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-message');
+      toastMsg.textContent = msg;
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.remove('translate-y-[-20px]', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-[-20px]', 'opacity-0');
+        setTimeout(() => toast.classList.add('hidden'), 300);
+      }, 3500);
+    }
+
+    // Booking Submit Handler
+    function handleBookingSubmit(e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const name = formData.get('fullname');
+      const checkin = formData.get('checkin');
+      const checkout = formData.get('checkout');
+
+      showToast(`Cảm ơn quý khách ${name}! Yêu cầu đặt phòng từ ${checkin} đến ${checkout} đã được gửi thành công.`);
+      e.target.reset();
+    }
+
+    // Quick Msg Handler
+    function handleQuickMsg(e) {
+      e.preventDefault();
+      showToast('Cảm ơn quý khách đã gửi tin nhắn! Nhân viên CSKH sẽ liên hệ lại ngay.');
+      toggleQuickMessageModal();
+      e.target.reset();
+    }
+
+    // Set default check-in and check-out dates
+    window.addEventListener('DOMContentLoaded', () => {
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const formatDate = (d) => d.toISOString().split('T')[0];
+      const checkinInput = document.querySelector('input[name="checkin"]');
+      const checkoutInput = document.querySelector('input[name="checkout"]');
+
+      if (checkinInput && checkoutInput) {
+        checkinInput.value = formatDate(today);
+        checkoutInput.value = formatDate(tomorrow);
+        checkinInput.min = formatDate(today);
+        checkoutInput.min = formatDate(tomorrow);
+      }
+    });
+  </script>
+</body>
+</html>

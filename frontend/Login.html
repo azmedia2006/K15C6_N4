@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lotus Hotel &amp; Resort - Hệ Thống Đặt Phòng Khách Sạn</title>
+  <!-- Google Fonts: Playfair Display & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&amp;display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#0F2A43',
+              navyDark: '#0A1D2E',
+              navyLight: '#1E3E5B',
+              gold: '#C9A227',
+              goldHover: '#B5911F',
+              goldActive: '#9E7E19',
+              goldLight: 'rgba(201, 162, 39, 0.12)',
+              offwhite: '#F8F7F4',
+              slate: '#64748B',
+              border: '#E2E8F0',
+              borderDark: '#CBD5E1',
+              error: '#DC2626',
+              success: '#16A34A'
+            }
+          },
+          fontFamily: {
+            serif: ['"Playfair Display"', 'Georgia', 'serif'],
+            sans: ['"Inter"', 'system-ui', 'sans-serif']
+          },
+          boxShadow: {
+            'luxury': '0 25px 50px -12px rgba(15, 42, 67, 0.15), 0 0 1px 1px rgba(15, 42, 67, 0.05)',
+            'gold-glow': '0 0 0 3px rgba(201, 162, 39, 0.25)',
+            'card-glow': '0 10px 30px -5px rgba(201, 162, 39, 0.15)'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #F8F7F4;
+      color: #0F2A43;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 4px;
+    }
+    .fade-enter {
+      animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.99);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    .bg-grid-pattern {
+      background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+  </style>
+</head>
+<body class="min-h-screen w-full flex flex-col justify-between selection:bg-[#C9A227]/30 selection:text-[#0F2A43]">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+  <!-- Main Split-Screen Container -->
+  <main class="flex-1 w-full grid grid-cols-1 lg:grid-cols-12 min-h-screen">
+
+    <!-- LEFT SIDE: 58% Width Hero & Luxury Experience Visuals -->
+    <section class="relative lg:col-span-7 bg-[#0F2A43] overflow-hidden min-h-[440px] lg:min-h-screen flex flex-col justify-between p-8 sm:p-12 lg:p-16 text-white">
+      <!-- Background Luxury Hotel Image with Dual Gradient Overlays -->
+      <div class="absolute inset-0 z-0 pointer-events-none">
+        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkGcTuxnpkOHfD1XIUu51SFEWzqL5atXdKUqxxSIcqnPh7zciwNCtVklYcE11ZkZHL9vHiUUb19a7JMuFosV-4UT1nD-V7EJkwve1AUpl3GrgvhpBJj5jEA03o002M7gz2CLk8fgLioUlbKxEurK_TqLQxSj3z3lussObDLUAExdzfhQEA-gjQLwRz2gvkwVhzFAxdpzAvXGd0HVUeonyWQCvlsvOnY4VScothg6g57a0jhtefpIvpGQ" alt="Không gian khách sạn sang trọng Lotus Hotel &amp; Resort" class="w-full h-full object-cover object-center transform scale-105 transition-transform duration-1000 ease-out">
+        <!-- Deep Navy Gradient Overlay for high-contrast typography -->
+        <div class="absolute inset-0 bg-gradient-to-t from-[#0A1D2E] via-[#0F2A43]/85 to-[#0F2A43]/70 mix-blend-multiply"></div>
+        <div class="absolute inset-0 bg-radial-gradient from-transparent via-[#0A1D2E]/60 to-[#0A1D2E]/95"></div>
+        <div class="absolute inset-0 bg-grid-pattern opacity-30"></div>
+      </div>
+
+      <!-- Left Top: Brand Identity Header -->
+      <div class="relative z-10 flex items-center justify-between">
+        <div class="flex items-center gap-3.5">
+          <div class="w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 p-2.5 flex items-center justify-center shadow-lg transition-transform hover:scale-105">
+            <!-- Lotus SVG Icon -->
+            <svg class="w-full h-full text-[#E5C76B]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3c1.5 3.5 3.5 6 3.5 9 0 3-1.5 5-3.5 6-2-1-3.5-3-3.5-6 0-3 2-5.5 3.5-9z"/>
+              <path d="M12 18c-3-1-6.5-2.5-7.5-6 2-1 4.5-1 6.5.5"/>
+              <path d="M12 18c3-1 6.5-2.5 7.5-6-2-1-4.5-1-6.5.5"/>
+              <path d="M4.5 12c-1.5-1-2.5-3-2-5 2 .5 3.5 2 4.5 4"/>
+              <path d="M19.5 12c1.5-1 2.5-3 2-5-2 .5-3.5 2-4.5 4"/>
+            </svg>
+          </div>
+          <div>
+            <div class="text-xl sm:text-2xl font-serif font-bold tracking-wider text-white">LOTUS</div>
+            <div class="text-[11px] tracking-[0.2em] uppercase text-[#C9A227] font-semibold">Hệ Thống Đặt Phòng Khách Sạn</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Left Middle-Bottom: Tagline -->
+      <div class="relative z-10 my-auto pt-16 pb-8 lg:pt-24 lg:pb-12 max-w-xl">
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-white leading-tight tracking-tight drop-shadow-md">
+          Đặt phòng khách sạn thông minh, <br class="hidden sm:inline">
+          <span class="text-[#E5C76B] italic font-normal">trải nghiệm trọn vẹn.</span>
+        </h1>
+
+        <p class="mt-4 text-slate-300 text-sm sm:text-base leading-relaxed max-w-lg">
+          Giải pháp tìm kiếm và đặt phòng khách sạn trực tuyến nhanh chóng, quản lý kỳ nghỉ dễ dàng cùng nhiều ưu đãi độc quyền dành cho khách hàng.
+        </p>
+      </div>
+
+      <!-- Left Bottom: Support Info -->
+      <div class="relative z-10 flex items-center justify-end text-xs text-slate-400 pt-4">
+        <span>Hỗ trợ đặt phòng 24/7</span>
+      </div>
+    </section>
+
+    <!-- RIGHT SIDE: 42% Width Clean Luxury Form Area (Sign in & Sign up) -->
+    <section class="lg:col-span-5 bg-[#F8F7F4] flex flex-col justify-center items-center px-4 py-8 sm:px-8 sm:py-12 lg:px-10 relative overflow-y-auto custom-scrollbar">
+
+      <!-- Center Auth Card -->
+      <div class="w-full max-w-[440px] bg-white rounded-[20px] p-7 sm:p-9 shadow-luxury border border-[#E2E8F0] transition-all duration-300 my-auto">
+
+        <!-- Top Logo and Branding Mark -->
+        <div class="flex flex-col items-center text-center mb-6">
+          <div class="w-14 h-14 rounded-2xl bg-[#0F2A43]/5 border border-[#C9A227]/30 p-2.5 flex items-center justify-center mb-3 shadow-inner group transition-transform hover:scale-105">
+            <!-- Lotus Gold Icon -->
+            <svg class="w-8 h-8 text-[#C9A227]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3c1.5 3.5 3.5 6 3.5 9 0 3-1.5 5-3.5 6-2-1-3.5-3-3.5-6 0-3 2-5.5 3.5-9z"/>
+              <path d="M12 18c-3-1-6.5-2.5-7.5-6 2-1 4.5-1 6.5.5"/>
+              <path d="M12 18c3-1 6.5-2.5 7.5-6-2-1-4.5-1-6.5.5"/>
+              <path d="M4.5 12c-1.5-1-2.5-3-2-5 2 .5 3.5 2 4.5 4"/>
+              <path d="M19.5 12c1.5-1 2.5-3 2-5-2 .5-3.5 2-4.5 4"/>
+            </svg>
+          </div>
+
+          <!-- Dynamic Heading: Đăng nhập -->
+          <h2 id="form-heading" class="text-2xl sm:text-[26px] font-serif font-bold text-[#0F2A43] tracking-tight">Đăng nhập</h2>
+          <!-- Dynamic Subheading -->
+          <p id="form-subheading" class="text-xs sm:text-sm text-[#64748B] mt-1.5 font-normal">
+            Đăng nhập để đặt phòng và quản lý kỳ nghỉ của bạn
+          </p>
+        </div>
+
+        <!-- Global Error Notification Banner -->
+        <div id="error-banner" class="hidden mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-[#DC2626] flex items-center gap-2.5 fade-enter">
+          <svg class="w-4 h-4 shrink-0 text-[#DC2626]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span id="error-banner-text" class="font-medium">Email hoặc mật khẩu không chính xác. Vui lòng thử lại.</span>
+        </div>
+
+        <!-- Global Success Notification Banner -->
+        <div id="success-banner" class="hidden mb-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2.5 fade-enter">
+          <svg class="w-4 h-4 shrink-0 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span id="success-banner-text" class="font-medium">Đăng ký thành công! Đang chuyển hướng...</span>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- FORM 1: SIGN IN (ĐĂNG NHẬP) -->
+        <!-- ============================================== -->
+        <form id="form-signin" onsubmit="handleSignInSubmit(event)" class="space-y-4 fade-enter">
+          
+          <!-- Field: Email -->
+          <div>
+            <label for="signin-username" class="block text-xs font-semibold text-[#0F2A43] uppercase tracking-wider mb-1.5">
+              Email <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+              </div>
+              <input type="email" id="signin-username" name="email" placeholder="example@email.com" required class="w-full h-[48px] pl-11 pr-4 rounded-[10px] border border-[#CBD5E1] bg-white text-sm text-[#0F2A43] placeholder:text-slate-400 focus:outline-none focus:border-[#C9A227] focus:ring-2 focus:ring-[#C9A227]/25 transition duration-150">
+            </div>
+          </div>
+
+          <!-- Field: Mật khẩu -->
+          <div>
+            <label for="signin-password" class="block text-xs font-semibold text-[#0F2A43] uppercase tracking-wider mb-1.5">
+              Mật khẩu <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </div>
+              <input type="password" id="signin-password" name="password" placeholder="••••••••" required class="w-full h-[48px] pl-11 pr-11 rounded-[10px] border border-[#CBD5E1] bg-white text-sm text-[#0F2A43] placeholder:text-slate-400 focus:outline-none focus:border-[#C9A227] focus:ring-2 focus:ring-[#C9A227]/25 transition duration-150">
+              <button type="button" onclick="togglePasswordVisibility('signin-password', 'signin-eye-icon')" aria-label="Hiện hoặc ẩn mật khẩu" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-[#0F2A43] transition-colors">
+                <svg id="signin-eye-icon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Row: Ghi nhớ đăng nhập & Quên mật khẩu? -->
+          <div class="flex items-center justify-between pt-1">
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input type="checkbox" id="signin-remember" checked class="w-4 h-4 rounded text-[#C9A227] focus:ring-[#C9A227] focus:ring-offset-1 border-[#CBD5E1] accent-[#C9A227]">
+              <span class="text-xs text-[#64748B] font-medium hover:text-[#0F2A43] transition-colors">Ghi nhớ đăng nhập</span>
+            </label>
+            <button type="button" onclick="openForgotPasswordModal()" class="text-xs font-semibold text-[#0F2A43] hover:text-[#C9A227] underline-offset-2 hover:underline transition-colors">
+              Quên mật khẩu?
+            </button>
+          </div>
+
+          <!-- Primary Button: Đăng nhập -->
+          <div class="pt-2">
+            <button type="submit" id="signin-submit-btn" class="w-full h-[48px] rounded-[10px] bg-[#C9A227] hover:bg-[#B5911F] active:bg-[#9E7E19] text-white font-bold text-sm tracking-wide shadow-md shadow-[#C9A227]/25 flex items-center justify-center gap-2 focus:outline-none focus:ring-4 focus:ring-[#C9A227]/30 transition duration-150 transform active:scale-[0.99]">
+              <span id="signin-btn-text" class="flex items-center gap-2">
+                <span>Đăng nhập</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </span>
+              <span id="signin-btn-loading" class="hidden items-center gap-2">
+                <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Đang xác thực...</span>
+              </span>
+            </button>
+          </div>
+
+          <!-- Divider: hoặc -->
+          <div class="relative flex py-2 items-center">
+            <div class="flex-grow border-t border-[#E2E8F0]"></div>
+            <span class="flex-shrink mx-4 text-[11px] font-semibold text-slate-400 uppercase tracking-widest">hoặc</span>
+            <div class="flex-grow border-t border-[#E2E8F0]"></div>
+          </div>
+
+          <!-- Google Social Login -->
+          <button type="button" onclick="handleSocialAuth('Google')" class="w-full h-[46px] rounded-[10px] border border-[#CBD5E1] bg-white hover:bg-slate-50 hover:border-slate-400 text-xs font-semibold text-[#0F2A43] flex items-center justify-center gap-3 transition duration-150 shadow-sm">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"></path>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"></path>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"></path>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"></path>
+            </svg>
+            <span>Đăng nhập bằng tài khoản Google</span>
+          </button>
+
+          <!-- Toggle Link to Sign Up -->
+          <div class="text-center pt-3 text-xs text-[#64748B]">
+            Chưa có tài khoản? 
+            <button type="button" onclick="switchAuthTab('signup')" class="font-semibold text-[#C9A227] hover:text-[#B5911F] hover:underline underline-offset-2 transition-colors">
+              Đăng ký ngay
+            </button>
+          </div>
+        </form>
+
+        <!-- ============================================== -->
+        <!-- FORM 2: SIGN UP (ĐĂNG KÝ CHO KHÁCH HÀNG & THÀNH VIÊN) -->
+        <!-- ============================================== -->
+        <form id="form-signup" onsubmit="handleSignUpSubmit(event)" class="hidden space-y-3.5 fade-enter">
+          
+          <!-- Field: Họ và tên -->
+          <div>
+            <label for="signup-fullname" class="block text-xs font-semibold text-[#0F2A43] uppercase tracking-wider mb-1">
+              Họ và tên <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </div>
+              <input type="text" id="signup-fullname" placeholder="Nguyễn Văn A" required class="w-full h-[44px] pl-10 pr-4 rounded-[10px] border border-[#CBD5E1] bg-white text-sm text-[#0F2A43] placeholder:text-slate-400 focus:outline-none focus:border-[#C9A227] focus:ring-2 focus:ring-[#C9A227]/25 transition duration-150">
+            </div>
+          </div>
+
+          <!-- Field 2 columns: Email & Số điện thoại -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label for="signup-email" class="block text-xs font-semibold text-[#0F2A43] uppercase tracking-wider mb-1">
+                Email ưu đãi <span class="text-red-500">*</span>
+              </label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                    <polyline points="22,6 12,13 2,6"></polyline>
+                  </svg>
+                </div>
+                <input type="email" id="signup-email" placeholder="email@example.com" required class="w-full h-[44px] pl-9 pr-3 rounded-[10px] border border-[#CBD5E1] bg-white text-xs sm:text-sm text-[#0F2A43] placeholder:text-slate-400 focus:outline-none focus:border-[#C9A227] focus:ring-2 focus:ring-[#C9A227]/25 transition duration-150">
+              </div>
+            </div>
+
+            <div>
+              <label for="signup-phone" class="block text-xs font-semibold text-[#0F2A43] uppercase tracking-wider mb-1">
+                Số điện thoại liên hệ <span class="text-red-500">*</span>
+              </label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                  </svg>
+                </div>
+                <input type="tel" id="signup-phone" placeholder="0912 345 678" required class="w-full h-[44px] pl-9 pr-3 rounded-[10px] border border-[#CBD5E1] bg-white text-xs sm:text-sm text-[#0F2A43] placeholder:text-slate-400 focus:outline-none focus:border-[#C9A227] focus:ring-2 focus:ring-[#C9A227]/25 transition duration-150">
+              </div>
+            </div>
+          </div>
+
+          <!-- Field: Mật khẩu -->
+          <div>
+            <label for="signup-password" class="block text-xs font-semibold text-[#0F2A43] uppercase tracking-wider mb-1">
+              Mật khẩu <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </div>
+              <input type="password" id="signup-password" placeholder="••••••••" required class="w-full h-[44px] pl-10 pr-10 rounded-[10px] border border-[#CBD5E1] bg-white text-sm text-[#0F2A43] placeholder:text-slate-400 focus:outline-none focus:border-[#C9A227] focus:ring-2 focus:ring-[#C9A227]/25 transition duration-150">
+              <button type="button" onclick="togglePasswordVisibility('signup-password', 'signup-eye-icon')" aria-label="Hiện hoặc ẩn mật khẩu" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-[#0F2A43] transition-colors">
+                <svg id="signup-eye-icon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Agreement Checkbox -->
+          <div class="pt-1">
+            <label class="flex items-start gap-2.5 cursor-pointer select-none">
+              <input type="checkbox" id="signup-terms" required class="mt-0.5 w-4 h-4 rounded text-[#C9A227] focus:ring-[#C9A227] border-[#CBD5E1] accent-[#C9A227]">
+              <span class="text-xs text-[#64748B] leading-tight">
+                Tôi đồng ý với <a href="#terms" class="font-semibold text-[#0F2A43] hover:text-[#C9A227] underline">Điều khoản dịch vụ</a> và <a href="#privacy" class="font-semibold text-[#0F2A43] hover:text-[#C9A227] underline">Chính sách đặt phòng</a> của Lotus Hotel.
+              </span>
+            </label>
+          </div>
+
+          <!-- Primary Button: Đăng ký -->
+          <div class="pt-2">
+            <button type="submit" id="signup-submit-btn" class="w-full h-[46px] rounded-[10px] bg-[#C9A227] hover:bg-[#B5911F] active:bg-[#9E7E19] text-white font-bold text-sm tracking-wide shadow-md shadow-[#C9A227]/25 flex items-center justify-center gap-2 focus:outline-none focus:ring-4 focus:ring-[#C9A227]/30 transition duration-150 transform active:scale-[0.99]">
+              <span id="signup-btn-text" class="flex items-center gap-2">
+                <span>Tạo tài khoản thành viên</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </span>
+              <span id="signup-btn-loading" class="hidden items-center gap-2">
+                <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Đang khởi tạo tài khoản...</span>
+              </span>
+            </button>
+          </div>
+
+          <!-- Toggle Link to Sign In -->
+          <div class="text-center pt-3 text-xs text-[#64748B]">
+            Đã có tài khoản? 
+            <button type="button" onclick="switchAuthTab('signin')" class="font-semibold text-[#C9A227] hover:text-[#B5911F] hover:underline underline-offset-2 transition-colors">
+              Đăng nhập ngay
+            </button>
+          </div>
+        </form>
+
+      </div>
+
+      <!-- Footer Info Below Card -->
+      <footer class="mt-6 text-center space-y-1 text-xs text-[#64748B]">
+        <p>
+          Cần hỗ trợ đặt phòng? 
+          <a href="javascript:void(0)" onclick="openContactModal()" class="font-semibold text-[#0F2A43] hover:text-[#C9A227] underline decoration-slate-300 underline-offset-2 transition-colors">
+            Liên hệ CSKH
+          </a>
+          <span class="mx-1.5 text-slate-300">|</span>
+          <span class="text-slate-500">Hotline: 0785321475</span>
+        </p>
+        <p class="text-[11px] text-slate-400">
+          &copy; 2026 Lotus Hotel &amp; Resort. Hệ thống đặt phòng trực tuyến.
+        </p>
+      </footer>
+
+    </section>
+
+  </main>
+
+  <!-- ============================================== -->
+  <!-- MODAL: FORGOT PASSWORD (QUÊN MẬT KHẨU) -->
+  <!-- ============================================== -->
+  <div id="forgot-modal" class="fixed inset-0 z-50 bg-[#0F2A43]/60 backdrop-blur-sm flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+    <div class="w-full max-w-md bg-white rounded-2xl p-6 sm:p-7 shadow-2xl border border-[#E2E8F0] transform scale-95 transition-transform duration-300" id="forgot-modal-content">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-lg bg-[#C9A227]/10 flex items-center justify-center text-[#C9A227]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg font-serif font-bold text-[#0F2A43]">Khôi phục mật khẩu</h3>
+        </div>
+        <button type="button" onclick="closeForgotPasswordModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-600 mb-4 leading-relaxed">
+        Nhập địa chỉ email đã đăng ký của bạn. Chúng tôi sẽ gửi hướng dẫn và đường dẫn đặt lại mật khẩu an toàn.
+      </p>
+
+      <form onsubmit="handleForgotSubmit(event)" class="space-y-4">
+        <div>
+          <label for="forgot-email" class="block text-xs font-semibold text-[#0F2A43] uppercase tracking-wider mb-1">
+            Email xác nhận
+          </label>
+          <input type="email" id="forgot-email" placeholder="email@example.com" required class="w-full h-[46px] px-3.5 rounded-[10px] border border-[#CBD5E1] bg-white text-sm text-[#0F2A43] focus:outline-none focus:border-[#C9A227] focus:ring-2 focus:ring-[#C9A227]/25">
+        </div>
+
+        <div class="flex gap-2.5 pt-1">
+          <button type="button" onclick="closeForgotPasswordModal()" class="w-1/2 h-[44px] rounded-[10px] border border-slate-300 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition">
+            Hủy bỏ
+          </button>
+          <button type="submit" id="forgot-submit-btn" class="w-1/2 h-[44px] rounded-[10px] bg-[#C9A227] hover:bg-[#B5911F] text-xs font-bold text-white transition shadow-sm">
+            Gửi yêu cầu
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Interactive JavaScript -->
+  <script>
+    // Tab switching between Sign In & Sign Up (via inline link, without segmented tab bar)
+    function switchAuthTab(tab) {
+      const heading = document.getElementById('form-heading');
+      const subheading = document.getElementById('form-subheading');
+      const formSignIn = document.getElementById('form-signin');
+      const formSignUp = document.getElementById('form-signup');
+      const errorBanner = document.getElementById('error-banner');
+      const successBanner = document.getElementById('success-banner');
+
+      // Clear alerts
+      errorBanner.classList.add('hidden');
+      successBanner.classList.add('hidden');
+
+      if (tab === 'signin') {
+        heading.textContent = 'Đăng nhập';
+        subheading.textContent = 'Đăng nhập để đặt phòng và quản lý kỳ nghỉ của bạn';
+
+        formSignUp.classList.add('hidden');
+        formSignIn.classList.remove('hidden');
+        formSignIn.classList.add('fade-enter');
+      } else {
+        heading.textContent = 'Đăng ký tài khoản';
+        subheading.textContent = 'Tạo tài khoản thành viên để nhận ưu đãi đặt phòng tốt nhất';
+
+        formSignIn.classList.add('hidden');
+        formSignUp.classList.remove('hidden');
+        formSignUp.classList.add('fade-enter');
+      }
+    }
+
+    // Toggle Password Visibility
+    function togglePasswordVisibility(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (!input || !icon) return;
+
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.innerHTML = `
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+          <line x1="1" y1="1" x2="23" y2="23"></line>
+        `;
+      } else {
+        input.type = 'password';
+        icon.innerHTML = `
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        `;
+      }
+    }
+
+    // Password Strength Evaluator
+    function evaluatePasswordStrength(password) {
+      const b1 = document.getElementById('strength-bar-1');
+      const b2 = document.getElementById('strength-bar-2');
+      const b3 = document.getElementById('strength-bar-3');
+      const b4 = document.getElementById('strength-bar-4');
+      const text = document.getElementById('strength-text');
+
+      let score = 0;
+      if (!password) {
+        text.textContent = 'Chưa nhập';
+        text.className = 'font-semibold text-slate-400';
+        [b1, b2, b3, b4].forEach(b => b.className = 'h-full w-1/4 bg-slate-300 rounded-full transition-all duration-300');
+        return;
+      }
+
+      if (password.length >= 8) score++;
+      if (/[A-Z]/.test(password)) score++;
+      if (/[0-9]/.test(password)) score++;
+      if (/[^A-Za-z0-9]/.test(password)) score++;
+
+      [b1, b2, b3, b4].forEach(b => b.className = 'h-full w-1/4 bg-slate-300 rounded-full transition-all duration-300');
+
+      if (score === 1) {
+        text.textContent = 'Yếu';
+        text.className = 'font-semibold text-red-500';
+        b1.className = 'h-full w-1/4 bg-red-500 rounded-full transition-all duration-300';
+      } else if (score === 2) {
+        text.textContent = 'Trung bình';
+        text.className = 'font-semibold text-amber-500';
+        b1.className = 'h-full w-1/4 bg-amber-500 rounded-full transition-all duration-300';
+        b2.className = 'h-full w-1/4 bg-amber-500 rounded-full transition-all duration-300';
+      } else if (score === 3) {
+        text.textContent = 'Khá mạnh';
+        text.className = 'font-semibold text-blue-500';
+        b1.className = 'h-full w-1/4 bg-blue-500 rounded-full transition-all duration-300';
+        b2.className = 'h-full w-1/4 bg-blue-500 rounded-full transition-all duration-300';
+        b3.className = 'h-full w-1/4 bg-blue-500 rounded-full transition-all duration-300';
+      } else if (score >= 4) {
+        text.textContent = 'Rất mạnh';
+        text.className = 'font-semibold text-emerald-600';
+        b1.className = 'h-full w-1/4 bg-emerald-500 rounded-full transition-all duration-300';
+        b2.className = 'h-full w-1/4 bg-emerald-500 rounded-full transition-all duration-300';
+        b3.className = 'h-full w-1/4 bg-emerald-500 rounded-full transition-all duration-300';
+        b4.className = 'h-full w-1/4 bg-emerald-500 rounded-full transition-all duration-300';
+      }
+    }
+
+    // Handle Sign In Submit
+    function handleSignInSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('signin-submit-btn');
+      const text = document.getElementById('signin-btn-text');
+      const loading = document.getElementById('signin-btn-loading');
+      const errBanner = document.getElementById('error-banner');
+      const errText = document.getElementById('error-banner-text');
+      const successBanner = document.getElementById('success-banner');
+
+      errBanner.classList.add('hidden');
+      successBanner.classList.add('hidden');
+      btn.setAttribute('disabled', 'true');
+      text.classList.add('hidden');
+      loading.classList.remove('hidden');
+      loading.classList.add('flex');
+
+      const username = document.getElementById('signin-username').value.trim();
+      const password = document.getElementById('signin-password').value;
+
+      setTimeout(() => {
+        btn.removeAttribute('disabled');
+        text.classList.remove('hidden');
+        loading.classList.add('hidden');
+        loading.classList.remove('flex');
+
+        if (password.length >= 6) {
+          showToast('Đăng nhập thành công! Đang chuyển đến trang đặt phòng...', 'success');
+          setTimeout(() => {
+            alert('🎉 Xác thực thành công!\nChào mừng quý khách ' + username + ' đã đến với Hệ Thống Đặt Phòng Lotus Hotel.');
+          }, 600);
+        } else {
+          errText.textContent = 'Email hoặc mật khẩu không chính xác. Vui lòng kiểm tra lại.';
+          errBanner.classList.remove('hidden');
+          showToast('Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin!', 'error');
+        }
+      }, 1000);
+    }
+
+    // Handle Sign Up Submit
+    function handleSignUpSubmit(e) {
+      e.preventDefault();
+      const pwd = document.getElementById('signup-password').value;
+      const errBanner = document.getElementById('error-banner');
+      const errText = document.getElementById('error-banner-text');
+      const successBanner = document.getElementById('success-banner');
+      const successText = document.getElementById('success-banner-text');
+
+      errBanner.classList.add('hidden');
+      successBanner.classList.add('hidden');
+
+      if (pwd.length < 6) {
+        errText.textContent = 'Mật khẩu cần tối thiểu 6 ký tự để đảm bảo an toàn.';
+        errBanner.classList.remove('hidden');
+        showToast('Mật khẩu quá ngắn!', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('signup-submit-btn');
+      const text = document.getElementById('signup-btn-text');
+      const loading = document.getElementById('signup-btn-loading');
+
+      btn.setAttribute('disabled', 'true');
+      text.classList.add('hidden');
+      loading.classList.remove('hidden');
+      loading.classList.add('flex');
+
+      const fullName = document.getElementById('signup-fullname').value;
+      const email = document.getElementById('signup-email').value;
+
+      setTimeout(() => {
+        btn.removeAttribute('disabled');
+        text.classList.remove('hidden');
+        loading.classList.add('hidden');
+        loading.classList.remove('flex');
+
+        successText.textContent = `Tạo tài khoản thành viên thành công cho ${fullName}! Đang chuyển sang màn hình đăng nhập...`;
+        successBanner.classList.remove('hidden');
+        showToast('Đăng ký tài khoản thành công!', 'success');
+
+        setTimeout(() => {
+          switchAuthTab('signin');
+          document.getElementById('signin-username').value = email;
+          document.getElementById('signin-password').value = pwd;
+        }, 1400);
+      }, 1100);
+    }
+
+    // Forgot Password Modal
+    function openForgotPasswordModal() {
+      const modal = document.getElementById('forgot-modal');
+      const content = document.getElementById('forgot-modal-content');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        content.classList.remove('scale-95');
+        content.classList.add('scale-100');
+      }, 10);
+    }
+
+    function closeForgotPasswordModal() {
+      const modal = document.getElementById('forgot-modal');
+      const content = document.getElementById('forgot-modal-content');
+      modal.classList.add('opacity-0');
+      content.classList.remove('scale-100');
+      content.classList.add('scale-95');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 250);
+    }
+
+    function handleForgotSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById('forgot-email').value;
+      const btn = document.getElementById('forgot-submit-btn');
+      btn.textContent = 'Đang gửi...';
+      btn.setAttribute('disabled', 'true');
+
+      setTimeout(() => {
+        btn.textContent = 'Gửi yêu cầu';
+        btn.removeAttribute('disabled');
+        closeForgotPasswordModal();
+        showToast(`Đã gửi email khôi phục tới: ${email}`, 'success');
+      }, 800);
+    }
+
+    function handleSocialAuth(provider) {
+      showToast(`Đang kết nối xác thực qua ${provider}...`, 'info');
+    }
+
+    function openContactModal() {
+      alert('📞 Hotline Chăm sóc Khách hàng & Hỗ trợ Đặt phòng 24/7:\n- Điện thoại: 0785321475\n- Email: booking@lotushotel.vn\n- Hỗ trợ giải đáp ưu đãi phòng & dịch vụ nghỉ dưỡng.');
+    }
+
+    // Toast Notification System
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let bg = 'bg-[#0F2A43] text-white border-white/20';
+      let icon = `<svg class="w-4 h-4 text-[#C9A227]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+      
+      if (type === 'success') {
+        bg = 'bg-[#064E3B] text-white border-emerald-500/40';
+        icon = `<svg class="w-4 h-4 text-emerald-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+      } else if (type === 'error') {
+        bg = 'bg-[#7F1D1D] text-white border-red-500/40';
+        icon = `<svg class="w-4 h-4 text-red-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+      }
+
+      toast.className = `${bg} pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-xl border text-xs font-medium max-w-sm transition-all duration-300 transform translate-y-2 opacity-0`;
+      toast.innerHTML = `${icon}<span>${message}</span>`;
+      
+      container.appendChild(toast);
+      
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', '-translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+  </script>
+</body>
+</html>
