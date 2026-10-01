@@ -973,7 +973,14 @@
         function handleSuccessfulLogin(role, userData = null) {
             localStorage.setItem("tms_login_fail_count", "0");
             localStorage.removeItem("tms_login_lockout_until");
-            const cleanRole = String(role || "administrator").trim().toLowerCase().replace(/^role_/, "").replace(/[\s-]+/g, "_");
+            const cleanRole = String(role || "").trim().toLowerCase().replace(/^role_/, "").replace(/[\s-]+/g, "_");
+            if (!cleanRole) {
+                showMessage(
+                loginMessage,
+                "Không xác định được vai trò người dùng. Vui lòng liên hệ quản trị viên."
+            );
+    return;
+}
             const userObj = userData || {
                 email: document.querySelector("#email").value.trim(),
                 role: cleanRole
@@ -1020,6 +1027,13 @@
 
                 const role = String(result.role || "").trim().toLowerCase().replace(/^role_/, "").replace(/[\s-]+/g, "_");
                 handleSuccessfulLogin(role, result.user);
+                if (!cleanRole) {
+    showMessage(
+        loginMessage,
+        "Không xác định được vai trò người dùng. Vui lòng liên hệ quản trị viên."
+    );
+    return;
+}
             } catch {
                 // Chế độ demo / offline client-side mô phỏng đầy đủ tiêu chí của user story KN-14
                 const inputEmail = document.querySelector("#email").value.trim().toLowerCase();
