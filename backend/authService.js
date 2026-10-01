@@ -22,7 +22,7 @@ function generateSalt() {
 
 // Khởi tạo danh sách người dùng mẫu với mật khẩu đã băm (hashed)
 const users = [
-    { id: "usr_admin", email: "admin@tms.edu.vn", name: "Nguyễn Văn Anh", role: "administrator", salt: "s1", passwordHash: "" },
+    { id: "usr_admin", email: "admin@tms.edu.vn", name: "Thạch Minh Quân", role: "administrator", salt: "s1", passwordHash: "" },
     { id: "usr_manager", email: "manager@tms.edu.vn", name: "Đỗ Quốc Bảo", role: "training_manager", salt: "s2", passwordHash: "" },
     { id: "usr_teacher", email: "teacher@tms.edu.vn", name: "ThS. Trần Minh", role: "instructor", salt: "s3", passwordHash: "" },
     { id: "usr_ta", email: "ta@tms.edu.vn", name: "Nguyễn Thu Hà", role: "teaching_assistant", salt: "s4", passwordHash: "" },
