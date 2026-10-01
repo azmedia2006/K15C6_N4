@@ -243,6 +243,150 @@ app.delete("/api/admin/users/:id", authenticateToken, requireAdmin, (req, res) =
     }
 });
 
+// ============================================================================
+// KN-8: HỆ THỐNG PHÂN QUYỀN THEO VAI TRÒ (RBAC) - DOAN MINH QUAN (azmedia247)
+// ============================================================================
+const {
+    BUSINESS_ROLES,
+    PERMISSIONS,
+    getAllRolePermissions,
+    getPermissionsByRole,
+    updateRolePermissions,
+    resetRolePermissions,
+    mockGrades,
+    mockTuitions,
+    updateStudentGrade,
+    updateStudentTuition,
+    authorizePermission
+} = require("./rbacService");
+
+// KN-8: Lấy toàn bộ ma trận phân quyền của 8 vai trò
+app.get("/api/rbac/matrix", authenticateToken, (req, res) => {
+    res.json({
+        success: true,
+        roles: Object.values(BUSINESS_ROLES),
+        permissions: Object.values(PERMISSIONS),
+        matrix: getAllRolePermissions()
+    });
+});
+
+// KN-8: Lấy quyền của người dùng hiện tại (Current User Permissions)
+app.get("/api/rbac/my-permissions", authenticateToken, (req, res) => {
+    const userRole = req.user.role;
+    res.json({
+        success: true,
+        role: userRole,
+        permissions: getPermissionsByRole(userRole)
+    });
+});
+
+// KN-8: Cập nhật quyền cho một vai trò (Chỉ Quản trị viên có quyền rbac:manage)
+app.put("/api/rbac/matrix/:role", authenticateToken, authorizePermission(PERMISSIONS.RBAC_MANAGE), (req, res) => {
+    try {
+        const { role } = req.params;
+        const { permissions } = req.body || {};
+        const result = updateRolePermissions(role, permissions);
+        res.json({
+            success: true,
+            message: `Cập nhật phân quyền cho vai trò '${role}' thành công.`,
+            ...result
+        });
+    } catch (err) {
+        res.status(err.status || 500).json({
+            success: false,
+            message: err.message || "Đã xảy ra lỗi khi cập nhật phân quyền."
+        });
+    }
+});
+
+// KN-8: Khôi phục phân quyền mặc định
+app.post("/api/rbac/matrix/reset", authenticateToken, authorizePermission(PERMISSIONS.RBAC_MANAGE), (req, res) => {
+    const matrix = resetRolePermissions();
+    res.json({
+        success: true,
+        message: "Đã khôi phục ma trận phân quyền về mặc định.",
+        matrix
+    });
+});
+
+// ----------------------------------------------------------------------------
+// KN-8 NGHIỆP VỤ ĐIỂM SỐ: Kiểm quyền ở tầng Server (Giảng viên được sửa, Kế toán bị chặn)
+// ----------------------------------------------------------------------------
+
+// Xem danh sách điểm (Yêu cầu quyền grades:view)
+app.get("/api/grades", authenticateToken, authorizePermission(PERMISSIONS.GRADES_VIEW), (req, res) => {
+    res.json({
+        success: true,
+        grades: mockGrades
+    });
+});
+
+// Nhập / sửa điểm cho sinh viên (Yêu cầu quyền grades:update)
+// -> Giảng viên (instructor): CHO PHÉP (HTTP 200)
+// -> Kế toán (accountant): TỪ CHỐI (HTTP 403)
+app.put("/api/grades/:studentId", authenticateToken, authorizePermission(PERMISSIONS.GRADES_UPDATE), (req, res) => {
+    try {
+        const { studentId } = req.params;
+        const { subject, score } = req.body || {};
+        if (!subject || score === undefined) {
+            return res.status(400).json({
+                success: false,
+                message: "Vui lòng cung cấp môn học (subject) và điểm số (score)."
+            });
+        }
+        const updatedGrade = updateStudentGrade(studentId, subject, score, req.user.email);
+        res.json({
+            success: true,
+            message: `Cập nhật điểm môn '${subject}' cho sinh viên ${studentId} thành ${score} thành công.`,
+            grade: updatedGrade
+        });
+    } catch (err) {
+        res.status(err.status || 500).json({
+            success: false,
+            message: err.message || "Lỗi cập nhật điểm."
+        });
+    }
+});
+
+// ----------------------------------------------------------------------------
+// KN-8 NGHIỆP VỤ HỌC PHÍ: Kiểm quyền ở tầng Server (Kế toán được sửa, Giảng viên bị chặn)
+// ----------------------------------------------------------------------------
+
+// Xem danh sách học phí (Yêu cầu quyền tuition:view)
+app.get("/api/tuitions", authenticateToken, authorizePermission(PERMISSIONS.TUITION_VIEW), (req, res) => {
+    res.json({
+        success: true,
+        tuitions: mockTuitions
+    });
+});
+
+// Cập nhật học phí cho sinh viên (Yêu cầu quyền tuition:update)
+// -> Kế toán (accountant): CHO PHÉP (HTTP 200)
+// -> Giảng viên (instructor): TỪ CHỐI (HTTP 403)
+app.put("/api/tuitions/:studentId", authenticateToken, authorizePermission(PERMISSIONS.TUITION_UPDATE), (req, res) => {
+    try {
+        const { studentId } = req.params;
+        const { paidAmount, status } = req.body || {};
+        if (paidAmount === undefined) {
+            return res.status(400).json({
+                success: false,
+                message: "Vui lòng cung cấp số tiền học phí (paidAmount)."
+            });
+        }
+        const updatedTuition = updateStudentTuition(studentId, paidAmount, status, req.user.email);
+        res.json({
+            success: true,
+            message: `Cập nhật học phí sinh viên ${studentId} thành công. Đã đóng: ${Number(paidAmount).toLocaleString("vi-VN")} VNĐ.`,
+            tuition: updatedTuition
+        });
+    } catch (err) {
+        res.status(err.status || 500).json({
+            success: false,
+            message: err.message || "Lỗi cập nhật học phí."
+        });
+    }
+});
+
 // Chỉ listen khi chạy trực tiếp file server.js (hỗ trợ kiểm thử require module)
 if (require.main === module) {
     app.listen(PORT, () => {
