@@ -193,15 +193,17 @@ app.get("/api/admin/users/:id", authenticateToken, requireAdmin, (req, res) => {
     }
 });
 
-// KN-11: API Tạo mới tài khoản người dùng (cấp quyền truy cập cho nhân sự mới)
+// KN-11: API Tạo mới tài khoản người dùng (cấp quyền truy cập cho nhân sự mới, gửi email kích hoạt kèm mật khẩu tạm)
 app.post("/api/admin/users", authenticateToken, requireAdmin, (req, res) => {
     try {
         const result = createUser(req.body || {});
         res.status(201).json({
             success: true,
-            message: `Tạo tài khoản người dùng '${result.user.name}' thành công.`,
+            message: `Tạo tài khoản người dùng '${result.user.name}' thành công. Đã gửi email kích hoạt kèm mật khẩu tạm.`,
             user: result.user,
-            temporaryPassword: result.temporaryPassword
+            temporaryPassword: result.temporaryPassword,
+            emailSent: result.emailSent,
+            activationEmail: result.activationEmail
         });
     } catch (err) {
         res.status(err.status || 500).json({

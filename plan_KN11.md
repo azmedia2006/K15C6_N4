@@ -1,15 +1,28 @@
 # Báo cáo Triển khai Tính năng KN-11: Quản trị Tài khoản Người dùng
 
 > **Jira Issue:** [KN-11] - Sprint 1  
+> **Parent Epic:** KN-14 Tài khoản, Phân quyền & Hồ sơ  
 > **Story Points:** 8  
+> **Assignee:** LY PHI THANG  
 > **User Story:** *"Là Quản trị hệ thống, tôi muốn tạo, sửa và tìm kiếm tài khoản người dùng, để cấp quyền truy cập cho nhân sự mới trong ngày đầu họ đi làm."*  
-> **Nhánh Git:** `feature/KN-11`  
+> **Nhánh Git:** `Develop` (và `feature/KN-11`)  
 
 ---
 
-## 1. Mục tiêu và Phạm vi Nghiệp vụ
-- Cung cấp giao diện và hệ thống API hoàn chỉnh cho Quản trị viên (Administrator) thực hiện vòng đời quản lý tài khoản người dùng.
-- Giúp việc tiếp nhận và bàn giao tài khoản cho nhân sự mới trong ngày đầu tiên đi làm diễn ra tức thì, an toàn và chuyên nghiệp.
+## 1. Tiêu chí nghiệm thu (Jira Description Acceptance Criteria)
+1. **Tạo tài khoản gửi email kích hoạt kèm mật khẩu tạm:**
+   - Hệ thống tự sinh mật khẩu tạm thời an toàn (`TMS@...`).
+   - Tự động kích hoạt luồng gửi email bàn giao thông tin kích hoạt tới địa chỉ email của nhân sự mới.
+   - Giao diện Admin hiển thị modal bàn giao thông tin kèm nút sao chép nhanh (copy clipboard).
+2. **Email trùng bị từ chối kèm thông báo cụ thể:**
+   - Kiểm tra tính duy nhất (unique) của email trước khi tạo.
+   - Trả về mã lỗi HTTP 409 Conflict với thông báo tiếng Việt: *"Email này đã được sử dụng bởi một tài khoản khác trong hệ thống."*
+3. **Tìm theo tên, email, số điện thoại; lọc theo vai trò và trạng thái:**
+   - Tìm kiếm tức thời (live debounce) không phân biệt hoa/thường theo họ tên, email hoặc số điện thoại.
+   - Dropdown lọc danh sách linh hoạt theo 8 vai trò TMS và 3 trạng thái (`active`, `locked`, `inactive`).
+4. **Danh sách phân trang, mặc định 20 dòng:**
+   - API và Giao diện hỗ trợ phân trang chuẩn, mặc định hiển thị 20 dòng / trang.
+   - Cho phép tùy chọn chuyển đổi linh hoạt (20, 50, 100 dòng / trang) cùng các nút điều hướng trang.
 
 ---
 
