@@ -45,17 +45,17 @@ Dưới đây là danh sách tài khoản được phân quyền theo 8 vai trò
 
 | STT | Vai trò nghiệp vụ (Role) | Email / Tên đăng nhập | Mật khẩu | Trang đích sau đăng nhập |
 |:---:|:---|:---|:---:|:---|
-| 1 | **Quản trị hệ thống (Administrator)** | `admin@tms.edu.vn` | `admin123` | `FE/Index.html?role=administrator` |
-| 2 | **Quản lý đào tạo (Training Manager)** | `manager@tms.edu.vn` | `manager123` | `FE/Index.html?role=training_manager` |
-| 3 | **Giảng viên (Instructor)** | `teacher@tms.edu.vn` | `teacher123` | `FE/Index.html?role=instructor` |
-| 4 | **Trợ giảng (Teaching Assistant)** | `ta@tms.edu.vn` | `ta123456` | `FE/Index.html?role=teaching_assistant` |
-| 5 | **Học viên (Student / Learner)** | `student@tms.edu.vn` *(hoặc `sv001`)* | `student123` | `FE/Index.html?role=student` |
-| 6 | **Tư vấn tuyển sinh (Admissions Counselor)** | `admissions@tms.edu.vn` | `admissions123` | `FE/Index.html?role=admissions` |
-| 7 | **Kế toán đào tạo (Accountant)** | `accountant@tms.edu.vn` | `accountant123` | `FE/Index.html?role=accountant` |
-| 8 | **Khách truy cập (Visitor)** | `visitor@tms.edu.vn` | `visitor123` | `FE/Index.html?role=visitor` |
+| 1 | **Quản trị hệ thống (Administrator)** | `admin@tms.edu.vn` | `admin123` | `frontend/Index.html?role=administrator` |
+| 2 | **Quản lý đào tạo (Training Manager)** | `manager@tms.edu.vn` | `manager123` | `frontend/Index.html?role=training_manager` |
+| 3 | **Giảng viên (Instructor)** | `teacher@tms.edu.vn` | `teacher123` | `frontend/Index.html?role=instructor` |
+| 4 | **Trợ giảng (Teaching Assistant)** | `ta@tms.edu.vn` | `ta123456` | `frontend/Index.html?role=teaching_assistant` |
+| 5 | **Học viên (Student / Learner)** | `student@tms.edu.vn` *(hoặc `sv001`)* | `student123` | `frontend/Index.html?role=student` |
+| 6 | **Tư vấn tuyển sinh (Admissions Counselor)** | `admissions@tms.edu.vn` | `admissions123` | `frontend/Index.html?role=admissions` |
+| 7 | **Kế toán đào tạo (Accountant)** | `accountant@tms.edu.vn` | `accountant123` | `frontend/Index.html?role=accountant` |
+| 8 | **Khách truy cập (Visitor)** | `visitor@tms.edu.vn` | `visitor123` | `frontend/Index.html?role=visitor` |
 
 > **Ghi chú trải nghiệm:**
-> - Trang đăng nhập: [FE/Login.html](file:///d:/du_an/K15C6_N4/FE/Login.html)
-> - Trang đăng ký: [FE/Register.html](file:///d:/du_an/K15C6_N4/FE/Register.html) (hoặc `FE/Login.html#register`)
-> - Dashboard tổng quan: [FE/Index.html](file:///d:/du_an/K15C6_N4/FE/Index.html)
+> - Trang đăng nhập: [frontend/Login.html](file:///d:/du_an/K15C6_N4/frontend/Login.html)
+> - Trang đăng ký: [frontend/Register.html](file:///d:/du_an/K15C6_N4/frontend/Register.html) (hoặc `frontend/Login.html#register`)
+> - Dashboard tổng quan: [frontend/Index.html](file:///d:/du_an/K15C6_N4/frontend/Index.html)
 > - Khi chạy môi trường demo tĩnh (chưa mở backend), hệ thống đã tích hợp sẵn cơ chế kiểm tra tài khoản offline để trải nghiệm mượt mà không bị lỗi mạng.
