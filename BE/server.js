@@ -4,9 +4,9 @@ const {
     findUserByEmail,
     hashPassword,
     generateToken,
-    loginAttempts,
-    LOCK_DURATION_MS,
-    MAX_FAILED_ATTEMPTS
+    getLockoutStatus,
+    recordFailedAttempt,
+    recordSuccessfulLogin
 } = require("./authService");
 
 const app = express();
@@ -27,24 +27,15 @@ app.post("/api/auth/login", (req, res) => {
     }
 
     const normalizedEmail = String(email).trim().toLowerCase();
-    const now = Date.now();
 
-    // KN-34 & KN-36: Kiểm tra trạng thái khóa tài khoản
-    const attempt = loginAttempts.get(normalizedEmail) || { count: 0, lockoutUntil: 0 };
-    if (attempt.lockoutUntil > now) {
-        const remainingSeconds = Math.ceil((attempt.lockoutUntil - now) / 1000);
+    // KN-34 & KN-36: Kiểm tra trạng thái khóa tài khoản trước khi xử lý
+    const lockout = getLockoutStatus(normalizedEmail);
+    if (lockout.isLocked) {
         return res.status(423).json({
             success: false,
-            message: `Tài khoản tạm khóa do đăng nhập sai 5 lần liên tiếp. Vui lòng thử lại sau.`,
-            retryAfterSeconds: remainingSeconds
+            message: "Tài khoản tạm khóa do đăng nhập sai 5 lần liên tiếp. Vui lòng thử lại sau.",
+            retryAfterSeconds: lockout.remainingSeconds
         });
-    }
-
-    // Nếu thời gian khóa đã qua, reset trạng thái
-    if (attempt.lockoutUntil > 0 && attempt.lockoutUntil <= now) {
-        attempt.count = 0;
-        attempt.lockoutUntil = 0;
-        loginAttempts.set(normalizedEmail, attempt);
     }
 
     const user = findUserByEmail(normalizedEmail);
@@ -59,31 +50,27 @@ app.post("/api/auth/login", (req, res) => {
         hashPassword(password, "dummy_constant_salt_for_timing_safety_321");
     }
 
-    // Xử lý đăng nhập sai
+    // KN-36: Xử lý và lưu trạng thái đăng nhập sai
     if (!user || !isPasswordValid) {
-        attempt.count += 1;
-        if (attempt.count >= MAX_FAILED_ATTEMPTS) {
-            attempt.lockoutUntil = now + LOCK_DURATION_MS;
-            loginAttempts.set(normalizedEmail, attempt);
+        const failedResult = recordFailedAttempt(normalizedEmail);
+        if (failedResult.isLocked) {
             return res.status(423).json({
                 success: false,
                 message: "Tài khoản tạm khóa 15 phút do đăng nhập sai 5 lần liên tiếp.",
-                retryAfterSeconds: Math.ceil(LOCK_DURATION_MS / 1000)
+                retryAfterSeconds: failedResult.remainingSeconds
             });
         }
-
-        loginAttempts.set(normalizedEmail, attempt);
 
         // KN-35: Không tiết lộ email có tồn tại hay không
         return res.status(401).json({
             success: false,
             message: "Email hoặc mật khẩu không đúng",
-            attemptsLeft: MAX_FAILED_ATTEMPTS - attempt.count
+            attemptsLeft: failedResult.remainingAttempts
         });
     }
 
-    // Đăng nhập thành công -> Reset số lần đăng nhập sai
-    loginAttempts.delete(normalizedEmail);
+    // KN-36: Đăng nhập thành công -> Reset toàn bộ trạng thái sai
+    recordSuccessfulLogin(normalizedEmail);
 
     // KN-31 & KN-32: Trả về token và vai trò người dùng
     const token = generateToken(user);

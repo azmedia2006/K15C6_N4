@@ -66,11 +66,69 @@ function generateToken(user) {
     return Buffer.from(JSON.stringify(payload)).toString("base64");
 }
 
+function getLockoutStatus(email) {
+    const normalized = String(email || "").trim().toLowerCase();
+    const now = Date.now();
+    const attempt = loginAttempts.get(normalized) || { count: 0, lockoutUntil: 0 };
+
+    if (attempt.lockoutUntil > now) {
+        return {
+            isLocked: true,
+            remainingSeconds: Math.ceil((attempt.lockoutUntil - now) / 1000)
+        };
+    }
+
+    if (attempt.lockoutUntil > 0 && attempt.lockoutUntil <= now) {
+        attempt.count = 0;
+        attempt.lockoutUntil = 0;
+        loginAttempts.set(normalized, attempt);
+    }
+
+    return {
+        isLocked: false,
+        count: attempt.count,
+        remainingAttempts: Math.max(0, MAX_FAILED_ATTEMPTS - attempt.count)
+    };
+}
+
+function recordFailedAttempt(email) {
+    const normalized = String(email || "").trim().toLowerCase();
+    const now = Date.now();
+    const attempt = loginAttempts.get(normalized) || { count: 0, lockoutUntil: 0 };
+
+    attempt.count += 1;
+    if (attempt.count >= MAX_FAILED_ATTEMPTS) {
+        attempt.lockoutUntil = now + LOCK_DURATION_MS;
+        loginAttempts.set(normalized, attempt);
+        return {
+            isLocked: true,
+            count: attempt.count,
+            lockoutUntil: attempt.lockoutUntil,
+            remainingSeconds: Math.ceil(LOCK_DURATION_MS / 1000)
+        };
+    }
+
+    loginAttempts.set(normalized, attempt);
+    return {
+        isLocked: false,
+        count: attempt.count,
+        remainingAttempts: MAX_FAILED_ATTEMPTS - attempt.count
+    };
+}
+
+function recordSuccessfulLogin(email) {
+    const normalized = String(email || "").trim().toLowerCase();
+    loginAttempts.delete(normalized);
+}
+
 module.exports = {
     findUserByEmail,
     hashPassword,
     generateSalt,
     generateToken,
+    getLockoutStatus,
+    recordFailedAttempt,
+    recordSuccessfulLogin,
     loginAttempts,
     LOCK_DURATION_MS,
     MAX_FAILED_ATTEMPTS,
