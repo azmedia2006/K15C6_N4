@@ -75,65 +75,53 @@ Nhánh **`minhquanmedia`** thực hiện toàn diện tính năng **KN-8: Phân 
 - **Vai trò trong nhóm:** Backend Developer
 - **User Story:** *"Là Quản trị hệ thống, tôi muốn phân quyền theo vai trò cho toàn hệ thống, để đảm bảo giảng viên không sửa được học phí và kế toán không sửa được điểm."*
 
-### 7.1 Chi tiết các hạng mục đã hoàn thành trên nhánh
+---
 
-#### 1. Dịch vụ Phân quyền Hệ thống (`backend/rbacService.js`)
-- **Khai báo đầy đủ 8 vai trò nghiệp vụ chuẩn TMS:**
-  `administrator` (Quản trị hệ thống), `training_manager` (Quản lý đào tạo), `instructor` (Giảng viên), `teaching_assistant` (Trợ giảng), `student` (Học viên), `admissions` (Tư vấn tuyển sinh), `accountant` (Kế toán), `visitor` (Khách tham quan).
-- **Khai báo 11 mã quyền hệ thống:** Phân chia theo 4 nhóm chức năng (Khảo thí & Điểm số, Tài chính & Học phí, Đào tạo & Lớp học, Quản trị hệ thống).
-- **Cơ chế kiểm soát truy cập Default Deny:** Hàm `hasPermission(role, permission)` mặc định từ chối mọi yêu cầu nếu vai trò không có quyền rõ ràng hoặc chưa xác thực.
-- **Middleware bảo vệ ở tầng Server:** `authorizePermission(permission)` đánh chặn các request trước khi tới handler nghiệp vụ. Khi thiếu quyền, trả về mã **HTTP 403 Forbidden** kèm thông báo tiếng Việt thân thiện, không làm lộ stack trace kỹ thuật.
-- **Cô lập quyền hạn tuyệt đối:**
-  - Giảng viên (`instructor`): Có quyền `grades:update` (nhập/sửa điểm), **không có quyền `tuition:update`** (sửa học phí).
-  - Kế toán (`accountant`): Có quyền `tuition:update` (cập nhật học phí), **không có quyền `grades:update`** (sửa điểm).
-- **Hỗ trợ cập nhật phân quyền linh hoạt:** Cung cấp các hàm `updateRolePermissions`, `updateAllRolePermissions` và `resetRolePermissions`.
+### 7.1 Cấu trúc Mã nguồn trên Nhánh `minhquanmedia` (Code Structure)
 
-#### 2. Tầng API Endpoints (`backend/server.js`)
-- `GET /api/rbac/matrix`: Lấy toàn bộ ma trận phân quyền 8 vai trò.
-- `PUT /api/rbac/matrix`: Cập nhật toàn bộ ma trận phân quyền trong một yêu cầu duy nhất.
-- `PUT /api/rbac/matrix/:role`: Cập nhật danh sách quyền cho vai trò cụ thể.
-- `POST /api/rbac/matrix/reset`: Khôi phục ma trận phân quyền về mặc định ban đầu.
-- `GET /api/rbac/my-permissions`: Lấy danh sách quyền của tài khoản hiện tại qua token.
-- `GET /api/rbac/demo-token/:role`: Cấp Token mô phỏng theo vai trò phục vụ kiểm thử nhanh trực tiếp trên giao diện.
-- `GET /api/grades` & `PUT /api/grades/:studentId`: Nghiệp vụ quản lý điểm số (yêu cầu `grades:view` / `grades:update`).
-- `GET /api/tuitions` & `PUT /api/tuitions/:studentId`: Nghiệp vụ quản lý học phí (yêu cầu `tuition:view` / `tuition:update`).
-- Phục vụ file tĩnh frontend: Cấu hình `express.static` phục vụ toàn bộ thư mục `../frontend`.
+Toàn bộ cấu trúc thư mục của dự án trên nhánh `minhquanmedia` được chuẩn hóa, phân tách rõ ràng giữa tầng dịch vụ Backend, giao diện Frontend và bộ kiểm thử tự động:
 
-#### 3. Giao diện Quản trị Phân quyền (`frontend/RoleManagement.html`)
-- **Thiết kế chuẩn hệ thống TMS 2026:**
-  - Bo góc mềm mại hiện đại (`10px` - `14px`), bảng màu Emerald Green (`#10b981`), thanh điều hướng Sidebar Dark (`#0f172a`), hỗ trợ chế độ Sáng / Tối.
-  - Sử dụng 100% icon SVG vector thanh mảnh, không sử dụng emoji.
-- **Ma trận quyền hạn trực quan:**
-  - Bảng ma trận 8 cột vai trò và 11 hàng quyền hạn phân theo 4 nhóm nghiệp vụ rõ ràng.
-  - Bộ đếm quyền động cho từng vai trò (ví dụ: `4/11 quyền`).
-  - Thanh tìm kiếm quyền (live search) và bộ lọc phân hệ nghiệp vụ.
-  - Checkbox tương tác thời gian thực, có banner cảnh báo khi có thay đổi chưa lưu.
-- **Bảng Thử nghiệm Thực thi Quyền tầng Server (Live RBAC Test):**
-  - 4 thẻ kịch bản kiểm tra nhanh cho Giảng viên, Kế toán, Học viên, Quản trị viên.
-  - Trình giả lập tương tác tự do (Custom Interactive Simulator): Cho phép chọn vai trò bất kỳ và hành động bất kỳ để gửi request HTTP thật tới Server, hiển thị mã trạng thái, độ trễ và JSON response chi tiết.
-- **Danh mục 8 tài khoản mẫu chuẩn TMS:** Bảng tra cứu tài khoản kèm nút kiểm tra quyền tức thời.
-
-#### 4. Bộ Kiểm thử Tự động Toàn diện (`backend/test/rbac.test.js`)
-Xây dựng bộ kiểm thử tự động kiểm tra 4 vai trò với 12 ca kiểm thử đạt kết quả **100% PASS**:
-- Case 1: Khai báo đầy đủ ma trận quyền cho 8 vai trò.
-- Case 2: Giảng viên có quyền `grades:update` và không có quyền `tuition:update`.
-- Case 3: Giảng viên sửa điểm sinh viên thành công (HTTP 200).
-- Case 4: Chặn giảng viên sửa học phí (HTTP 403 Forbidden).
-- Case 5: Kế toán cập nhật học phí thành công (HTTP 200).
-- Case 6: Chặn kế toán sửa điểm (HTTP 403 Forbidden).
-- Case 7: Quản trị hệ thống được phép cập nhật cả điểm và học phí.
-- Case 8: Học viên bị chặn khi cố ý sửa điểm hoặc học phí.
-- Case 9: Chặn request không có token xác thực (HTTP 401).
-- Case 10: Vai trò không xác định bị từ chối mặc định (Default Deny).
-- Case 11: Cập nhật ma trận phân quyền thành công qua API.
-- Case 12: Thông báo lỗi tiếng Việt rõ ràng khi không đủ quyền.
-
-#### 5. Báo cáo Chi tiết Tiến độ (`plan_KN8.md`)
-Tài liệu hóa chi tiết quá trình phân tích, thiết kế, triển khai và kết quả kiểm thử của tính năng KN-8 theo đúng đặc tả của đề bài.
+```text
+minhquan_thuctapcaso/
+├── backend/
+│   ├── test/
+│   │   ├── auth.test.js              # Kiểm thử xác thực & đăng nhập (KN-38)
+│   │   ├── rbac.test.js              # [MỚI - KN-8] Bộ 12 ca kiểm thử tự động phân quyền RBAC
+│   │   └── user_management.test.js   # Kiểm thử quản lý người dùng
+│   ├── authService.js                # Dịch vụ xác thực, băm mật khẩu PBKDF2 & JWT token
+│   ├── package.json                  # [CẬP NHẬT] Cấu hình npm test chạy rbac.test.js
+│   ├── rbacService.js                # [MỚI - KN-8] Dịch vụ phân quyền 8 vai trò, Default Deny & nghiệp vụ
+│   ├── server.js                     # [CẬP NHẬT - KN-8] Express server, middleware kiểm quyền & API RBAC
+│   └── userService.js                # Dịch vụ quản trị thông tin người dùng
+├── frontend/
+│   ├── ChangePassword.html           # Giao diện đổi mật khẩu
+│   ├── Index.html                    # Dashboard tổng quan hệ thống TMS
+│   ├── Login.html                    # Giao diện đăng nhập tài khoản
+│   ├── Register.html                 # Giao diện đăng ký
+│   ├── RoleManagement.html           # [MỚI - KN-8] Giao diện ma trận phân quyền & Live RBAC Test
+│   └── UserManagement.html           # Giao diện quản lý người dùng
+├── plan_KN8.md                       # [MỚI - KN-8] Báo cáo chi tiết nghiệm thu tính năng KN-8
+└── README.md                         # [CẬP NHẬT] Tài liệu dự án & đặc tả kỹ thuật nhánh minhquanmedia
+```
 
 ---
 
-### 7.2 Hướng dẫn Chạy & Kiểm thử Tính năng
+### 7.2 Chi tiết Các Hạng mục và Tính năng Mới của KN-8
+
+Bảng tổng hợp chi tiết các file mới và cập nhật riêng cho tính năng **KN-8**:
+
+| STT | Tên File / Thành phần | Loại thay đổi | Nội dung và Chức năng mới |
+|:---:|---|:---:|---|
+| 1 | `backend/rbacService.js` | **TẠO MỚI** | • Định nghĩa 8 vai trò nghiệp vụ chuẩn (`BUSINESS_ROLES`) và 11 mã quyền hệ thống (`PERMISSIONS`).<br>• Khai báo ma trận phân quyền mặc định (`defaultRolePermissions`) và quản lý bộ nhớ động (`currentRolePermissions`).<br>• Triển khai hàm kiểm quyền `hasPermission(role, permission)` tuân thủ nguyên tắc **Default Deny**.<br>• Xây dựng Middleware `authorizePermission(permission)` đánh chặn ở tầng Server, trả về mã HTTP 403 Forbidden kèm thông báo tiếng Việt.<br>• Cung cấp nghiệp vụ mẫu: Sửa điểm (`updateStudentGrade`) và Sửa học phí (`updateStudentTuition`).<br>• Hàm cập nhật ma trận (`updateRolePermissions`, `updateAllRolePermissions`) và khôi phục mặc định (`resetRolePermissions`). |
+| 2 | `backend/server.js` | **CẬP NHẬT** | • Đăng ký các API quản trị phân quyền: `GET /api/rbac/matrix`, `PUT /api/rbac/matrix`, `PUT /api/rbac/matrix/:role`, `POST /api/rbac/matrix/reset`, `GET /api/rbac/my-permissions`.<br>• Bổ sung API `GET /api/rbac/demo-token/:role` cấp token nhanh cho 8 vai trò để phục vụ kiểm thử.<br>• Áp dụng Middleware `authorizePermission` vào các Endpoint nhạy cảm: `GET /api/grades`, `PUT /api/grades/:studentId`, `GET /api/tuitions`, `PUT /api/tuitions/:studentId`.<br>• Cấu hình phục vụ file tĩnh giao diện web qua `express.static`. |
+| 3 | `frontend/RoleManagement.html` | **TẠO MỚI & HOÀN THIỆN** | • Giao diện chuẩn TMS 2026: Bo góc mềm mại (`10px` - `14px`), màu xanh ngọc lục bảo (`#10b981`), Dark sidebar (`#0f172a`), hỗ trợ Dark/Light mode, 100% SVG vector sạch AI.<br>• Bảng ma trận phân quyền động 8 vai trò x 11 quyền hạn, tích hợp bộ đếm quyền thời gian thực (`count_role`).<br>• Thanh công cụ tìm kiếm quyền tức thời (live search) và bộ lọc phân hệ nghiệp vụ.<br>• Bảng kiểm tra thực thi quyền tầng Server (Live RBAC Test): 4 kịch bản nhanh cho Giảng viên, Kế toán, Học viên, Quản trị viên và Trình giả lập tự do (Custom Interactive Simulator) gửi HTTP request thật lên Server.<br>• Kết nối trực tiếp Backend: Nút "Lưu thay đổi" (`PUT /api/rbac/matrix`) và "Khôi phục mặc định" (`POST /api/rbac/matrix/reset`).<br>• Bảng tham chiếu 8 tài khoản mẫu chuẩn TMS theo mục 6 `README.md`. |
+| 4 | `backend/test/rbac.test.js` | **TẠO MỚI** | • Bộ 12 ca kiểm thử tự động toàn diện kiểm tra 4 vai trò (Quản trị viên, Giảng viên, Kế toán, Học viên).<br>• Kiểm thử cô lập: Giảng viên sửa điểm (HTTP 200), Giảng viên sửa học phí (HTTP 403).<br>• Kiểm thử cô lập: Kế toán sửa học phí (HTTP 200), Kế toán sửa điểm (HTTP 403).<br>• Kiểm thử Default Deny, chặn thiếu token (HTTP 401), kiểm tra thông báo tiếng Việt.<br>• Đạt tỷ lệ **100% PASS (12/12 ca kiểm thử)**. |
+| 5 | `plan_KN8.md` | **TẠO MỚI** | • Báo cáo chi tiết tiến độ triển khai, kiến trúc giải pháp, tiêu chí nghiệm thu Jira và kết quả kiểm thử tự động của tính năng KN-8. |
+| 6 | `backend/package.json` | **CẬP NHẬT** | • Bổ sung kịch bản chạy kiểm thử `test:rbac` (`node test/rbac.test.js`).<br>• Cấu hình lệnh `npm test` chuyên biệt cho tính năng KN-8. |
+
+---
+
+### 7.3 Hướng dẫn Chạy & Kiểm thử Tính năng
 
 #### Bước 1: Khởi động Backend Server
 ```bash
