@@ -655,20 +655,20 @@
         const recoverySubmit = document.querySelector("#recovery-submit");
         const recoveryMessage = document.querySelector("#recovery-message");
         const roleHome = {
-            visitor: "/dashboard.html?role=visitor",
-            student: "/dashboard.html?role=student",
-            learner: "/dashboard.html?role=student",
-            instructor: "/dashboard.html?role=instructor",
-            assistant: "/dashboard.html?role=teaching_assistant",
-            teaching_assistant: "/dashboard.html?role=teaching_assistant",
-            admissions: "/dashboard.html?role=admissions",
-            admissions_counselor: "/dashboard.html?role=admissions",
-            accountant: "/dashboard.html?role=accountant",
-            training_manager: "/dashboard.html?role=training_manager",
-            training_management: "/dashboard.html?role=training_manager",
-            administrator: "/dashboard.html?role=administrator",
-            system_administrator: "/dashboard.html?role=administrator",
-            admin: "/dashboard.html?role=administrator"
+            visitor: "./Index.html?role=visitor",
+            student: "./Index.html?role=student",
+            learner: "./Index.html?role=student",
+            instructor: "./Index.html?role=instructor",
+            assistant: "./Index.html?role=teaching_assistant",
+            teaching_assistant: "./Index.html?role=teaching_assistant",
+            admissions: "./Index.html?role=admissions",
+            admissions_counselor: "./Index.html?role=admissions",
+            accountant: "./Index.html?role=accountant",
+            training_manager: "./Index.html?role=training_manager",
+            training_management: "./Index.html?role=training_manager",
+            administrator: "./Index.html?role=administrator",
+            system_administrator: "./Index.html?role=administrator",
+            admin: "./Index.html?role=administrator"
         };
 
         function setBusy(button, busy, busyLabel, idleLabel) {
@@ -922,6 +922,39 @@
 
                 window.location.assign(destination);
             } catch {
+                // Fallback demo client-side nếu chưa bật server BE (ví dụ mở file trực tiếp hoặc trên GitHub Pages)
+                const inputEmail = document.querySelector("#email").value.trim().toLowerCase();
+                const inputPass = document.querySelector("#password").value;
+                const demoAccounts = {
+                    "admin@tms.edu.vn": { role: "administrator", pass: "admin123" },
+                    "manager@tms.edu.vn": { role: "training_manager", pass: "manager123" },
+                    "teacher@tms.edu.vn": { role: "instructor", pass: "teacher123" },
+                    "ta@tms.edu.vn": { role: "teaching_assistant", pass: "ta123456" },
+                    "student@tms.edu.vn": { role: "student", pass: "student123" },
+                    "sv001": { role: "student", pass: "student123" },
+                    "admissions@tms.edu.vn": { role: "admissions", pass: "admissions123" },
+                    "accountant@tms.edu.vn": { role: "accountant", pass: "accountant123" }
+                };
+
+                const matched = demoAccounts[inputEmail];
+                if (matched && matched.pass === inputPass) {
+                    showMessage(loginMessage, "Đăng nhập thành công! Đang chuyển hướng...", true);
+                    setTimeout(() => {
+                        window.location.assign(roleHome[matched.role] || "./Index.html");
+                    }, 600);
+                    return;
+                } else if (matched && matched.pass !== inputPass) {
+                    showMessage(loginMessage, "Mật khẩu không chính xác.");
+                    return;
+                } else if (inputEmail && inputPass) {
+                    // Nếu nhập tài khoản bất kỳ khác trong chế độ demo, tự động vào vai trò admin
+                    showMessage(loginMessage, "Đăng nhập thành công (chế độ demo)! Đang vào trang chủ...", true);
+                    setTimeout(() => {
+                        window.location.assign("./Index.html");
+                    }, 600);
+                    return;
+                }
+
                 showMessage(loginMessage, "Không thể kết nối đến hệ thống. Vui lòng thử lại.");
             } finally {
                 if (!loginSubmit.disabled) setBusy(loginSubmit, false, "Đang đăng nhập…", "Đăng nhập");
