@@ -1,38 +1,128 @@
-Hệ Thống Quản Lý Đào Tạo (Training Management System - TMS)
-1. Giới thiệu tổng quan
-Hệ thống Quản lý Đào tạo (TMS) là giải pháp phần mềm quản trị nội bộ trên nền tảng Web, được xây dựng nhằm số hóa và đồng nhất toàn diện chu trình vận hành đào tạo tại trung tâm. Hệ thống kết nối và phục vụ 8 nhóm người dùng nghiệp vụ (từ Khách truy cập, Học viên, Giảng viên, Trợ giảng đến Tư vấn tuyển sinh, Kế toán, Quản lý đào tạo và Quản trị hệ thống), cung cấp một nguồn dữ liệu tập trung duy nhất (Single Source of Truth) thay thế cho quy trình quản lý thủ công phân tán.
-2. Bối cảnh & Vấn đề giải quyết
-Trước khi triển khai dự án, trung tâm vận hành dựa trên các công cụ rời rạc: quản lý danh sách và điểm số qua Google Sheets, xếp lịch trên Google Calendar, giao nhận bài tập qua Zalo / GitHub và theo dõi công nợ thủ công tại sổ sách kế toán. Thực trạng này dẫn đến nhiều bất cập:
-Thiếu tính tức thời: Ban quản lý không thể nắm bắt nhanh tình trạng chuyên cần hay tỷ lệ nợ bài tập của từng lớp theo thời gian thực.
-Phát hiện trễ học viên có nguy cơ bỏ học: Các dấu hiệu cảnh báo (vắng học liên tiếp, chậm nộp bài tập, chậm đóng học phí) nằm rải rác ở các bộ phận khác nhau, khiến việc hỗ trợ học viên bị chậm trễ.
-Sai lệch số liệu công nợ: Bộ phận tuyển sinh và kế toán không dùng chung một nguồn dữ liệu về các đợt thanh toán học phí.
-Khó khăn lưu trữ & đánh giá: Dữ liệu khóa cũ khó tra cứu để cấp lại bảng điểm; khảo sát chất lượng giảng dạy không gắn định danh trực tiếp với từng giảng viên và môn học cụ thể.
-3. Mục tiêu dự án
-Chuẩn hóa vòng đời học viên: Theo dõi xuyên suốt dữ liệu từ lúc tiếp nhận thông tin tư vấn (Lead), nhập học, xếp lớp, điểm danh, làm bài tập đến khi xét tốt nghiệp.
-Tối ưu hóa thao tác vận hành: Giảm thời gian điểm danh một buổi học xuống $\le$ 60 giây và thời gian chấm bài tập xuống $\le$ 3 phút.
-Tự động hóa cảnh báo rủi ro: Hệ thống chủ động phát hiện và gắn cờ cảnh báo các trường hợp học viên vắng học vượt ngưỡng hoặc nợ bài tập quá hạn.
-Minh bạch hóa tài chính: Đồng bộ bảng theo dõi công nợ học phí theo lớp khớp 100% với sổ kế toán thực tế.
-Khảo sát chất lượng thực chất: Tự động hóa quy trình khảo sát cuối khóa, đảm bảo tỷ lệ phản hồi $\ge$ 70% và quy chuẩn kết quả về từng giảng viên đứng lớp.
-4. Phạm vi chức năng (Project Scope)
-Phân hệ thực hiện (In-Scope)
-Tài khoản & Phân quyền (RBAC): Xác thực JWT, quản trị người dùng, phân quyền truy cập nghiêm ngặt ở tầng Server theo 8 vai trò và ghi nhật ký thao tác dữ liệu nhạy cảm (Audit Log).
-Danh mục đào tạo: Quản lý mô hình phân cấp: Chương trình đào tạo $\rightarrow$ Môn học $\rightarrow$ Buổi học.
-Tuyển sinh & Ghi danh: Tiếp nhận lead tư vấn từ Landing Page, quản lý phễu chăm sóc khách hàng và chuyển đổi thành hồ sơ học viên chính thức.
-Lớp học & Thời khóa biểu: Tự động sinh lịch học theo mẫu lặp, cơ chế phát hiện trùng lịch phòng/giảng viên, xử lý bảo lưu và chuyển lớp.
-Điểm danh & Chuyên cần: Giao diện điểm danh di động (Mobile-first từ 360px), tiếp nhận đơn xin nghỉ phép và thống kê tỷ lệ chuyên cần.
-Bài tập & Chấm điểm: Giao bài tập, nộp bài đa phiên bản, chấm điểm theo rubric chi tiết và cơ chế yêu cầu làm lại.
-Kết quả học tập & Tốt nghiệp: Thiết lập trọng số thành phần điểm, tự động tính điểm tổng kết môn học, xuất bảng điểm và xét điều kiện hoàn thành khóa.
-Học phí & Công nợ: Quản lý biểu phí, lập kế hoạch đóng theo đợt, ghi nhận thanh toán, xuất biên lai và báo cáo công nợ.
-Học liệu, Khảo sát & Báo cáo: Quản trị tài liệu theo buổi học, thông báo in-app kèm gửi email nhắc lịch, khảo sát đánh giá giảng viên và dashboard tổng quan.
-Giới hạn hệ thống (Out-of-Scope)
-Ứng dụng di động native (hệ thống tập trung tối ưu Web Responsive).
-Cổng thanh toán trực tuyến tự động (chỉ ghi nhận khoản nộp thủ công qua kế toán).
-Hệ thống học trực tuyến LMS phức tạp (không phát video trực tuyến, không chấm code tự động).
-Chat trực tiếp thời gian thực, tích hợp SSO doanh nghiệp (LDAP) và xuất hóa đơn điện tử VAT.
-5. Kiến trúc kỹ thuật & Công nghệ sử dụng
-Frontend: React, TypeScript, Tailwind CSS (giao diện tối ưu đa thiết bị, hỗ trợ hiển thị di động từ 360px).
-Backend: Spring Boot (Java) hoặc NestJS (TypeScript), kiến trúc phân lớp chuẩn RESTful APIs.
-Cơ sở dữ liệu: PostgreSQL (đảm bảo tính toàn vẹn dữ liệu, giao dịch ACID và các ràng buộc khóa ngoại chặt chẽ).
-Bảo mật & Phiên làm việc: JSON Web Tokens (Access Token + Refresh Token), mật khẩu mã hóa chuẩn bcrypt, kiểm soát truy cập phân tầng (Role-Based Access Control) tại Server Endpoint.
-Lưu trữ & Dịch vụ ngoài: Hệ thống lưu trữ đối tượng (S3-compatible) cho bài tập và slide bài giảng; hàng đợi gửi mail bất đồng bộ qua SMTP.
-Quản lý dự án & Quy trình phát triển: Agile/Scrum (8 tuần, 8 Sprints, 75 User Stories, 350 Story Points) quản lý qua Jira và mã nguồn kiểm soát theo Git Flow.
+# 🎓 Hệ Thống Quản Lý Đào Tạo (Training Management System - TMS)
+
+> **Giải pháp phần mềm quản trị nội bộ trên nền tảng Web**, số hóa toàn diện chu trình vận hành đào tạo tại trung tâm với một nguồn dữ liệu tập trung duy nhất (**Single Source of Truth**).
+
+---
+
+## 🛠️ Công Nghệ Sử Dụng (Fullstack JavaScript)
+
+* **Backend**: Node.js, Express.js, JWT (Access + Refresh Token), bcryptjs.
+* **ORM & Database**: Prisma ORM, PostgreSQL (kết nối trực tiếp **Supabase Cloud**, không cần cài CSDL cục bộ).
+* **Frontend**: React (Vite), Tailwind CSS, Lucide Icons, Axios.
+* **Kiến trúc**: RESTful APIs, Role-Based Access Control (RBAC 8 vai trò), Server-side Session Revocation, Silent Refresh (Sliding session).
+
+---
+
+## 🚀 Hướng Dẫn Cài Đặt & Khởi Chạy (Sau Khi Clone Về)
+
+Dự án đã kết nối sẵn với **Database Supabase Cloud**. Máy tính chỉ cần có **Node.js (v18 trở lên)** là chạy được ngay!
+
+### Bước 1: Khởi chạy Backend (Port 5000)
+Mở một cửa sổ Terminal / CMD:
+```bash
+# 1. Đi vào thư mục backend
+cd backend
+
+# 2. Cài đặt các gói thư viện (nếu chưa cài)
+npm install
+
+# 3. Tạo file .env từ file mẫu (nếu chưa có)
+# Trên Windows CMD: copy .env.example .env
+# Trên PowerShell / Linux: cp .env.example .env
+
+# 4. Khởi chạy máy chủ API
+npm start
+```
+> Server Backend sẽ hoạt động tại: **`d**
+
+---
+
+### Bước 2: Khởi chạy Frontend (Port 3000)
+Mở thêm **một cửa sổ Terminal / CMD thứ 2**:
+```bash
+# 1. Đi vào thư mục frontend
+cd frontend
+
+# 2. Cài đặt thư viện (nếu chưa cài)
+npm install
+
+# 3. Khởi chạy giao diện Web
+npm run dev
+```
+> Giao diện người dùng sẽ chạy tại: **`http://localhost:3000`**
+
+---
+
+## 🔑 Danh Sách Tài Khoản Thử Nghiệm (8 Vai Trò)
+
+Mật khẩu mặc định cho toàn bộ tài khoản: **`123456`**
+
+| Vai trò (Role) | Email đăng nhập | Mô tả quyền hạn |
+| :--- | :--- | :--- |
+| **Giảng viên (LECTURER)** | `teacher@tms.edu.vn` | Điểm danh lớp học, giao bài tập, chấm điểm rubric. |
+| **Quản lý Đào tạo (ACADEMIC_MANAGER)** | `manager@tms.edu.vn` | Theo dõi chuyên cần, giám sát cảnh báo rủi ro học viên. |
+| **Kế toán (ACCOUNTANT)** | `accountant@tms.edu.vn` | Quản lý biểu phí, công nợ, thu học phí & xuất biên lai. |
+| **Tư vấn Tuyển sinh (ADMISSIONS)** | `admissions@tms.edu.vn` | Quản lý phễu Lead, chuyển đổi thành học viên chính thức. |
+| **Quản trị viên (ADMIN)** | `admin@tms.edu.vn` | Toàn quyền cấu hình hệ thống, xem Audit Log thao tác. |
+| **Trợ giảng (TA)** | `ta@tms.edu.vn` | Hỗ trợ giảng viên điểm danh, quản lý học liệu. |
+| **Học viên (STUDENT)** | `student1@tms.edu.vn` | Xem lịch học, nộp bài tập đa phiên bản, làm khảo sát. |
+
+*(Tại màn hình đăng nhập `http://localhost:3000`, bạn chỉ cần bấm vào nút chọn nhanh vai trò tương ứng để vào thẳng hệ thống).*
+
+---
+
+## 🌟 Các Phân Hệ Cốt Lõi Đã Nghiệm Thu
+
+### 1. Quản lý Phiên Đăng nhập & Bảo mật (User Story)
+* **Gia hạn tự động (Sliding Session)**: Axios Interceptor tự động ngầm gửi `Refresh Token` để lấy `Access Token` mới khi người dùng còn thao tác, không bị gián đoạn giữa chừng khi đang điểm danh.
+* **Đăng xuất an toàn phía Server**: Đăng xuất đánh dấu `isRevoked = true` trong Supabase Database, vô hiệu hóa ngay lập tức token (an toàn khi dùng máy công cộng).
+* **Không mất dữ liệu đang nhập dở**: Tự động lưu nháp (`Draft auto-save`) vào LocalStorage khi đang chấm điểm/điểm danh, kèm **Re-auth Modal** đăng nhập tại chỗ khi hết phiên.
+
+### 2. Điểm danh & Chuyên cần (Mobile-first ≤ 60 giây)
+* Giao diện tối ưu chuẩn màn hình di động từ **360px** trở lên với các nút chạm cảm ứng to, dễ bấm.
+* Nút **"Có mặt tất cả"** hỗ trợ hoàn tất điểm danh cả lớp trong **dưới 15 giây**.
+
+### 3. Tự động hóa Cảnh báo Rủi ro (Early Warning System)
+* Chủ động quét và gắn cờ đỏ học viên vắng học **≥ 2 buổi liên tiếp** (nguy cơ bỏ học).
+* Cảnh báo các khoản nợ học phí quá hạn và bài tập bị yêu cầu làm lại.
+
+### 4. Minh bạch Tài chính & Khớp Công nợ 100%
+* Dùng chung một nguồn dữ liệu duy nhất giữa bộ phận Tuyển sinh và Kế toán.
+* Thao tác **"Thu tiền & Xuất biên lai"** cập nhật số liệu công nợ thời gian thực.
+
+### 5. Bài tập & Chấm điểm Rubric (≤ 3 phút)
+* Hỗ trợ học viên nộp bài nhiều phiên bản (v1, v2) qua link GitHub/bài làm.
+* Giảng viên chấm điểm chi tiết theo rubric tiêu chí và gửi phản hồi yêu cầu làm lại.
+
+### 6. Khảo sát Chất lượng Giảng viên (≥ 70% Phản hồi)
+* Khảo sát gắn định danh trực tiếp với từng giảng viên đứng lớp.
+* Tự động thống kê tỷ lệ phản hồi thực tế (hiện đạt **75%**) và điểm sao trung bình.
+
+### 7. Nhật ký Thao tác (Audit Log)
+* Ghi lại chi tiết mọi hành vi đăng nhập, đăng xuất, điểm danh, nộp học phí kèm địa chỉ IP vào bảng `AuditLog` trên Supabase.
+
+---
+
+## 📁 Cấu Trúc Thư Mục Dự Án
+
+```
+├── backend/
+│   ├── prisma/
+│   │   ├── schema.prisma      # Lược đồ CSDL 14 bảng quan hệ & 8 Roles
+│   │   └── seed.js            # Kịch bản nạp dữ liệu mẫu toàn diện
+│   ├── src/
+│   │   └── server.js          # RESTful API Server Express + RBAC Guards
+│   ├── .env.example           # File cấu hình mẫu chứa chuỗi kết nối Supabase
+│   └── package.json
+│
+├── frontend/
+│   ├── src/
+│   │   ├── App.jsx            # Giao diện chính đầy đủ các phân hệ & Mobile UI
+│   │   ├── api.js             # Cấu hình Axios với Silent Refresh Interceptor
+│   │   └── main.jsx
+│   ├── index.html             # Tích hợp Tailwind CSS CDN & Responsive viewport
+│   └── package.json
+│
+├── .gitignore
+└── README.md                  # Hướng dẫn chi tiết dự án
+```
