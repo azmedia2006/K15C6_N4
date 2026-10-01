@@ -93,6 +93,154 @@ app.get("/api/health", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
+// Middleware xác thực token đăng nhập
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+
+    if (!token) {
+        return res.status(401).json({
+            success: false,
+            message: "Không tìm thấy token xác thực. Vui lòng đăng nhập."
+        });
+    }
+
+    try {
+        const payloadStr = Buffer.from(token, "base64").toString("utf-8");
+        const decoded = JSON.parse(payloadStr);
+
+        if (decoded.expiresAt && decoded.expiresAt < Date.now()) {
+            return res.status(401).json({
+                success: false,
+                message: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
+            });
+        }
+
+        req.user = decoded;
+        next();
+    } catch (err) {
+        return res.status(401).json({
+            success: false,
+            message: "Token xác thực không hợp lệ."
+        });
+    }
+}
+
+// Middleware kiểm tra quyền Quản trị viên (Administrator)
+function requireAdmin(req, res, next) {
+    if (!req.user || req.user.role !== "administrator") {
+        return res.status(403).json({
+            success: false,
+            message: "Truy cập bị từ chối: Chỉ Quản trị viên (Administrator) mới có quyền thực hiện thao tác này."
+        });
+    }
+    next();
+}
+
+// Import dịch vụ quản lý người dùng KN-11
+const {
+    VALID_ROLES,
+    getUsers,
+    getUserById,
+    createUser,
+    updateUser,
+    deleteUser
+} = require("./userService");
+
+// KN-11: Lấy danh mục các vai trò trong hệ thống
+app.get("/api/admin/roles", authenticateToken, requireAdmin, (req, res) => {
+    res.json({
+        success: true,
+        roles: VALID_ROLES
+    });
+});
+
+// KN-11: API Tìm kiếm & lấy danh sách người dùng (hỗ trợ search, filter vai trò, trạng thái, phân trang)
+app.get("/api/admin/users", authenticateToken, requireAdmin, (req, res) => {
+    try {
+        const result = getUsers(req.query);
+        res.json({
+            success: true,
+            ...result
+        });
+    } catch (err) {
+        res.status(err.status || 500).json({
+            success: false,
+            message: err.message || "Đã xảy ra lỗi khi lấy danh sách người dùng."
+        });
+    }
+});
+
+// KN-11: API Lấy chi tiết một người dùng
+app.get("/api/admin/users/:id", authenticateToken, requireAdmin, (req, res) => {
+    try {
+        const user = getUserById(req.params.id);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "Không tìm thấy người dùng."
+            });
+        }
+        res.json({
+            success: true,
+            user
+        });
+    } catch (err) {
+        res.status(err.status || 500).json({
+            success: false,
+            message: err.message || "Đã xảy ra lỗi."
+        });
+    }
+});
+
+// KN-11: API Tạo mới tài khoản người dùng (cấp quyền truy cập cho nhân sự mới)
+app.post("/api/admin/users", authenticateToken, requireAdmin, (req, res) => {
+    try {
+        const result = createUser(req.body || {});
+        res.status(201).json({
+            success: true,
+            message: `Tạo tài khoản người dùng '${result.user.name}' thành công.`,
+            user: result.user,
+            temporaryPassword: result.temporaryPassword
+        });
+    } catch (err) {
+        res.status(err.status || 500).json({
+            success: false,
+            message: err.message || "Đã xảy ra lỗi khi tạo người dùng."
+        });
+    }
+});
+
+// KN-11: API Cập nhật / sửa thông tin tài khoản người dùng
+app.put("/api/admin/users/:id", authenticateToken, requireAdmin, (req, res) => {
+    try {
+        const updated = updateUser(req.params.id, req.body || {});
+        res.json({
+            success: true,
+            message: `Cập nhật thông tin tài khoản '${updated.name}' thành công.`,
+            user: updated
+        });
+    } catch (err) {
+        res.status(err.status || 500).json({
+            success: false,
+            message: err.message || "Đã xảy ra lỗi khi cập nhật tài khoản."
+        });
+    }
+});
+
+// KN-11: API Xóa / Vô hiệu hóa người dùng
+app.delete("/api/admin/users/:id", authenticateToken, requireAdmin, (req, res) => {
+    try {
+        const result = deleteUser(req.params.id, req.user ? req.user.userId : null);
+        res.json(result);
+    } catch (err) {
+        res.status(err.status || 500).json({
+            success: false,
+            message: err.message || "Đã xảy ra lỗi khi xóa người dùng."
+        });
+    }
+});
+
 // Chỉ listen khi chạy trực tiếp file server.js (hỗ trợ kiểm thử require module)
 if (require.main === module) {
     app.listen(PORT, () => {

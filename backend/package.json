@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node test/auth.test.js"
+    "test": "node test/auth.test.js && node test/user_management.test.js",
+    "test:auth": "node test/auth.test.js",
+    "test:user": "node test/user_management.test.js"
   },
   "keywords": [],
   "author": "",
