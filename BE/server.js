@@ -54,6 +54,9 @@ app.post("/api/auth/login", (req, res) => {
     if (user) {
         const computedHash = hashPassword(password, user.salt);
         isPasswordValid = (computedHash === user.passwordHash);
+    } else {
+        // KN-35: Chống tấn công phân tích thời gian (timing attack) khi người dùng không tồn tại
+        hashPassword(password, "dummy_constant_salt_for_timing_safety_321");
     }
 
     // Xử lý đăng nhập sai
