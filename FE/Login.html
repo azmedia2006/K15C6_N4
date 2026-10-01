@@ -987,7 +987,10 @@
                 // Nếu sai tài khoản hoặc mật khẩu: bảo mật không tiết lộ email có tồn tại hay không
                 handleFailedAttempt();
             } finally {
-                if (!loginSubmit.disabled) setBusy(loginSubmit, false, "Đang đăng nhập…", "Đăng nhập");
+                // Nếu chưa bị khóa thì luôn trả nút về trạng thái bình thường "Đăng nhập"
+                if (!checkAndApplyLockout()) {
+                    setBusy(loginSubmit, false, "Đang đăng nhập…", "Đăng nhập");
+                }
             }
         });
 
