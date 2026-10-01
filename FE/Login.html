@@ -318,7 +318,7 @@
             font-size: 1rem;
             font-weight: 600;
             border-radius: var(--radius-md);
-            transition: all 0.2s;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 4px 6px -1px var(--primary-light);
         }
 
@@ -328,9 +328,30 @@
             box-shadow: 0 6px 8px -1px rgba(16, 185, 129, 0.25);
         }
 
+        .btn-primary:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 3px;
+        }
+
         .btn-primary:disabled {
-            opacity: 0.7;
-            cursor: wait;
+            opacity: 0.75;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: btnSpin 0.6s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes btnSpin {
+            to { transform: rotate(360deg); }
         }
 
         .register-link {
@@ -673,7 +694,11 @@
 
         function setBusy(button, busy, busyLabel, idleLabel) {
             button.disabled = busy;
-            button.textContent = busy ? busyLabel : idleLabel;
+            if (busy) {
+                button.innerHTML = `<span class="btn-spinner" aria-hidden="true"></span>${busyLabel}`;
+            } else {
+                button.textContent = idleLabel;
+            }
         }
 
         function showMessage(element, text, success = false) {
