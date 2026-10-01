@@ -707,8 +707,12 @@
         }
 
         function formatRemaining(seconds) {
-            const minutes = Math.ceil(seconds / 60);
-            return `${minutes} phút`;
+            const m = Math.floor(seconds / 60);
+            const s = Math.max(0, seconds % 60);
+            if (m > 0) {
+                return `${m} phút ${s > 0 ? s + ' giây' : ''}`.trim();
+            }
+            return `${s} giây`;
         }
 
         async function parseResponse(response) {
@@ -905,23 +909,28 @@
             return remainingSec > 0 ? remainingSec : 0;
         }
 
+        let lockoutTimerInterval = null;
         function checkAndApplyLockout() {
             const remaining = getLockoutRemaining();
             if (remaining > 0) {
                 loginSubmit.disabled = true;
                 showMessage(loginMessage, `Tài khoản tạm khóa do đăng nhập sai 5 lần liên tiếp. Vui lòng thử lại sau ${formatRemaining(remaining)}.`);
-                const timer = window.setInterval(() => {
-                    const rem = getLockoutRemaining();
-                    if (rem <= 0) {
-                        window.clearInterval(timer);
-                        localStorage.removeItem("tms_login_lockout_until");
-                        localStorage.setItem("tms_login_fail_count", "0");
-                        loginSubmit.disabled = false;
-                        showMessage(loginMessage, "");
-                    } else {
-                        showMessage(loginMessage, `Tài khoản tạm khóa do đăng nhập sai 5 lần liên tiếp. Vui lòng thử lại sau ${formatRemaining(rem)}.`);
-                    }
-                }, 1000);
+                if (!lockoutTimerInterval) {
+                    lockoutTimerInterval = window.setInterval(() => {
+                        const rem = getLockoutRemaining();
+                        if (rem <= 0) {
+                            window.clearInterval(lockoutTimerInterval);
+                            lockoutTimerInterval = null;
+                            localStorage.removeItem("tms_login_lockout_until");
+                            localStorage.setItem("tms_login_fail_count", "0");
+                            loginSubmit.disabled = false;
+                            setBusy(loginSubmit, false, "Đang đăng nhập…", "Đăng nhập");
+                            showMessage(loginMessage, "Đã hết thời gian khóa tạm. Bạn có thể đăng nhập lại.", true);
+                        } else {
+                            showMessage(loginMessage, `Tài khoản tạm khóa do đăng nhập sai 5 lần liên tiếp. Vui lòng thử lại sau ${formatRemaining(rem)}.`);
+                        }
+                    }, 1000);
+                }
                 return true;
             }
             return false;
