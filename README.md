@@ -72,8 +72,6 @@ Dưới đây là danh sách tài khoản được phân quyền theo 8 vai trò
 Nhánh **`minhquanmedia`** thực hiện toàn diện tính năng **KN-8: Phân quyền theo vai trò cho toàn hệ thống (RBAC)** thuộc Sprint 1 - Epic KN-14:
 
 - **Thành viên thực hiện:** ĐOÀN MINH QUÂN
-- **Mã sinh viên:** `dtc245200761@ictu.edu.vn`
-- **Tài khoản GitHub:** `azmedia247` (`doanminhquan3322@gmail.com`)
 - **Vai trò trong nhóm:** Backend Developer
 - **User Story:** *"Là Quản trị hệ thống, tôi muốn phân quyền theo vai trò cho toàn hệ thống, để đảm bảo giảng viên không sửa được học phí và kế toán không sửa được điểm."*
 

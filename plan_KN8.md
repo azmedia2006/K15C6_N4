@@ -2,9 +2,7 @@
 
 > **Jira Issue:** [KN-8] - Sprint 1  
 > **Parent Epic:** KN-14 Tài khoản, Phân quyền & Hồ sơ  
-> **Story Points:** 2  
-> **Assignee:** ĐOÀN MINH QUÂN (`dtc245200761@ictu.edu.vn`)  
-> **GitHub Account:** `azmedia247` (`doanminhquan3322@gmail.com`)  
+> **Assignee:** ĐOÀN MINH QUÂN  
 > **User Story:** *"Là Quản trị hệ thống, tôi muốn phân quyền theo vai trò cho toàn hệ thống, để đảm bảo giảng viên không sửa được học phí và kế toán không sửa được điểm."*  
 > **Nhánh Git:** `minhquanmedia`  
 
