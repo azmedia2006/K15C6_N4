@@ -3,7 +3,7 @@
 > **Jira Issue:** [KN-11] - Sprint 1  
 > **Parent Epic:** KN-14 Tài khoản, Phân quyền & Hồ sơ  
 > **Story Points:** 8  
-> **Assignee:** LY PHI THANG  
+> **Assignee:** DOAN MINH QUAN (dtc245200761@ictu.edu.vn)  
 > **User Story:** *"Là Quản trị hệ thống, tôi muốn tạo, sửa và tìm kiếm tài khoản người dùng, để cấp quyền truy cập cho nhân sự mới trong ngày đầu họ đi làm."*  
 > **Nhánh Git:** `Develop` (và `feature/KN-11`)  
 
