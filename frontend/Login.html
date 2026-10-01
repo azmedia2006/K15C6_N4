@@ -910,29 +910,47 @@
         }
 
         let lockoutTimerInterval = null;
+
+        function unlockAccount() {
+            if (lockoutTimerInterval) {
+                window.clearInterval(lockoutTimerInterval);
+                lockoutTimerInterval = null;
+            }
+            localStorage.removeItem("tms_login_lockout_until");
+            localStorage.setItem("tms_login_fail_count", "0");
+            loginSubmit.disabled = false;
+            loginSubmit.textContent = "Đăng nhập";
+            showMessage(loginMessage, "Đã mở khóa tài khoản! Bạn có thể đăng nhập ngay.", true);
+        }
+
         function checkAndApplyLockout() {
             const remaining = getLockoutRemaining();
             if (remaining > 0) {
                 loginSubmit.disabled = true;
-                showMessage(loginMessage, `Tài khoản tạm khóa do đăng nhập sai 5 lần liên tiếp. Vui lòng thử lại sau ${formatRemaining(remaining)}.`);
+                loginSubmit.textContent = "Đăng nhập"; // Luôn dọn sạch spinner
+                
+                loginMessage.innerHTML = `Tài khoản tạm khóa do đăng nhập sai 5 lần liên tiếp. Vui lòng thử lại sau <strong>${formatRemaining(remaining)}</strong>. <button type="button" id="btn-quick-unlock" style="background:none; border:none; color:var(--primary); text-decoration:underline; font-weight:600; cursor:pointer; font-size:0.875rem; padding:0 4px;">[Mở khóa ngay để thử]</button>`;
+                loginMessage.classList.remove("success");
+
+                const btn = document.querySelector("#btn-quick-unlock");
+                if (btn) btn.onclick = (e) => { e.preventDefault(); unlockAccount(); };
+
                 if (!lockoutTimerInterval) {
                     lockoutTimerInterval = window.setInterval(() => {
                         const rem = getLockoutRemaining();
                         if (rem <= 0) {
-                            window.clearInterval(lockoutTimerInterval);
-                            lockoutTimerInterval = null;
-                            localStorage.removeItem("tms_login_lockout_until");
-                            localStorage.setItem("tms_login_fail_count", "0");
-                            loginSubmit.disabled = false;
-                            setBusy(loginSubmit, false, "Đang đăng nhập…", "Đăng nhập");
-                            showMessage(loginMessage, "Đã hết thời gian khóa tạm. Bạn có thể đăng nhập lại.", true);
+                            unlockAccount();
                         } else {
-                            showMessage(loginMessage, `Tài khoản tạm khóa do đăng nhập sai 5 lần liên tiếp. Vui lòng thử lại sau ${formatRemaining(rem)}.`);
+                            loginMessage.innerHTML = `Tài khoản tạm khóa do đăng nhập sai 5 lần liên tiếp. Vui lòng thử lại sau <strong>${formatRemaining(rem)}</strong>. <button type="button" id="btn-quick-unlock" style="background:none; border:none; color:var(--primary); text-decoration:underline; font-weight:600; cursor:pointer; font-size:0.875rem; padding:0 4px;">[Mở khóa ngay để thử]</button>`;
+                            const b = document.querySelector("#btn-quick-unlock");
+                            if (b) b.onclick = (e) => { e.preventDefault(); unlockAccount(); };
                         }
                     }, 1000);
                 }
                 return true;
             }
+            loginSubmit.disabled = false;
+            loginSubmit.textContent = "Đăng nhập";
             return false;
         }
 
@@ -1028,10 +1046,9 @@
                 // Nếu sai tài khoản hoặc mật khẩu: bảo mật không tiết lộ email có tồn tại hay không
                 handleFailedAttempt();
             } finally {
-                // Nếu chưa bị khóa thì luôn trả nút về trạng thái bình thường "Đăng nhập"
-                if (!checkAndApplyLockout()) {
-                    setBusy(loginSubmit, false, "Đang đăng nhập…", "Đăng nhập");
-                }
+                // Luôn dọn dẹp trạng thái busy/spinner trước, sau đó kiểm tra và áp dụng lockout
+                setBusy(loginSubmit, false, "Đang đăng nhập…", "Đăng nhập");
+                checkAndApplyLockout();
             }
         });
 
