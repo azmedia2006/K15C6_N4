@@ -1,0 +1,371 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// 8 vai trò người dùng nghiệp vụ theo đặc tả hệ thống TMS
+enum Role {
+  GUEST             // Khách truy cập
+  STUDENT           // Học viên
+  LECTURER          // Giảng viên
+  TA                // Trợ giảng
+  ADMISSIONS        // Tư vấn tuyển sinh
+  ACCOUNTANT        // Kế toán
+  ACADEMIC_MANAGER  // Quản lý đào tạo
+  ADMIN             // Quản trị hệ thống
+}
+
+// Trạng thái học viên trong lớp
+enum EnrollmentStatus {
+  ENROLLED    // Đang học
+  DEFERRED    // Bảo lưu
+  TRANSFERRED // Chuyển lớp
+  DROPPED     // Bỏ học / Thôi học
+  COMPLETED   // Hoàn thành / Tốt nghiệp
+}
+
+// Trạng thái điểm danh
+enum AttendanceStatus {
+  PRESENT // Có mặt
+  ABSENT  // Vắng không phép
+  EXCUSED // Nghỉ có phép
+  LATE    // Đi muộn
+}
+
+// Trạng thái đơn xin nghỉ
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// Trạng thái phễu tuyển sinh
+enum LeadStatus {
+  NEW         // Mới tiếp nhận
+  CONTACTED   // Đã tư vấn
+  CONSIDERING // Đang cân nhắc
+  ENROLLED    // Đã ghi danh thành công
+  LOST        // Hủy tư vấn
+}
+
+// Trạng thái thanh toán học phí
+enum PaymentStatus {
+  UNPAID   // Chưa đóng
+  PARTIAL  // Đóng một phần
+  PAID     // Đã hoàn tất
+  OVERDUE  // Quá hạn
+}
+
+// 1. TÀI KHOẢN & PHÂN QUYỀN (RBAC)
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  fullName  String
+  phone     String?
+  role      Role     @default(STUDENT)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions       Session[]
+  auditLogs      AuditLog[]
+  enrollments    Enrollment[]
+  teachingClasses Class[]        @relation("LecturerClasses")
+  taClasses       Class[]        @relation("TAClasses")
+  attendances    Attendance[]
+  submissions    Submission[]
+  leaveRequests  LeaveRequest[]
+  tuitionRecords TuitionRecord[]
+  surveyResponses SurveyResponse[]
+}
+
+// Quản lý Phiên làm việc (Sliding session, server-side revocation)
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshToken String   @unique
+  userAgent    String?
+  ipAddress    String?
+  isRevoked    Boolean  @default(false)
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// Nhật ký thao tác (Audit Log)
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  details   String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+}
+
+// 2. TUYỂN SINH & GHI DANH (LEAD MANAGEMENT)
+model Lead {
+  id             String     @id @default(uuid())
+  fullName       String
+  phone          String
+  email          String?
+  interestedCourse String?
+  source         String     @default("Landing Page")
+  status         LeadStatus @default(NEW)
+  note           String?
+  assignedTo     String?    // ID nhân viên tuyển sinh
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+// 3. DANH MỤC ĐÀO TẠO: Chương trình -> Môn học -> Buổi học mẫu
+model Program {
+  id          String   @id @default(uuid())
+  code        String   @unique // Ví dụ: FS-JS (Fullstack JavaScript)
+  name        String
+  description String?
+  courses     Course[]
+  classes     Class[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Course {
+  id          String            @id @default(uuid())
+  programId   String
+  program     Program           @relation(fields: [programId], references: [id], onDelete: Cascade)
+  code        String            @unique // Ví dụ: JS101
+  name        String
+  credits     Int               @default(3)
+  sessions    CourseSessionTemplate[]
+  assignments Assignment[]
+  gradeWeights GradeWeight[]
+  classes     Class[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model CourseSessionTemplate {
+  id          String   @id @default(uuid())
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  sessionNo   Int      // Buổi số 1, 2, 3...
+  title       String
+  objective   String?  // Mục tiêu buổi học
+  materials   Material[]
+  createdAt   DateTime @default(now())
+}
+
+// 4. LỚP HỌC & THỜI KHÓA BIỂU
+model Class {
+  id          String       @id @default(uuid())
+  code        String       @unique // Ví dụ: FS-K24-01
+  name        String
+  programId   String
+  program     Program      @relation(fields: [programId], references: [id])
+  courseId    String
+  course      Course       @relation(fields: [courseId], references: [id])
+  lecturerId  String?
+  lecturer    User?        @relation("LecturerClasses", fields: [lecturerId], references: [id])
+  taId        String?
+  ta          User?        @relation("TAClasses", fields: [taId], references: [id])
+  room        String?      // Phòng học (vd: Lab 201)
+  startDate   DateTime
+  endDate     DateTime?
+  status      String       @default("OPEN") // OPEN, IN_PROGRESS, FINISHED
+
+  schedules   ClassSchedule[]
+  enrollments Enrollment[]
+  tuitionPlans TuitionRecord[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model ClassSchedule {
+  id          String       @id @default(uuid())
+  classId     String
+  class       Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
+  sessionNo   Int          // Buổi thứ mấy
+  title       String
+  date        DateTime     // Ngày học
+  startTime   String       // Ví dụ: "18:30"
+  endTime     String       // Ví dụ: "21:00"
+  room        String?
+  attendances Attendance[]
+  materials   Material[]
+  createdAt   DateTime     @default(now())
+}
+
+// 5. GHI DANH & CHUYỂN LỚP/BẢO LƯU
+model Enrollment {
+  id             String           @id @default(uuid())
+  userId         String
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  classId        String
+  class          Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
+  status         EnrollmentStatus @default(ENROLLED)
+  enrolledAt     DateTime         @default(now())
+  note           String?
+  finalGrade     Float?
+  isPassed       Boolean?
+  surveyDone     Boolean          @default(false)
+
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@unique([userId, classId])
+}
+
+// 6. ĐIỂM DANH & CHUYÊN CẦN (Mobile-First <= 60s)
+model Attendance {
+  id         String           @id @default(uuid())
+  scheduleId String
+  schedule   ClassSchedule    @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status     AttendanceStatus @default(PRESENT)
+  note       String?
+  updatedAt  DateTime         @updatedAt
+
+  @@unique([scheduleId, userId])
+}
+
+model LeaveRequest {
+  id         String      @id @default(uuid())
+  userId     String
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  classId    String
+  date       DateTime
+  reason     String
+  status     LeaveStatus @default(PENDING)
+  response   String?
+  createdAt  DateTime    @default(now())
+}
+
+// 7. BÀI TẬP, NỘP BÀI ĐA PHIÊN BẢN & CHẤM ĐIỂM RUBRIC (<= 3 phút)
+model Assignment {
+  id          String       @id @default(uuid())
+  courseId    String
+  course      Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  deadline    DateTime
+  maxScore    Float        @default(100)
+  rubricJson  String?      // Cấu hình tiêu chí chấm rubric (JSON)
+  submissions Submission[]
+  createdAt   DateTime     @default(now())
+}
+
+model Submission {
+  id           String     @id @default(uuid())
+  assignmentId String
+  assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  version      Int        @default(1)
+  contentUrl   String?    // Link github hoặc link bài làm
+  note         String?
+  score        Float?
+  rubricScore  String?    // Điểm chi tiết từng tiêu chí rubric (JSON)
+  feedback     String?
+  needsRedo    Boolean    @default(false) // Yêu cầu làm lại
+  submittedAt  DateTime   @default(now())
+  gradedAt     DateTime?
+}
+
+// 8. ĐẦU ĐIỂM & TRỌNG SỐ TỔNG KẾT
+model GradeWeight {
+  id        String   @id @default(uuid())
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  name      String   // Điểm chuyên cần (10%), Giữa kỳ (30%), Đồ án cuối kỳ (60%)
+  weight    Float    // Phần trăm (ví dụ: 0.1, 0.3, 0.6)
+  createdAt DateTime @default(now())
+}
+
+// 9. HỌC PHÍ & CÔNG NỢ (Kế toán & Tuyển sinh)
+model TuitionRecord {
+  id           String        @id @default(uuid())
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  classId      String
+  class        Class         @relation(fields: [classId], references: [id], onDelete: Cascade)
+  totalAmount  Float         // Tổng học phí
+  paidAmount   Float         @default(0) // Đã đóng
+  status       PaymentStatus @default(UNPAID)
+  installments Installment[]
+  receipts     Receipt[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@unique([userId, classId])
+}
+
+model Installment {
+  id              String        @id @default(uuid())
+  tuitionRecordId String
+  tuitionRecord   TuitionRecord @relation(fields: [tuitionRecordId], references: [id], onDelete: Cascade)
+  phase           Int           // Đợt 1, Đợt 2...
+  amount          Float
+  dueDate         DateTime
+  paidAmount      Float         @default(0)
+  status          PaymentStatus @default(UNPAID)
+}
+
+model Receipt {
+  id              String        @id @default(uuid())
+  tuitionRecordId String
+  tuitionRecord   TuitionRecord @relation(fields: [tuitionRecordId], references: [id], onDelete: Cascade)
+  receiptNumber   String        @unique // Số biên lai: BL-2026-0001
+  amount          Float
+  paidDate        DateTime      @default(now())
+  method          String        @default("Chuyển khoản") // Tiền mặt, Chuyển khoản
+  note            String?
+  accountantName  String?       // Kế toán thu tiền
+}
+
+// 10. HỌC LIỆU & KHẢO SÁT CHẤT LƯỢNG GIẢNG VIÊN (>= 70%)
+model Material {
+  id          String                 @id @default(uuid())
+  title       String
+  fileUrl     String                 // Link file slide / tài liệu
+  type        String                 @default("SLIDE") // SLIDE, CODE, VIDEO_LINK
+  templateId  String?
+  template    CourseSessionTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  scheduleId  String?
+  schedule    ClassSchedule?         @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+  createdAt   DateTime               @default(now())
+}
+
+model Survey {
+  id          String           @id @default(uuid())
+  title       String
+  classCode   String
+  lecturerName String
+  description String?
+  isActive    Boolean          @default(true)
+  responses   SurveyResponse[]
+  createdAt   DateTime         @default(now())
+}
+
+model SurveyResponse {
+  id           String   @id @default(uuid())
+  surveyId     String
+  survey       Survey   @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ratingScore  Int      // Đánh giá 1 - 5 sao
+  feedbackText String?
+  submittedAt  DateTime @default(now())
+
+  @@unique([surveyId, userId])
+}
