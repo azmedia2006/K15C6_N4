@@ -872,9 +872,67 @@
             });
         }
 
+        // Kiểm tra trạng thái khóa tạm thời khi tải trang
+        const LOCK_DURATION_MS = 15 * 60 * 1000; // 15 phút = 900 giây
+        function getLockoutRemaining() {
+            const lockoutUntil = Number(localStorage.getItem("tms_login_lockout_until") || 0);
+            const remainingSec = Math.ceil((lockoutUntil - Date.now()) / 1000);
+            return remainingSec > 0 ? remainingSec : 0;
+        }
+
+        function checkAndApplyLockout() {
+            const remaining = getLockoutRemaining();
+            if (remaining > 0) {
+                loginSubmit.disabled = true;
+                showMessage(loginMessage, `Tài khoản tạm khóa do đăng nhập sai 5 lần liên tiếp. Vui lòng thử lại sau ${formatRemaining(remaining)}.`);
+                const timer = window.setInterval(() => {
+                    const rem = getLockoutRemaining();
+                    if (rem <= 0) {
+                        window.clearInterval(timer);
+                        localStorage.removeItem("tms_login_lockout_until");
+                        localStorage.setItem("tms_login_fail_count", "0");
+                        loginSubmit.disabled = false;
+                        showMessage(loginMessage, "");
+                    } else {
+                        showMessage(loginMessage, `Tài khoản tạm khóa do đăng nhập sai 5 lần liên tiếp. Vui lòng thử lại sau ${formatRemaining(rem)}.`);
+                    }
+                }, 1000);
+                return true;
+            }
+            return false;
+        }
+
+        // Khởi động kiểm tra khóa
+        checkAndApplyLockout();
+
+        function handleFailedAttempt() {
+            let failCount = Number(localStorage.getItem("tms_login_fail_count") || 0) + 1;
+            localStorage.setItem("tms_login_fail_count", String(failCount));
+
+            if (failCount >= 5) {
+                const lockoutUntil = Date.now() + LOCK_DURATION_MS;
+                localStorage.setItem("tms_login_lockout_until", String(lockoutUntil));
+                checkAndApplyLockout();
+            } else {
+                // Tiêu chí bảo mật: Không tiết lộ email có tồn tại hay không
+                showMessage(loginMessage, `Email hoặc mật khẩu không đúng (Lần thử ${failCount}/5)`);
+            }
+        }
+
+        function handleSuccessfulLogin(role) {
+            localStorage.setItem("tms_login_fail_count", "0");
+            localStorage.removeItem("tms_login_lockout_until");
+            const destination = roleHome[role] || "./Index.html";
+            showMessage(loginMessage, "Đăng nhập thành công! Đang chuyển hướng...", true);
+            setTimeout(() => {
+                window.location.assign(destination);
+            }, 600);
+        }
+
         loginForm.addEventListener("submit", async (event) => {
             event.preventDefault();
             showMessage(loginMessage, "");
+            if (checkAndApplyLockout()) return;
             if (!loginForm.reportValidity()) return;
 
             setBusy(loginSubmit, true, "Đang đăng nhập…", "Đăng nhập");
@@ -892,37 +950,20 @@
 
                 if (response.status === 423 || response.status === 429) {
                     const seconds = Math.max(1, Number(result.retryAfterSeconds) || 900);
-                    const until = Date.now() + seconds * 1000;
-                    loginSubmit.disabled = true;
-                    showMessage(loginMessage, `Tài khoản tạm khóa do đăng nhập sai nhiều lần. Vui lòng thử lại sau ${formatRemaining(seconds)}.`);
-                    const timer = window.setInterval(() => {
-                        const remaining = Math.max(0, Math.ceil((until - Date.now()) / 1000));
-                        if (remaining === 0) {
-                            window.clearInterval(timer);
-                            loginSubmit.disabled = false;
-                            showMessage(loginMessage, "");
-                        } else {
-                            showMessage(loginMessage, `Tài khoản tạm khóa do đăng nhập sai nhiều lần. Vui lòng thử lại sau ${formatRemaining(remaining)}.`);
-                        }
-                    }, 1000);
+                    localStorage.setItem("tms_login_lockout_until", String(Date.now() + seconds * 1000));
+                    checkAndApplyLockout();
                     return;
                 }
 
                 if (!response.ok) {
-                    showMessage(loginMessage, "Email hoặc mật khẩu không đúng");
+                    handleFailedAttempt();
                     return;
                 }
 
                 const role = String(result.role || "").trim().toLowerCase().replace(/^role_/, "").replace(/[\s-]+/g, "_");
-                const destination = roleHome[role];
-                if (!destination) {
-                    showMessage(loginMessage, "Tài khoản chưa được phân quyền. Vui lòng liên hệ quản trị viên.");
-                    return;
-                }
-
-                window.location.assign(destination);
+                handleSuccessfulLogin(role);
             } catch {
-                // Fallback demo client-side nếu chưa bật server BE (ví dụ mở file trực tiếp hoặc trên GitHub Pages)
+                // Chế độ demo / offline client-side mô phỏng đầy đủ tiêu chí của user story KN-14
                 const inputEmail = document.querySelector("#email").value.trim().toLowerCase();
                 const inputPass = document.querySelector("#password").value;
                 const demoAccounts = {
@@ -933,29 +974,18 @@
                     "student@tms.edu.vn": { role: "student", pass: "student123" },
                     "sv001": { role: "student", pass: "student123" },
                     "admissions@tms.edu.vn": { role: "admissions", pass: "admissions123" },
-                    "accountant@tms.edu.vn": { role: "accountant", pass: "accountant123" }
+                    "accountant@tms.edu.vn": { role: "accountant", pass: "accountant123" },
+                    "visitor@tms.edu.vn": { role: "visitor", pass: "visitor123" }
                 };
 
                 const matched = demoAccounts[inputEmail];
                 if (matched && matched.pass === inputPass) {
-                    showMessage(loginMessage, "Đăng nhập thành công! Đang chuyển hướng...", true);
-                    setTimeout(() => {
-                        window.location.assign(roleHome[matched.role] || "./Index.html");
-                    }, 600);
-                    return;
-                } else if (matched && matched.pass !== inputPass) {
-                    showMessage(loginMessage, "Mật khẩu không chính xác.");
-                    return;
-                } else if (inputEmail && inputPass) {
-                    // Nếu nhập tài khoản bất kỳ khác trong chế độ demo, tự động vào vai trò admin
-                    showMessage(loginMessage, "Đăng nhập thành công (chế độ demo)! Đang vào trang chủ...", true);
-                    setTimeout(() => {
-                        window.location.assign("./Index.html");
-                    }, 600);
+                    handleSuccessfulLogin(matched.role);
                     return;
                 }
 
-                showMessage(loginMessage, "Không thể kết nối đến hệ thống. Vui lòng thử lại.");
+                // Nếu sai tài khoản hoặc mật khẩu: bảo mật không tiết lộ email có tồn tại hay không
+                handleFailedAttempt();
             } finally {
                 if (!loginSubmit.disabled) setBusy(loginSubmit, false, "Đang đăng nhập…", "Đăng nhập");
             }
