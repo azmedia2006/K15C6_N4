@@ -35,4 +35,8 @@ Backend: Spring Boot (Java) hoặc NestJS (TypeScript), kiến trúc phân lớp
 Cơ sở dữ liệu: PostgreSQL (đảm bảo tính toàn vẹn dữ liệu, giao dịch ACID và các ràng buộc khóa ngoại chặt chẽ).
 Bảo mật & Phiên làm việc: JSON Web Tokens (Access Token + Refresh Token), mật khẩu mã hóa chuẩn bcrypt, kiểm soát truy cập phân tầng (Role-Based Access Control) tại Server Endpoint.
 Lưu trữ & Dịch vụ ngoài: Hệ thống lưu trữ đối tượng (S3-compatible) cho bài tập và slide bài giảng; hàng đợi gửi mail bất đồng bộ qua SMTP.
+<<<<<<< HEAD
 Quản lý dự án & Quy trình phát triển: Agile/Scrum (8 tuần, 8 Sprints, 75 User Stories, 350 Story Points) quản lý qua Jira và mã nguồn kiểm soát theo Git Flow.
+=======
+Quản lý dự án & Quy trình phát triển: Agile/Scrum (8 tuần, 8 Sprints, 75 User Stories, 350 Story Points) quản lý qua Jira và mã nguồn kiểm soát theo Git Flow.
+>>>>>>> f62eaa4b178729a63564c5ab50f0f14daf713a3d
