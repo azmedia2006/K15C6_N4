@@ -1,0 +1,30 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Test TMS",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"test",
+				"--prefix",
+				"backend"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Start TMS app",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"start",
+				"--prefix",
+				"backend"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}

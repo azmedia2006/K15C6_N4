@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản trị vai trò & Phân quyền</title>
+    <script src="./error-handler.js"></script>
+    <script>
+        document.documentElement.style.visibility = "hidden";
+        if (window.TmsErrorHandler.guard(["administrator"])) {
+            document.documentElement.style.visibility = "";
+        }
+    </script>
+    <style>
+        * { box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 1000px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-primary:hover { background-color: #0056b3; }
+        .btn-success { background-color: #28a745; color: white; }
+        
+        /* Bảng danh sách */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #dee2e6; padding: 12px; text-align: left; }
+        th { background-color: #f8f9fa; font-weight: bold; }
+        tr:hover { background-color: #f1f1f1; }
+        .checkbox-cell { text-align: center; }
+        
+        /* Badge vai trò */
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .badge-admin { background-color: #e3f2fd; color: #0d47a1; }
+        .badge-user { background-color: #e8f5e9; color: #1b5e20; }
+        
+        .action-bar { margin-top: 20px; text-align: right; }
+        .message { margin-top: 15px; font-weight: bold; color: #28a745; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div>
+            <h2 style="margin: 0;">Quản lý Vai trò & Phân quyền (Role & Permissions)</h2>
+            <div style="margin-top: 6px; font-size: 13px;">
+                <a href="./Index.html" style="color: #007bff; text-decoration: none;">&larr; Tổng quan Dashboard</a>
+                <span style="color: #ccc; margin: 0 8px;">|</span>
+                <a href="./UserManagement.html" style="color: #007bff; text-decoration: none; font-weight: bold;">👥 Quản lý Người dùng (KN-11)</a>
+            </div>
+        </div>
+        <button class="btn btn-primary" onclick="alert('Tính năng thêm vai trò mới')">+ Thêm vai trò mới</button>
+    </div>
+
+    <!-- Bảng Ma trận Phân quyền -->
+    <h3>Ma trận Phân quyền</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Chức năng / Quyền</th>
+                <th style="width: 15%; text-align: center;">Admin <br><span class="badge badge-admin">Quản trị</span></th>
+                <th style="width: 15%; text-align: center;">Manager <br><span class="badge badge-admin">Quản lý</span></th>
+                <th style="width: 15%; text-align: center;">User <br><span class="badge badge-user">Người dùng</span></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Quản lý Người dùng</strong> (Xem danh sách, Tạo, Sửa, Xóa)</td>
+                <td class="checkbox-cell"><input type="checkbox" checked disabled></td>
+                <td class="checkbox-cell"><input type="checkbox" checked></td>
+                <td class="checkbox-cell"><input type="checkbox"></td>
+            </tr>
+            <tr>
+                <td><strong>Quản lý Vai trò & Phân quyền</strong></td>
+                <td class="checkbox-cell"><input type="checkbox" checked disabled></td>
+                <td class="checkbox-cell"><input type="checkbox"></td>
+                <td class="checkbox-cell"><input type="checkbox"></td>
+            </tr>
+            <tr>
+                <td><strong>Xem báo cáo & Thống kê</strong></td>
+                <td class="checkbox-cell"><input type="checkbox" checked disabled></td>
+                <td class="checkbox-cell"><input type="checkbox" checked></td>
+                <td class="checkbox-cell"><input type="checkbox"></td>
+            </tr>
+            <tr>
+                <td><strong>Đổi mật khẩu cá nhân</strong></td>
+                <td class="checkbox-cell"><input type="checkbox" checked disabled></td>
+                <td class="checkbox-cell"><input type="checkbox" checked></td>
+                <td class="checkbox-cell"><input type="checkbox" checked></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="action-bar">
+        <button class="btn btn-success" onclick="savePermissions()">Lưu thay đổi phân quyền</button>
+    </div>
+    <div id="msg" class="message">Đã lưu cấu hình phân quyền thành công!</div>
+</div>
+
+<script>
+    function savePermissions() {
+        const msgDiv = document.getElementById('msg');
+        msgDiv.style.display = 'block';
+        setTimeout(() => {
+            msgDiv.style.display = 'none';
+        }, 3000);
+    }
+</script>
+
+</body>
+</html>
