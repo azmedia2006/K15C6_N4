@@ -1343,8 +1343,70 @@
 
         // KN-32: Điều hướng và thiết lập giao diện theo vai trò người dùng (RBAC)
         const params = new URLSearchParams(window.location.search);
-        const storedRole = localStorage.getItem("tms_current_role");
-        const role = params.get("role") || storedRole || "administrator";
+
+function normalizeRole(value) {
+    const normalized = String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/^role_/, "")
+        .replace(/[\s-]+/g, "_");
+
+    const aliases = {
+        learner: "student",
+        assistant: "teaching_assistant",
+        admissions_counselor: "admissions",
+        training_management: "training_manager",
+        system_administrator: "administrator",
+        admin: "administrator"
+    };
+
+    return aliases[normalized] || normalized;
+}
+
+const allowedRoles = new Set([
+    "visitor",
+    "student",
+    "instructor",
+    "teaching_assistant",
+    "admissions",
+    "accountant",
+    "training_manager",
+    "administrator"
+]);
+
+const storedRole = normalizeRole(
+    localStorage.getItem("tms_current_role")
+);
+
+const requestedRole = normalizeRole(
+    params.get("role")
+);
+
+let role;
+
+// Có phiên đăng nhập hợp lệ
+if (allowedRoles.has(storedRole)) {
+    role = storedRole;
+
+    // Người dùng cố sửa URL sang role khác
+    if (requestedRole && requestedRole !== storedRole) {
+        alert("Bạn không có quyền truy cập vai trò này.");
+
+        window.history.replaceState(
+            null,
+            "",
+            `./Index.html?role=${encodeURIComponent(storedRole)}`
+        );
+    }
+} else {
+    // Chưa đăng nhập chỉ cho phép giao diện visitor
+    if (requestedRole === "visitor") {
+        role = "visitor";
+    } else {
+        role = "visitor";
+        window.location.replace("./Login.html");
+    }
+}
 
         const roleTitles = {
             visitor: { 
@@ -1403,7 +1465,7 @@
             }
         };
 
-        const currentProfile = roleTitles[role] || roleTitles.administrator;
+        const currentProfile = roleTitles[role] || roleTitles.visitor;
         document.getElementById("welcome-name").textContent = currentProfile.name;
         document.getElementById("display-user-name").textContent = currentProfile.name;
         document.getElementById("display-user-role").textContent = currentProfile.role;
