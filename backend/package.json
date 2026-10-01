@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node test/auth.test.js"
+    "migrate": "node migrations/migrate_roles_n_n.js",
+    "test": "node test/auth.test.js && node test/role_management.test.js",
+    "test:auth": "node test/auth.test.js",
+    "test:role": "node test/role_management.test.js"
   },
   "keywords": [],
   "author": "",
