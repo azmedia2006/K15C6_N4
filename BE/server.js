@@ -3,6 +3,7 @@ const cors = require("cors");
 const {
     findUserByEmail,
     hashPassword,
+    verifyPassword,
     generateToken,
     getLockoutStatus,
     recordFailedAttempt,
@@ -40,13 +41,12 @@ app.post("/api/auth/login", (req, res) => {
 
     const user = findUserByEmail(normalizedEmail);
 
-    // KN-37 & KN-35: Xác thực mật khẩu và ẩn thông tin tồn tại email
+    // KN-37 & KN-35: Xác thực và bảo vệ mật khẩu an toàn với constant-time comparison
     let isPasswordValid = false;
     if (user) {
-        const computedHash = hashPassword(password, user.salt);
-        isPasswordValid = (computedHash === user.passwordHash);
+        isPasswordValid = verifyPassword(password, user.salt, user.passwordHash);
     } else {
-        // KN-35: Chống tấn công phân tích thời gian (timing attack) khi người dùng không tồn tại
+        // KN-35 & KN-37: Chống tấn công phân tích thời gian (timing attack) khi người dùng không tồn tại
         hashPassword(password, "dummy_constant_salt_for_timing_safety_321");
     }
 

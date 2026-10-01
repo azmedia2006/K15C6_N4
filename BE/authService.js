@@ -1,9 +1,19 @@
 // Cấu sở dữ liệu mô phỏng trong bộ nhớ cho 8 vai trò người dùng hệ thống TMS
 const crypto = require("crypto");
 
-// Hàm hash bảo vệ mật khẩu bằng PBKDF2 (chuẩn an toàn NIST)
+// Hàm hash bảo vệ mật khẩu bằng PBKDF2 (chuẩn an toàn NIST SP 800-132)
 function hashPassword(password, salt) {
-    return crypto.pbkdf2Sync(password, salt, 10000, 64, "sha512").toString("hex");
+    return crypto.pbkdf2Sync(String(password), String(salt), 10000, 64, "sha512").toString("hex");
+}
+
+// KN-37: Xác thực mật khẩu với hàm so sánh constant-time chống tấn công side-channel
+function verifyPassword(password, salt, storedHash) {
+    if (!password || !salt || !storedHash) return false;
+    const computedHash = hashPassword(password, salt);
+    const bufComputed = Buffer.from(computedHash, "hex");
+    const bufStored = Buffer.from(storedHash, "hex");
+    if (bufComputed.length !== bufStored.length) return false;
+    return crypto.timingSafeEqual(bufComputed, bufStored);
 }
 
 function generateSalt() {
@@ -124,6 +134,7 @@ function recordSuccessfulLogin(email) {
 module.exports = {
     findUserByEmail,
     hashPassword,
+    verifyPassword,
     generateSalt,
     generateToken,
     getLockoutStatus,
