@@ -107,7 +107,24 @@ async function runAllTests() {
         }
 
         {
-            // Case 1.4: Lấy danh mục các vai trò hỗ trợ
+            // Case 1.4: Tìm kiếm theo số điện thoại (KN-11 Jira Description)
+            const res = await request("/api/admin/users?query=0912345678", { token: adminToken });
+            assert.strictEqual(res.status, 200);
+            assert.ok(res.data.users.length >= 1);
+            assert.strictEqual(res.data.users[0].phone, "0912345678");
+            logPass("Tìm kiếm người dùng theo số điện thoại");
+        }
+
+        {
+            // Case 1.5: Danh sách phân trang, mặc định 20 dòng (KN-11 Jira Description)
+            const res = await request("/api/admin/users", { token: adminToken });
+            assert.strictEqual(res.status, 200);
+            assert.strictEqual(res.data.limit, 20, "Phân trang mặc định phải là 20 dòng");
+            logPass("Danh sách phân trang mặc định 20 dòng theo đặc tả KN-11");
+        }
+
+        {
+            // Case 1.6: Lấy danh mục các vai trò hỗ trợ
             const res = await request("/api/admin/roles", { token: adminToken });
             assert.strictEqual(res.status, 200);
             assert.ok(Array.isArray(res.data.roles));
@@ -124,7 +141,7 @@ async function runAllTests() {
         let tempPassword;
 
         {
-            // Case 2.1: Tạo nhân sự mới với mật khẩu tự sinh ngẫu nhiên
+            // Case 2.1: Tạo nhân sự mới với mật khẩu tự sinh ngẫu nhiên và gửi email kích hoạt
             const res = await request("/api/admin/users", {
                 method: "POST",
                 token: adminToken,
@@ -139,12 +156,14 @@ async function runAllTests() {
             assert.strictEqual(res.data.success, true);
             assert.strictEqual(res.data.user.email, createdUserEmail);
             assert.strictEqual(res.data.user.role, "instructor");
+            assert.strictEqual(res.data.emailSent, true, "Phải gửi email kích hoạt kèm mật khẩu tạm");
+            assert.ok(res.data.activationEmail, "Bản ghi email kích hoạt phải tồn tại");
             assert.ok(res.data.temporaryPassword, "Phải sinh mật khẩu tạm");
             assert.ok(res.data.temporaryPassword.startsWith("TMS@"), "Mật khẩu tạm phải có tiền tố an toàn TMS@");
 
             createdUserId = res.data.user.id;
             tempPassword = res.data.temporaryPassword;
-            logPass("Tạo tài khoản nhân sự mới thành công và sinh mật khẩu tạm an toàn");
+            logPass("Tạo tài khoản và gửi email kích hoạt kèm mật khẩu tạm (KN-11)");
         }
 
         {

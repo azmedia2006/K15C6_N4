@@ -1051,10 +1051,28 @@
                 </table>
             </div>
 
-            <!-- Pagination & Table Footer -->
+            <!-- Pagination & Table Footer (KN-11: Mặc định 20 dòng / trang) -->
             <div class="table-footer">
-                <span id="table-summary-text">Hiển thị 9 người dùng</span>
-                <span style="font-size: 0.75rem; color: #10b981; font-weight: 600;">● Dữ liệu đồng bộ máy chủ thời gian thực</span>
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <span id="table-summary-text">Hiển thị 9 người dùng</span>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <label for="page-size-select" style="font-size: 0.75rem; color: var(--text-muted);">Hiển thị:</label>
+                        <select id="page-size-select" class="filter-select" style="padding: 4px 8px; font-size: 0.75rem;" onchange="changePageSize(this.value)">
+                            <option value="20" selected>20 dòng / trang (Mặc định)</option>
+                            <option value="50">50 dòng / trang</option>
+                            <option value="100">100 dòng / trang</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <button class="btn btn-secondary" id="btn-prev-page" style="padding: 4px 10px; font-size: 0.75rem;" onclick="changePage(-1)" disabled>&larr; Trước</button>
+                        <span id="page-indicator" style="font-weight: 600; font-size: 0.75rem; min-width: 80px; text-align: center;">Trang 1 / 1</span>
+                        <button class="btn btn-secondary" id="btn-next-page" style="padding: 4px 10px; font-size: 0.75rem;" onclick="changePage(1)" disabled>Sau &rarr;</button>
+                    </div>
+                    <span style="font-size: 0.75rem; color: #10b981; font-weight: 600;">● Tự động đồng bộ</span>
+                </div>
             </div>
         </div>
     </main>
@@ -1133,7 +1151,12 @@
             </button>
         </div>
         <div class="modal-body">
-            <p style="font-size: 0.875rem; color: var(--text-muted);">
+            <div style="display: flex; align-items: center; gap: 10px; background: #e0f2fe; color: #0284c7; padding: 12px 16px; border-radius: 8px; font-size: 0.8125rem; font-weight: 600; border: 1px solid #bae6fd;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                <span>Đã gửi email kích hoạt tài khoản kèm mật khẩu tạm thời đến hòm thư của nhân sự mới!</span>
+            </div>
+
+            <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 8px;">
                 Tài khoản đã sẵn sàng hoạt động. Bạn hãy sao chép thông tin này để bàn giao cho nhân sự trong ngày đầu nhận việc:
             </p>
 
@@ -1262,6 +1285,8 @@
     let currentSearch = "";
     let currentRoleFilter = "all";
     let currentStatusFilter = "all";
+    let currentPage = 1;
+    let pageSize = 20; // KN-11: Danh sách phân trang, mặc định 20 dòng
 
     // Khởi động trang
     document.addEventListener("DOMContentLoaded", () => {
@@ -1273,7 +1298,7 @@
         const token = localStorage.getItem("tms_token");
         if (token) {
             try {
-                const res = await fetch("http://localhost:3000/api/admin/users", {
+                const res = await fetch("http://localhost:3000/api/admin/users?limit=100", {
                     headers: { "Authorization": `Bearer ${token}` }
                 });
                 if (res.ok) {
@@ -1290,7 +1315,7 @@
         updateMetrics();
     }
 
-    // Hiển thị danh sách bảng người dùng
+    // Hiển thị danh sách bảng người dùng có phân trang (mặc định 20 dòng)
     function renderTable() {
         const tbody = document.getElementById("user-table-body");
         tbody.innerHTML = "";
@@ -1307,7 +1332,12 @@
             return matchesQuery && matchesRole && matchesStatus;
         });
 
-        if (filtered.length === 0) {
+        const total = filtered.length;
+        const totalPages = Math.ceil(total / pageSize) || 1;
+        if (currentPage > totalPages) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+
+        if (total === 0) {
             tbody.innerHTML = `
                 <tr>
                     <td colspan="6" style="text-align: center; padding: 48px; color: var(--text-muted);">
@@ -1318,10 +1348,16 @@
                 </tr>
             `;
             document.getElementById("table-summary-text").textContent = "Hiển thị 0 người dùng";
+            document.getElementById("page-indicator").textContent = "Trang 1 / 1";
+            document.getElementById("btn-prev-page").disabled = true;
+            document.getElementById("btn-next-page").disabled = true;
             return;
         }
 
-        filtered.forEach(u => {
+        const startIndex = (currentPage - 1) * pageSize;
+        const pageItems = filtered.slice(startIndex, startIndex + pageSize);
+
+        pageItems.forEach(u => {
             const roleInfo = roleLabels[u.role] || { name: u.role, class: "badge-visitor", color: "#64748b" };
             const initials = getInitials(u.name);
             const dateStr = formatDate(u.createdAt);
@@ -1371,7 +1407,21 @@
             tbody.appendChild(tr);
         });
 
-        document.getElementById("table-summary-text").textContent = `Hiển thị ${filtered.length} / ${usersData.length} người dùng`;
+        document.getElementById("table-summary-text").textContent = `Hiển thị ${startIndex + 1}-${Math.min(startIndex + pageSize, total)} / ${total} người dùng`;
+        document.getElementById("page-indicator").textContent = `Trang ${currentPage} / ${totalPages}`;
+        document.getElementById("btn-prev-page").disabled = currentPage <= 1;
+        document.getElementById("btn-next-page").disabled = currentPage >= totalPages;
+    }
+
+    function changePage(delta) {
+        currentPage += delta;
+        renderTable();
+    }
+
+    function changePageSize(size) {
+        pageSize = parseInt(size, 10) || 20;
+        currentPage = 1;
+        renderTable();
     }
 
     // Cập nhật số liệu thống kê

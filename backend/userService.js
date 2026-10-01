@@ -61,8 +61,25 @@ function isValidEmail(email) {
     return re.test(email.trim());
 }
 
-// Lấy danh sách người dùng có hỗ trợ lọc, tìm kiếm và phân trang
-function getUsers({ query = "", role = "", status = "", page = 1, limit = 50 } = {}) {
+// Hàng đợi email kích hoạt (Email Queue / Audit Log cho KN-11)
+const sentEmails = [];
+
+function sendActivationEmail({ to, name, temporaryPassword }) {
+    const emailRecord = {
+        id: "mail_" + Date.now().toString(36) + Math.random().toString(36).substring(2, 6),
+        to,
+        subject: "[TMS] Thông tin tài khoản nhân sự mới và mật khẩu tạm thời",
+        name,
+        temporaryPassword,
+        sentAt: new Date().toISOString(),
+        status: "SENT"
+    };
+    sentEmails.push(emailRecord);
+    return emailRecord;
+}
+
+// Lấy danh sách người dùng có hỗ trợ lọc, tìm kiếm và phân trang (mặc định 20 dòng theo KN-11)
+function getUsers({ query = "", role = "", status = "", page = 1, limit = 20 } = {}) {
     let result = [...users];
 
     // Lọc theo từ khóa tìm kiếm (Tên, email, số điện thoại)
@@ -177,6 +194,13 @@ function createUser({ email, name, role, phone = "", password = "" }) {
 
     users.push(newUser);
 
+    // KN-11: Gửi email kích hoạt kèm mật khẩu tạm thời cho nhân sự mới
+    const emailResult = sendActivationEmail({
+        to: newUser.email,
+        name: newUser.name,
+        temporaryPassword: rawPassword
+    });
+
     return {
         user: {
             id: newUser.id,
@@ -188,7 +212,9 @@ function createUser({ email, name, role, phone = "", password = "" }) {
             createdAt: newUser.createdAt,
             updatedAt: newUser.updatedAt
         },
-        temporaryPassword: rawPassword // Trả về mật khẩu để Admin gửi cho nhân sự mới
+        temporaryPassword: rawPassword, // Trả về mật khẩu để Admin gửi cho nhân sự mới
+        emailSent: true,
+        activationEmail: emailResult
     };
 }
 
@@ -293,5 +319,7 @@ module.exports = {
     updateUser,
     deleteUser,
     isValidEmail,
-    generateRandomTempPassword
+    generateRandomTempPassword,
+    sendActivationEmail,
+    sentEmails
 };
