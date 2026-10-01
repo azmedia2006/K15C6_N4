@@ -929,11 +929,8 @@
                 loginSubmit.disabled = true;
                 loginSubmit.textContent = "Đăng nhập"; // Luôn dọn sạch spinner
                 
-                loginMessage.innerHTML = `Tài khoản tạm khóa do đăng nhập sai 5 lần liên tiếp. Vui lòng thử lại sau <strong>${formatRemaining(remaining)}</strong>. <button type="button" id="btn-quick-unlock" style="background:none; border:none; color:var(--primary); text-decoration:underline; font-weight:600; cursor:pointer; font-size:0.875rem; padding:0 4px;">[Mở khóa ngay để thử]</button>`;
+                loginMessage.textContent = `Tài khoản tạm khóa do đăng nhập sai 5 lần liên tiếp. Vui lòng thử lại sau ${formatRemaining(remaining)}.`;
                 loginMessage.classList.remove("success");
-
-                const btn = document.querySelector("#btn-quick-unlock");
-                if (btn) btn.onclick = (e) => { e.preventDefault(); unlockAccount(); };
 
                 if (!lockoutTimerInterval) {
                     lockoutTimerInterval = window.setInterval(() => {
@@ -941,9 +938,7 @@
                         if (rem <= 0) {
                             unlockAccount();
                         } else {
-                            loginMessage.innerHTML = `Tài khoản tạm khóa do đăng nhập sai 5 lần liên tiếp. Vui lòng thử lại sau <strong>${formatRemaining(rem)}</strong>. <button type="button" id="btn-quick-unlock" style="background:none; border:none; color:var(--primary); text-decoration:underline; font-weight:600; cursor:pointer; font-size:0.875rem; padding:0 4px;">[Mở khóa ngay để thử]</button>`;
-                            const b = document.querySelector("#btn-quick-unlock");
-                            if (b) b.onclick = (e) => { e.preventDefault(); unlockAccount(); };
+                            loginMessage.textContent = `Tài khoản tạm khóa do đăng nhập sai 5 lần liên tiếp. Vui lòng thử lại sau ${formatRemaining(rem)}.`;
                         }
                     }, 1000);
                 }
@@ -953,6 +948,10 @@
             loginSubmit.textContent = "Đăng nhập";
             return false;
         }
+
+        // Hỗ trợ tiện ích mở khóa khi cần qua console hoặc double click vào thông báo
+        window.unlockAccount = unlockAccount;
+        loginMessage.addEventListener("dblclick", () => unlockAccount());
 
         // Khởi động kiểm tra khóa
         checkAndApplyLockout();
