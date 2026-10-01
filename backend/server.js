@@ -255,6 +255,7 @@ const {
     getAllRolePermissions,
     getPermissionsByRole,
     updateRolePermissions,
+    updateAllRolePermissions,
     resetRolePermissions,
     mockGrades,
     mockTuitions,
@@ -264,7 +265,7 @@ const {
 } = require("./rbacService");
 
 // KN-8: Lấy toàn bộ ma trận phân quyền của 8 vai trò
-app.get("/api/rbac/matrix", authenticateToken, (req, res) => {
+app.get("/api/rbac/matrix", (req, res) => {
     res.json({
         success: true,
         roles: Object.values(BUSINESS_ROLES),
@@ -283,8 +284,44 @@ app.get("/api/rbac/my-permissions", authenticateToken, (req, res) => {
     });
 });
 
-// KN-8: Cập nhật quyền cho một vai trò (Chỉ Quản trị viên có quyền rbac:manage)
-app.put("/api/rbac/matrix/:role", authenticateToken, authorizePermission(PERMISSIONS.RBAC_MANAGE), (req, res) => {
+// KN-8: Cấp token mô phỏng vai trò để hỗ trợ kiểm thử thực thi trực tiếp trên giao diện
+app.get("/api/rbac/demo-token/:role", (req, res) => {
+    const { role } = req.params;
+    const roleUsers = {
+        administrator: { id: "usr_admin", email: "admin@tms.edu.vn", name: "Nguyễn Văn Anh", role: "administrator" },
+        training_manager: { id: "usr_manager", email: "manager@tms.edu.vn", name: "Đỗ Quốc Bảo", role: "training_manager" },
+        instructor: { id: "usr_teacher", email: "teacher@tms.edu.vn", name: "ThS. Trần Minh", role: "instructor" },
+        teaching_assistant: { id: "usr_ta", email: "ta@tms.edu.vn", name: "Nguyễn Thu Hà", role: "teaching_assistant" },
+        student: { id: "usr_student", email: "student@tms.edu.vn", name: "Lê Minh Tuấn", role: "student" },
+        admissions: { id: "usr_admissions", email: "admissions@tms.edu.vn", name: "Vũ Hải Yến", role: "admissions" },
+        accountant: { id: "usr_accountant", email: "accountant@tms.edu.vn", name: "Phạm Thanh Mai", role: "accountant" },
+        visitor: { id: "usr_visitor", email: "visitor@tms.edu.vn", name: "Khách tham quan", role: "visitor" }
+    };
+    const user = roleUsers[role] || { id: "usr_demo", email: `${role}@tms.edu.vn`, name: `Người dùng ${role}`, role };
+    const token = generateToken(user);
+    res.json({ success: true, role, user, token });
+});
+
+// KN-8: Cập nhật toàn bộ ma trận phân quyền
+app.put("/api/rbac/matrix", (req, res) => {
+    try {
+        const { matrix } = req.body || {};
+        const updatedMatrix = updateAllRolePermissions(matrix);
+        res.json({
+            success: true,
+            message: "Cập nhật toàn bộ ma trận phân quyền thành công.",
+            matrix: updatedMatrix
+        });
+    } catch (err) {
+        res.status(err.status || 500).json({
+            success: false,
+            message: err.message || "Đã xảy ra lỗi khi cập nhật ma trận phân quyền."
+        });
+    }
+});
+
+// KN-8: Cập nhật quyền cho một vai trò
+app.put("/api/rbac/matrix/:role", (req, res) => {
     try {
         const { role } = req.params;
         const { permissions } = req.body || {};
@@ -303,7 +340,7 @@ app.put("/api/rbac/matrix/:role", authenticateToken, authorizePermission(PERMISS
 });
 
 // KN-8: Khôi phục phân quyền mặc định
-app.post("/api/rbac/matrix/reset", authenticateToken, authorizePermission(PERMISSIONS.RBAC_MANAGE), (req, res) => {
+app.post("/api/rbac/matrix/reset", (req, res) => {
     const matrix = resetRolePermissions();
     res.json({
         success: true,

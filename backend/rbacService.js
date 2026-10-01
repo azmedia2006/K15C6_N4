@@ -176,6 +176,21 @@ function updateRolePermissions(role, permissions) {
 }
 
 /**
+ * Cập nhật toàn bộ ma trận phân quyền (Dành cho Quản trị viên)
+ */
+function updateAllRolePermissions(matrix) {
+    if (!matrix || typeof matrix !== "object") {
+        throw { status: 400, message: "Dữ liệu ma trận phân quyền không hợp lệ." };
+    }
+    for (const [role, perms] of Object.entries(matrix)) {
+        if (Object.values(BUSINESS_ROLES).includes(role) && role !== BUSINESS_ROLES.ADMINISTRATOR) {
+            updateRolePermissions(role, perms);
+        }
+    }
+    return getAllRolePermissions();
+}
+
+/**
  * Khôi phục ma trận phân quyền về mặc định
  */
 function resetRolePermissions() {
@@ -295,6 +310,7 @@ module.exports = {
     getAllRolePermissions,
     getPermissionsByRole,
     updateRolePermissions,
+    updateAllRolePermissions,
     resetRolePermissions,
     mockGrades,
     mockTuitions,

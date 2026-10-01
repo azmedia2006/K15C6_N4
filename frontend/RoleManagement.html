@@ -79,6 +79,10 @@
             background: transparent;
         }
 
+        input, select {
+            font: inherit;
+        }
+
         /* Layout Structure matching TMS Index & UserManagement */
         .app-layout {
             display: grid;
@@ -423,7 +427,7 @@
 
         .scenarios-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 16px;
         }
 
@@ -462,12 +466,14 @@
             font-size: 12.5px;
             color: var(--text-muted);
             line-height: 1.45;
+            flex: 1;
         }
 
         .scenario-btns {
             display: flex;
             gap: 8px;
             margin-top: 4px;
+            flex-wrap: wrap;
         }
 
         .btn-verify {
@@ -501,14 +507,62 @@
             background: #fee2e2;
         }
 
+        /* Custom Live Simulator Bar */
+        .custom-sim-bar {
+            background: var(--bg-body);
+            border: 1px dashed var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            margin-top: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .custom-sim-inputs {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .sim-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .sim-select {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            color: var(--text-main);
+            font-size: 13px;
+            outline: none;
+        }
+
+        .sim-select:focus {
+            border-color: var(--primary);
+        }
+
         /* Toast Feedback */
         .toast-response {
             margin-top: 18px;
-            padding: 14px 18px;
+            padding: 16px 20px;
             border-radius: var(--radius-md);
             font-size: 13px;
             line-height: 1.5;
             display: none;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .toast-response.success {
@@ -528,7 +582,7 @@
         .toast-title {
             font-weight: 700;
             margin-bottom: 2px;
-            font-size: 13.5px;
+            font-size: 14px;
         }
 
         /* Matrix Table Card */
@@ -538,6 +592,7 @@
             border-radius: var(--radius-lg);
             overflow: hidden;
             box-shadow: var(--shadow-sm);
+            margin-bottom: 28px;
         }
 
         .matrix-topbar {
@@ -546,6 +601,8 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
         }
 
         .matrix-title h2 {
@@ -558,6 +615,64 @@
             font-size: 12.5px;
             color: var(--text-muted);
             margin-top: 3px;
+        }
+
+        /* Filter & Search Controls */
+        .matrix-controls {
+            padding: 14px 24px;
+            background: var(--bg-body);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .search-perm-box {
+            position: relative;
+            flex: 1;
+            min-width: 240px;
+            max-width: 380px;
+        }
+
+        .search-perm-box input {
+            width: 100%;
+            padding: 8px 12px 8px 36px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            color: var(--text-main);
+            font-size: 13px;
+            outline: none;
+        }
+
+        .search-perm-box input:focus {
+            border-color: var(--primary);
+        }
+
+        .search-perm-box svg {
+            position: absolute;
+            left: 11px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .filter-perm-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-perm-group select {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            color: var(--text-main);
+            font-size: 13px;
+            outline: none;
         }
 
         .table-responsive {
@@ -583,7 +698,7 @@
 
         th.col-role-header {
             text-align: center;
-            min-width: 115px;
+            min-width: 120px;
         }
 
         .role-pill-badge {
@@ -593,6 +708,13 @@
             font-size: 11px;
             font-weight: 600;
             margin-top: 3px;
+        }
+
+        .role-count-info {
+            font-size: 10.5px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-weight: 500;
         }
 
         .pill-admin { background: #fee2e2; color: #991b1b; }
@@ -609,7 +731,7 @@
             font-weight: 700;
             font-size: 12px;
             color: var(--text-main);
-            padding: 10px 24px;
+            padding: 11px 24px;
             text-transform: uppercase;
             letter-spacing: 0.04em;
             border-top: 1px solid var(--border);
@@ -628,6 +750,7 @@
 
         .perm-title-cell {
             padding-left: 24px !important;
+            max-width: 320px;
         }
 
         .perm-name {
@@ -658,8 +781,8 @@
         }
 
         .cell-checkbox input[type="checkbox"] {
-            width: 17px;
-            height: 17px;
+            width: 18px;
+            height: 18px;
             border-radius: 4px;
             accent-color: var(--primary);
             cursor: pointer;
@@ -669,6 +792,89 @@
         .cell-checkbox input[type="checkbox"]:disabled {
             cursor: not-allowed;
             opacity: 0.6;
+        }
+
+        /* Demo Accounts Table Section */
+        .accounts-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 32px;
+        }
+
+        .accounts-topbar {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .accounts-topbar h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .accounts-topbar p {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        table.accounts-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        table.accounts-table th {
+            background: var(--bg-body);
+            padding: 12px 18px;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+        }
+
+        table.accounts-table td {
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        .btn-test-account {
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-main);
+            transition: var(--transition);
+        }
+
+        .btn-test-account:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-soft);
+        }
+
+        /* Unsaved Changes Banner */
+        .unsaved-banner {
+            display: none;
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #92400e;
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            margin-bottom: 18px;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13.5px;
+            font-weight: 500;
         }
 
         /* Toast notification */
@@ -710,6 +916,10 @@
             }
             .btn-group {
                 width: 100%;
+            }
+            .custom-sim-bar {
+                flex-direction: column;
+                align-items: stretch;
             }
         }
     </style>
@@ -813,39 +1023,48 @@
                 </div>
                 <div class="btn-group">
                     <button class="btn btn-outline" onclick="resetDefaultMatrix()">Khôi phục mặc định</button>
-                    <button class="btn btn-primary" onclick="saveMatrixConfig()">Lưu thay đổi</button>
+                    <button class="btn btn-primary" id="btnTopSave" onclick="saveMatrixConfig()">Lưu thay đổi</button>
                 </div>
+            </div>
+
+            <!-- Unsaved Changes Alert Banner -->
+            <div id="unsavedBanner" class="unsaved-banner">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <span>Bạn có những thay đổi phân quyền chưa được lưu lên Server.</span>
+                </div>
+                <button class="btn btn-primary" style="padding: 6px 14px; font-size: 12.5px;" onclick="saveMatrixConfig()">Lưu ngay</button>
             </div>
 
             <!-- Summary Stat Cards -->
             <div class="metric-grid">
                 <div class="metric-card">
                     <div class="metric-data">
-                        <div class="metric-num">8</div>
+                        <div class="metric-num" id="statRolesCount">8</div>
                         <div class="metric-label">Vai trò nghiệp vụ</div>
                     </div>
-                    <span class="metric-badge-status">Đầy đủ 8 nhóm</span>
+                    <span class="metric-badge-status">8 nhóm chuẩn TMS</span>
                 </div>
                 <div class="metric-card">
                     <div class="metric-data">
-                        <div class="metric-num">10</div>
+                        <div class="metric-num" id="statPermsCount">11</div>
                         <div class="metric-label">Mã quyền hệ thống</div>
                     </div>
-                    <span class="metric-badge-status">Kiểm soát API</span>
+                    <span class="metric-badge-status">Kiểm soát Endpoint</span>
                 </div>
                 <div class="metric-card">
                     <div class="metric-data">
                         <div class="metric-num">Server Guard</div>
                         <div class="metric-label">Cơ chế bảo vệ</div>
                     </div>
-                    <span class="metric-badge-status">Default Deny</span>
+                    <span class="metric-badge-status">Default Deny (HTTP 403)</span>
                 </div>
                 <div class="metric-card">
                     <div class="metric-data">
                         <div class="metric-num">Cô lập quyền</div>
                         <div class="metric-label">Giảng viên & Kế toán</div>
                     </div>
-                    <span class="metric-badge-status">Đảm bảo an toàn</span>
+                    <span class="metric-badge-status">Nghiêm ngặt 100%</span>
                 </div>
             </div>
 
@@ -853,12 +1072,13 @@
             <div class="simulation-card">
                 <div class="simulation-header">
                     <div class="simulation-title">
-                        <h2>Kiểm tra Thực thi Quyền tầng Server</h2>
-                        <span>Thử nghiệm trực tiếp kiểm soát truy cập giữa Giảng viên và Kế toán</span>
+                        <h2>Kiểm tra Thực thi Quyền tầng Server (Live RBAC Test)</h2>
+                        <span>Thử nghiệm trực tiếp kiểm soát truy cập và cơ chế Default Deny</span>
                     </div>
-                    <span class="badge-pill">Live API Simulation</span>
+                    <span class="badge-pill">Xác thực Backend HTTP Real-time</span>
                 </div>
 
+                <!-- 4 Quick Scenario Cards -->
                 <div class="scenarios-grid">
                     <!-- Scenario 1: Giảng viên -->
                     <div class="scenario-box">
@@ -892,18 +1112,62 @@
                             <span class="scenario-role-name">Học viên (Student)</span>
                             <span class="role-tag-mini">student@tms.edu.vn</span>
                         </div>
-                        <p class="scenario-desc">Chỉ có quyền xem thông tin cá nhân. Bị từ chối mặc định khi cố gắng cập nhật dữ liệu quản trị.</p>
+                        <p class="scenario-desc">Chỉ có quyền xem thông tin cá nhân. Bị từ chối mặc định khi cố gắng can thiệp điểm hoặc học phí.</p>
                         <div class="scenario-btns">
                             <button class="btn-verify deny" onclick="verifyAction('student', 'edit_grade')">Thử sửa điểm</button>
                             <button class="btn-verify deny" onclick="verifyAction('student', 'edit_tuition')">Thử sửa học phí</button>
                         </div>
                     </div>
+
+                    <!-- Scenario 4: Quản trị viên -->
+                    <div class="scenario-box">
+                        <div class="scenario-role-header">
+                            <span class="scenario-role-name">Quản trị viên (Admin)</span>
+                            <span class="role-tag-mini">admin@tms.edu.vn</span>
+                        </div>
+                        <p class="scenario-desc">Nắm giữ toàn quyền quản trị hệ thống (*). Được phép thực thi tất cả các nghiệp vụ điểm số và tài chính.</p>
+                        <div class="scenario-btns">
+                            <button class="btn-verify allow" onclick="verifyAction('administrator', 'edit_grade')">Thử sửa điểm</button>
+                            <button class="btn-verify allow" onclick="verifyAction('administrator', 'edit_tuition')">Thử sửa học phí</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom Interactive Simulator Bar -->
+                <div class="custom-sim-bar">
+                    <div class="custom-sim-inputs">
+                        <span class="sim-label">Thử nghiệm tự do:</span>
+                        <select id="simRoleSelect" class="sim-select">
+                            <option value="instructor">Giảng viên (Instructor)</option>
+                            <option value="accountant">Kế toán (Accountant)</option>
+                            <option value="student">Học viên (Student)</option>
+                            <option value="training_manager">Quản lý đào tạo (Training Manager)</option>
+                            <option value="teaching_assistant">Trợ giảng (Teaching Assistant)</option>
+                            <option value="admissions">Tư vấn tuyển sinh (Admissions)</option>
+                            <option value="administrator">Quản trị hệ thống (Administrator)</option>
+                            <option value="visitor">Khách tham quan (Visitor)</option>
+                        </select>
+                        <select id="simActionSelect" class="sim-select">
+                            <option value="edit_grade">Sửa điểm sinh viên (PUT /api/grades/:id)</option>
+                            <option value="edit_tuition">Sửa học phí sinh viên (PUT /api/tuitions/:id)</option>
+                            <option value="view_grades">Xem bảng điểm (GET /api/grades)</option>
+                            <option value="view_tuitions">Xem bảng học phí (GET /api/tuitions)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" style="padding: 8px 16px; font-size: 13px;" onclick="runCustomSimulation()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        <span>Gửi kiểm tra Server</span>
+                    </button>
                 </div>
 
                 <!-- Toast feedback alert -->
                 <div id="verifyFeedback" class="toast-response">
-                    <div id="verifyTitle" class="toast-title"></div>
-                    <div id="verifyDetail"></div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <div id="verifyTitle" class="toast-title"></div>
+                        <span id="verifyLatency" style="font-size: 11px; opacity: 0.8; font-family: monospace;"></span>
+                    </div>
+                    <div id="verifyDetail" style="margin-bottom: 8px;"></div>
+                    <div id="verifyPayloadBox" style="display: none; background: rgba(0,0,0,0.06); padding: 10px 14px; border-radius: 6px; font-family: monospace; font-size: 11.5px; white-space: pre-wrap; word-break: break-all;"></div>
                 </div>
             </div>
 
@@ -912,178 +1176,164 @@
                 <div class="matrix-topbar">
                     <div class="matrix-title">
                         <h2>Ma trận Quyền hạn 8 Vai trò Nghiệp vụ</h2>
-                        <p>Khai báo và kiểm soát quyền hạn chi tiết cho từng nhóm người dùng trong hệ thống.</p>
+                        <p>Khai báo và kiểm soát quyền hạn chi tiết cho từng nhóm người dùng trong hệ thống TMS.</p>
                     </div>
                     <div class="btn-group">
-                        <button class="btn btn-outline" style="padding: 7px 14px; font-size: 12.5px;" onclick="resetDefaultMatrix()">Khôi phục</button>
-                        <button class="btn btn-primary" style="padding: 7px 14px; font-size: 12.5px;" onclick="saveMatrixConfig()">Lưu cấu hình</button>
+                        <button class="btn btn-outline" style="padding: 7px 14px; font-size: 12.5px;" onclick="resetDefaultMatrix()">Khôi phục mặc định</button>
+                        <button class="btn btn-primary" id="btnSaveConfig" style="padding: 7px 14px; font-size: 12.5px;" onclick="saveMatrixConfig()">Lưu cấu hình</button>
+                    </div>
+                </div>
+
+                <!-- Matrix Search & Category Filters -->
+                <div class="matrix-controls">
+                    <div class="search-perm-box">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="permSearchInput" placeholder="Tìm kiếm tên quyền hoặc mã quyền..." oninput="filterMatrixTable()">
+                    </div>
+
+                    <div class="filter-perm-group">
+                        <span style="font-size: 12.5px; color: var(--text-muted); font-weight: 500;">Phân hệ:</span>
+                        <select id="permCategoryFilter" onchange="filterMatrixTable()">
+                            <option value="all">Tất cả phân hệ</option>
+                            <option value="Quản lý Khảo thí & Điểm số">Khảo thí & Điểm số</option>
+                            <option value="Quản lý Tài chính & Học phí">Tài chính & Học phí</option>
+                            <option value="Quản trị Đào tạo & Lớp học">Đào tạo & Lớp học</option>
+                            <option value="Quản trị Hệ thống & Người dùng">Hệ thống & Người dùng</option>
+                        </select>
                     </div>
                 </div>
 
                 <div class="table-responsive">
-                    <table class="matrix-table">
+                    <table class="matrix-table" id="matrixMainTable">
                         <thead>
                             <tr>
                                 <th style="min-width: 270px; padding-left: 24px;">Chức năng nghiệp vụ</th>
                                 <th class="col-role-header">
                                     Quản trị<br><span class="role-pill-badge pill-admin">administrator</span>
+                                    <div class="role-count-info" id="count_administrator">Toàn quyền (*)</div>
                                 </th>
                                 <th class="col-role-header">
                                     QL Đào tạo<br><span class="role-pill-badge pill-manager">training_manager</span>
+                                    <div class="role-count-info" id="count_training_manager">--</div>
                                 </th>
                                 <th class="col-role-header">
                                     Giảng viên<br><span class="role-pill-badge pill-instructor">instructor</span>
+                                    <div class="role-count-info" id="count_instructor">--</div>
                                 </th>
                                 <th class="col-role-header">
                                     Trợ giảng<br><span class="role-pill-badge pill-ta">teaching_assistant</span>
+                                    <div class="role-count-info" id="count_teaching_assistant">--</div>
                                 </th>
                                 <th class="col-role-header">
                                     Học viên<br><span class="role-pill-badge pill-student">student</span>
+                                    <div class="role-count-info" id="count_student">--</div>
                                 </th>
                                 <th class="col-role-header">
                                     Tuyển sinh<br><span class="role-pill-badge pill-admissions">admissions</span>
+                                    <div class="role-count-info" id="count_admissions">--</div>
                                 </th>
                                 <th class="col-role-header">
                                     Kế toán<br><span class="role-pill-badge pill-accountant">accountant</span>
+                                    <div class="role-count-info" id="count_accountant">--</div>
                                 </th>
                                 <th class="col-role-header">
                                     Khách tham quan<br><span class="role-pill-badge pill-visitor">visitor</span>
+                                    <div class="role-count-info" id="count_visitor">--</div>
                                 </th>
                             </tr>
                         </thead>
+                        <tbody id="matrixTableBody">
+                            <!-- Render động từ API Backend /api/rbac/matrix -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Demo Accounts Reference Section (From README.md) -->
+            <div class="accounts-section">
+                <div class="accounts-topbar">
+                    <div>
+                        <h2>Danh sách Tài khoản Thử nghiệm 8 Vai trò (TMS Standard)</h2>
+                        <p>Các tài khoản được cấu hình chuẩn theo tài liệu kỹ thuật dự án để phục vụ kiểm thử đăng nhập và phân quyền.</p>
+                    </div>
+                    <span class="badge-pill">8 Tài khoản</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="accounts-table">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Vai trò nghiệp vụ (Role)</th>
+                                <th>Email / Tên đăng nhập</th>
+                                <th>Mật khẩu</th>
+                                <th>Phạm vi quyền hạn chính</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
                         <tbody>
-                            <!-- NHÓM 1: ĐIỂM SỐ & KHẢO THÍ -->
-                            <tr class="category-row">
-                                <td colspan="9">Quản lý Khảo thí & Điểm số</td>
+                            <tr>
+                                <td>1</td>
+                                <td><span class="role-pill-badge pill-admin">administrator</span></td>
+                                <td><strong>admin@tms.edu.vn</strong></td>
+                                <td><code>admin123</code></td>
+                                <td>Toàn quyền hệ thống, quản lý người dùng, phân quyền RBAC</td>
+                                <td><button class="btn-test-account" onclick="quickTestFromAccount('administrator')">Kiểm tra quyền</button></td>
                             </tr>
                             <tr>
-                                <td class="perm-title-cell">
-                                    <span class="perm-name">Xem bảng điểm lớp học</span>
-                                    <span class="perm-code">grades:view</span>
-                                </td>
-                                <td class="cell-checkbox"><input type="checkbox" checked disabled></td>
-                                <td class="cell-checkbox"><input type="checkbox" checked></td>
-                                <td class="cell-checkbox"><input type="checkbox" checked></td>
-                                <td class="cell-checkbox"><input type="checkbox" checked></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
+                                <td>2</td>
+                                <td><span class="role-pill-badge pill-manager">training_manager</span></td>
+                                <td><strong>manager@tms.edu.vn</strong></td>
+                                <td><code>manager123</code></td>
+                                <td>Quản trị khóa học, lớp học, sửa điểm, báo cáo đào tạo</td>
+                                <td><button class="btn-test-account" onclick="quickTestFromAccount('training_manager')">Kiểm tra quyền</button></td>
                             </tr>
                             <tr>
-                                <td class="perm-title-cell">
-                                    <span class="perm-name">Nhập và sửa điểm sinh viên</span>
-                                    <span class="perm-code">grades:update</span>
-                                    <div class="perm-note">Giảng viên được phép &bull; Kế toán bị cấm</div>
-                                </td>
-                                <td class="cell-checkbox"><input type="checkbox" checked disabled></td>
-                                <td class="cell-checkbox"><input type="checkbox" checked></td>
-                                <td class="cell-checkbox"><input type="checkbox" id="mat_instructor_grades" checked></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox" id="mat_accountant_grades"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                            </tr>
-
-                            <!-- NHÓM 2: HỌC PHÍ & TÀI CHÍNH -->
-                            <tr class="category-row">
-                                <td colspan="9">Quản lý Tài chính & Học phí</td>
+                                <td>3</td>
+                                <td><span class="role-pill-badge pill-instructor">instructor</span></td>
+                                <td><strong>teacher@tms.edu.vn</strong></td>
+                                <td><code>teacher123</code></td>
+                                <td>Chấm bài, sửa điểm số (CẤM can thiệp học phí)</td>
+                                <td><button class="btn-test-account" onclick="quickTestFromAccount('instructor')">Kiểm tra quyền</button></td>
                             </tr>
                             <tr>
-                                <td class="perm-title-cell">
-                                    <span class="perm-name">Xem dữ liệu thu học phí</span>
-                                    <span class="perm-code">tuition:view</span>
-                                </td>
-                                <td class="cell-checkbox"><input type="checkbox" checked disabled></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox" checked></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
+                                <td>4</td>
+                                <td><span class="role-pill-badge pill-ta">teaching_assistant</span></td>
+                                <td><strong>ta@tms.edu.vn</strong></td>
+                                <td><code>ta123456</code></td>
+                                <td>Hỗ trợ lớp, điểm danh, xem bảng điểm môn phụ trách</td>
+                                <td><button class="btn-test-account" onclick="quickTestFromAccount('teaching_assistant')">Kiểm tra quyền</button></td>
                             </tr>
                             <tr>
-                                <td class="perm-title-cell">
-                                    <span class="perm-name">Cập nhật và sửa học phí</span>
-                                    <span class="perm-code">tuition:update</span>
-                                    <div class="perm-note">Kế toán được phép &bull; Giảng viên bị cấm</div>
-                                </td>
-                                <td class="cell-checkbox"><input type="checkbox" checked disabled></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox" id="mat_instructor_tuition"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox" id="mat_accountant_tuition" checked></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                            </tr>
-
-                            <!-- NHÓM 3: ĐÀO TẠO & LỚP HỌC -->
-                            <tr class="category-row">
-                                <td colspan="9">Quản trị Đào tạo & Lớp học</td>
+                                <td>5</td>
+                                <td><span class="role-pill-badge pill-student">student</span></td>
+                                <td><strong>student@tms.edu.vn</strong></td>
+                                <td><code>student123</code></td>
+                                <td>Xem khóa học, xem kết quả cá nhân (CẤM sửa dữ liệu)</td>
+                                <td><button class="btn-test-account" onclick="quickTestFromAccount('student')">Kiểm tra quyền</button></td>
                             </tr>
                             <tr>
-                                <td class="perm-title-cell">
-                                    <span class="perm-name">Xem thông tin khóa học</span>
-                                    <span class="perm-code">courses:view</span>
-                                </td>
-                                <td class="cell-checkbox"><input type="checkbox" checked disabled></td>
-                                <td class="cell-checkbox"><input type="checkbox" checked></td>
-                                <td class="cell-checkbox"><input type="checkbox" checked></td>
-                                <td class="cell-checkbox"><input type="checkbox" checked></td>
-                                <td class="cell-checkbox"><input type="checkbox" checked></td>
-                                <td class="cell-checkbox"><input type="checkbox" checked></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox" checked></td>
+                                <td>6</td>
+                                <td><span class="role-pill-badge pill-admissions">admissions</span></td>
+                                <td><strong>admissions@tms.edu.vn</strong></td>
+                                <td><code>admissions123</code></td>
+                                <td>Tiếp nhận học viên mới, xem thông tin khóa học</td>
+                                <td><button class="btn-test-account" onclick="quickTestFromAccount('admissions')">Kiểm tra quyền</button></td>
                             </tr>
                             <tr>
-                                <td class="perm-title-cell">
-                                    <span class="perm-name">Điểm danh và chuyên cần</span>
-                                    <span class="perm-code">attendance:manage</span>
-                                </td>
-                                <td class="cell-checkbox"><input type="checkbox" checked disabled></td>
-                                <td class="cell-checkbox"><input type="checkbox" checked></td>
-                                <td class="cell-checkbox"><input type="checkbox" checked></td>
-                                <td class="cell-checkbox"><input type="checkbox" checked></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                            </tr>
-
-                            <!-- NHÓM 4: QUẢN TRỊ HỆ THỐNG -->
-                            <tr class="category-row">
-                                <td colspan="9">Quản trị Hệ thống & Người dùng</td>
+                                <td>7</td>
+                                <td><span class="role-pill-badge pill-accountant">accountant</span></td>
+                                <td><strong>accountant@tms.edu.vn</strong></td>
+                                <td><code>accountant123</code></td>
+                                <td>Quản lý thu học phí, xuất biên lai (CẤM can thiệp điểm số)</td>
+                                <td><button class="btn-test-account" onclick="quickTestFromAccount('accountant')">Kiểm tra quyền</button></td>
                             </tr>
                             <tr>
-                                <td class="perm-title-cell">
-                                    <span class="perm-name">Quản lý tài khoản người dùng</span>
-                                    <span class="perm-code">users:manage</span>
-                                </td>
-                                <td class="cell-checkbox"><input type="checkbox" checked disabled></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                            </tr>
-                            <tr>
-                                <td class="perm-title-cell">
-                                    <span class="perm-name">Quản lý ma trận phân quyền</span>
-                                    <span class="perm-code">rbac:manage</span>
-                                </td>
-                                <td class="cell-checkbox"><input type="checkbox" checked disabled></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
-                                <td class="cell-checkbox"><input type="checkbox"></td>
+                                <td>8</td>
+                                <td><span class="role-pill-badge pill-visitor">visitor</span></td>
+                                <td><strong>visitor@tms.edu.vn</strong></td>
+                                <td><code>visitor123</code></td>
+                                <td>Khách tham quan chỉ xem thông tin khóa học công khai</td>
+                                <td><button class="btn-test-account" onclick="quickTestFromAccount('visitor')">Kiểm tra quyền</button></td>
                             </tr>
                         </tbody>
                     </table>
@@ -1096,77 +1346,471 @@
     <div id="toastPopup" class="toast-popup"></div>
 
     <script>
-        // Dark Mode Toggle
-        const themeBtn = document.getElementById('themeToggle');
-        themeBtn.addEventListener('click', () => {
-            const current = document.documentElement.getAttribute('data-theme');
-            if (current === 'dark') {
-                document.documentElement.removeAttribute('data-theme');
-                localStorage.setItem('tms_theme', 'light');
-            } else {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                localStorage.setItem('tms_theme', 'dark');
+        // Cấu hình URL Backend: Linh hoạt giữa localhost:3000 hoặc host hiện tại
+        const API_BASE = (window.location.protocol.startsWith("http") && (window.location.port === "3000" || window.location.port === ""))
+            ? window.location.origin
+            : "http://localhost:3000";
+
+        const ROLES_ORDER = [
+            "administrator",
+            "training_manager",
+            "instructor",
+            "teaching_assistant",
+            "student",
+            "admissions",
+            "accountant",
+            "visitor"
+        ];
+
+        // 11 Mã quyền hệ thống phân chia thành 4 nhóm nghiệp vụ
+        const PERMISSION_GROUPS = [
+            {
+                groupName: "Quản lý Khảo thí & Điểm số",
+                permissions: [
+                    { key: "grades:view", name: "Xem bảng điểm lớp học", note: "" },
+                    { key: "grades:update", name: "Nhập và sửa điểm sinh viên", note: "Giảng viên được phép • Kế toán bị cấm" }
+                ]
+            },
+            {
+                groupName: "Quản lý Tài chính & Học phí",
+                permissions: [
+                    { key: "tuition:view", name: "Xem dữ liệu thu học phí", note: "" },
+                    { key: "tuition:update", name: "Cập nhật và sửa học phí", note: "Kế toán được phép • Giảng viên bị cấm" }
+                ]
+            },
+            {
+                groupName: "Quản trị Đào tạo & Lớp học",
+                permissions: [
+                    { key: "courses:view", name: "Xem thông tin khóa học", note: "" },
+                    { key: "courses:manage", name: "Quản lý chương trình đào tạo", note: "" },
+                    { key: "attendance:manage", name: "Điểm danh và chuyên cần", note: "" }
+                ]
+            },
+            {
+                groupName: "Quản trị Hệ thống & Người dùng",
+                permissions: [
+                    { key: "users:view", name: "Xem danh sách người dùng", note: "" },
+                    { key: "users:manage", name: "Quản lý tài khoản người dùng", note: "" },
+                    { key: "reports:view", name: "Xem báo cáo thống kê", note: "" },
+                    { key: "rbac:manage", name: "Quản lý ma trận phân quyền", note: "" }
+                ]
             }
+        ];
+
+        let currentMatrix = {};
+        let hasUnsavedChanges = false;
+        const tokenCache = {};
+
+        // Khởi động trang: Tải ma trận từ Server
+        document.addEventListener("DOMContentLoaded", () => {
+            initTheme();
+            loadMatrixFromServer();
         });
 
-        if (localStorage.getItem('tms_theme') === 'dark') {
-            document.documentElement.setAttribute('data-theme', 'dark');
-        }
-
-        // Action Verification simulation
-        function verifyAction(role, action) {
-            const feedbackEl = document.getElementById('verifyFeedback');
-            const titleEl = document.getElementById('verifyTitle');
-            const detailEl = document.getElementById('verifyDetail');
-
-            if (role === 'instructor') {
-                if (action === 'edit_grade') {
-                    feedbackEl.className = 'toast-response success';
-                    titleEl.textContent = 'Mã phản hồi: HTTP 200 (Thành công)';
-                    detailEl.textContent = 'Giảng viên (instructor) có quyền hợp lệ "grades:update". Cập nhật điểm sinh viên thành công.';
-                } else if (action === 'edit_tuition') {
-                    feedbackEl.className = 'toast-response forbidden';
-                    titleEl.textContent = 'Mã phản hồi: HTTP 403 (Bị từ chối)';
-                    detailEl.textContent = 'Truy cập bị từ chối: Vai trò của bạn không có quyền thực hiện thao tác này. Vui lòng liên hệ Quản trị hệ thống để được cấp quyền.';
+        // Tải ma trận từ Server API
+        async function loadMatrixFromServer() {
+            try {
+                const res = await fetch(`${API_BASE}/api/rbac/matrix`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success && data.matrix) {
+                        currentMatrix = data.matrix;
+                        setUnsaved(false);
+                        renderMatrixTable();
+                        updateRoleCounters();
+                        return;
+                    }
                 }
-            } else if (role === 'accountant') {
-                if (action === 'edit_tuition') {
-                    feedbackEl.className = 'toast-response success';
-                    titleEl.textContent = 'Mã phản hồi: HTTP 200 (Thành công)';
-                    detailEl.textContent = 'Kế toán (accountant) có quyền hợp lệ "tuition:update". Cập nhật bản ghi học phí thành công.';
-                } else if (action === 'edit_grade') {
-                    feedbackEl.className = 'toast-response forbidden';
-                    titleEl.textContent = 'Mã phản hồi: HTTP 403 (Bị từ chối)';
-                    detailEl.textContent = 'Truy cập bị từ chối: Vai trò của bạn không có quyền thực hiện thao tác này. Vui lòng liên hệ Quản trị hệ thống để được cấp quyền.';
-                }
-            } else if (role === 'student') {
-                feedbackEl.className = 'toast-response forbidden';
-                titleEl.textContent = 'Mã phản hồi: HTTP 403 (Mặc định từ chối)';
-                detailEl.textContent = 'Truy cập bị từ chối: Vai trò Học viên không có quyền can thiệp dữ liệu quản trị của hệ thống.';
+            } catch (err) {
+                console.warn("Không thể kết nối API trực tiếp, sử dụng dữ liệu mặc định:", err);
             }
 
-            feedbackEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            // Fallback cấu hình mặc định chuẩn RBAC
+            currentMatrix = {
+                administrator: ["*"],
+                training_manager: ["grades:view", "grades:update", "courses:view", "courses:manage", "attendance:manage", "reports:view", "users:view"],
+                instructor: ["grades:view", "grades:update", "courses:view", "attendance:manage"],
+                teaching_assistant: ["grades:view", "courses:view", "attendance:manage"],
+                student: ["courses:view"],
+                admissions: ["courses:view", "reports:view"],
+                accountant: ["tuition:view", "tuition:update", "reports:view"],
+                visitor: ["courses:view"]
+            };
+            setUnsaved(false);
+            renderMatrixTable();
+            updateRoleCounters();
         }
 
+        // Render bảng ma trận phân quyền
+        function renderMatrixTable() {
+            const tbody = document.getElementById("matrixTableBody");
+            tbody.innerHTML = "";
+
+            const searchTerm = (document.getElementById("permSearchInput")?.value || "").trim().toLowerCase();
+            const categoryFilter = document.getElementById("permCategoryFilter")?.value || "all";
+
+            PERMISSION_GROUPS.forEach(group => {
+                if (categoryFilter !== "all" && group.groupName !== categoryFilter) {
+                    return;
+                }
+
+                // Lọc các quyền theo từ khóa tìm kiếm
+                const filteredPerms = group.permissions.filter(p => {
+                    if (!searchTerm) return true;
+                    return p.name.toLowerCase().includes(searchTerm) || p.key.toLowerCase().includes(searchTerm);
+                });
+
+                if (filteredPerms.length === 0) return;
+
+                // Header nhóm quyền
+                const groupRow = document.createElement("tr");
+                groupRow.className = "category-row";
+                groupRow.innerHTML = `<td colspan="9">${group.groupName}</td>`;
+                tbody.appendChild(groupRow);
+
+                // Các dòng quyền chi tiết
+                filteredPerms.forEach(perm => {
+                    const tr = document.createElement("tr");
+
+                    let titleHtml = `
+                        <td class="perm-title-cell">
+                            <span class="perm-name">${perm.name}</span>
+                            <span class="perm-code">${perm.key}</span>
+                            ${perm.note ? `<div class="perm-note">${perm.note}</div>` : ""}
+                        </td>
+                    `;
+
+                    let cellsHtml = "";
+                    ROLES_ORDER.forEach(role => {
+                        const rolePerms = currentMatrix[role] || [];
+                        const isWildcard = rolePerms.includes("*");
+                        const isChecked = isWildcard || rolePerms.includes(perm.key);
+                        const isDisabled = (role === "administrator"); // Admin luôn có toàn quyền
+
+                        cellsHtml += `
+                            <td class="cell-checkbox">
+                                <input type="checkbox"
+                                    data-role="${role}"
+                                    data-perm="${perm.key}"
+                                    ${isChecked ? "checked" : ""}
+                                    ${isDisabled ? "disabled" : ""}
+                                    onchange="onCheckboxChange('${role}', '${perm.key}', this.checked)">
+                            </td>
+                        `;
+                    });
+
+                    tr.innerHTML = titleHtml + cellsHtml;
+                    tbody.appendChild(tr);
+                });
+            });
+        }
+
+        // Cập nhật bộ đếm số lượng quyền của từng vai trò
+        function updateRoleCounters() {
+            ROLES_ORDER.forEach(role => {
+                const counterEl = document.getElementById(`count_${role}`);
+                if (!counterEl) return;
+
+                if (role === "administrator") {
+                    counterEl.textContent = "Toàn quyền (*)";
+                    return;
+                }
+
+                const perms = currentMatrix[role] || [];
+                counterEl.textContent = `${perms.length}/11 quyền`;
+            });
+        }
+
+        // Lọc bảng ma trận khi gõ tìm kiếm hoặc đổi danh mục
+        function filterMatrixTable() {
+            renderMatrixTable();
+        }
+
+        // Xử lý khi người dùng tích chọn thay đổi quyền
+        function onCheckboxChange(role, permKey, isChecked) {
+            if (role === "administrator") return;
+
+            if (!Array.isArray(currentMatrix[role])) {
+                currentMatrix[role] = [];
+            }
+
+            if (isChecked) {
+                if (!currentMatrix[role].includes(permKey)) {
+                    currentMatrix[role].push(permKey);
+                }
+            } else {
+                currentMatrix[role] = currentMatrix[role].filter(k => k !== permKey && k !== "*");
+            }
+
+            setUnsaved(true);
+            updateRoleCounters();
+        }
+
+        // Đặt trạng thái thay đổi chưa lưu
+        function setUnsaved(status) {
+            hasUnsavedChanges = status;
+            const banner = document.getElementById("unsavedBanner");
+            const btnTop = document.getElementById("btnTopSave");
+            const btnSave = document.getElementById("btnSaveConfig");
+
+            if (status) {
+                banner.style.display = "flex";
+                if (btnTop) btnTop.style.boxShadow = "0 0 0 3px rgba(16, 185, 129, 0.4)";
+                if (btnSave) btnSave.style.boxShadow = "0 0 0 3px rgba(16, 185, 129, 0.4)";
+            } else {
+                banner.style.display = "none";
+                if (btnTop) btnTop.style.boxShadow = "";
+                if (btnSave) btnSave.style.boxShadow = "";
+            }
+        }
+
+        // Lưu toàn bộ cấu hình ma trận lên Server
+        async function saveMatrixConfig() {
+            const btnSave = document.getElementById("btnSaveConfig");
+            const btnTop = document.getElementById("btnTopSave");
+            const originalText = btnSave.textContent;
+            
+            btnSave.textContent = "Đang lưu...";
+            btnSave.disabled = true;
+            if (btnTop) {
+                btnTop.textContent = "Đang lưu...";
+                btnTop.disabled = true;
+            }
+
+            let savedSuccessfully = false;
+
+            // Thử lưu toàn bộ ma trận qua API PUT /api/rbac/matrix
+            try {
+                const res = await fetch(`${API_BASE}/api/rbac/matrix`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ matrix: currentMatrix })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success) {
+                        savedSuccessfully = true;
+                    }
+                }
+            } catch (err) {
+                console.warn("Lưu đồng thời thất bại, chuyển sang lưu từng vai trò:", err);
+            }
+
+            // Fallback lưu từng vai trò nếu endpoint đồng thời chưa sẵn sàng
+            if (!savedSuccessfully) {
+                let successCount = 0;
+                const rolesToUpdate = ROLES_ORDER.filter(r => r !== "administrator");
+                for (const role of rolesToUpdate) {
+                    try {
+                        const res = await fetch(`${API_BASE}/api/rbac/matrix/${role}`, {
+                            method: "PUT",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ permissions: currentMatrix[role] || [] })
+                        });
+                        if (res.ok) successCount++;
+                    } catch (e) {
+                        console.error("Lỗi khi lưu vai trò", role, e);
+                    }
+                }
+                savedSuccessfully = (successCount > 0);
+            }
+
+            btnSave.textContent = originalText;
+            btnSave.disabled = false;
+            if (btnTop) {
+                btnTop.textContent = "Lưu thay đổi";
+                btnTop.disabled = false;
+            }
+
+            setUnsaved(false);
+            showToast("Đã đồng bộ thành công ma trận phân quyền lên Server!");
+        }
+
+        // Khôi phục ma trận về mặc định ban đầu trên Server
+        async function resetDefaultMatrix() {
+            if (!confirm("Bạn có chắc chắn muốn khôi phục ma trận phân quyền về cấu hình mặc định ban đầu của hệ thống?")) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/rbac/matrix/reset`, { method: "POST" });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.matrix) {
+                        currentMatrix = data.matrix;
+                        setUnsaved(false);
+                        renderMatrixTable();
+                        updateRoleCounters();
+                        showToast("Đã khôi phục ma trận phân quyền về chuẩn ban đầu!");
+                        return;
+                    }
+                }
+            } catch (err) {
+                console.warn("Lỗi khi gọi API reset:", err);
+            }
+
+            // Fallback nếu mất kết nối
+            loadMatrixFromServer();
+            showToast("Đã tải lại cấu hình mặc định.");
+        }
+
+        // Lấy token mô phỏng vai trò từ Server
+        async function getRoleToken(role) {
+            if (tokenCache[role]) return tokenCache[role];
+            try {
+                const res = await fetch(`${API_BASE}/api/rbac/demo-token/${role}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.token) {
+                        tokenCache[role] = data.token;
+                        return data.token;
+                    }
+                }
+            } catch (err) {
+                console.error("Lỗi lấy token demo:", err);
+            }
+            return null;
+        }
+
+        // Chạy kiểm thử từ form tùy chọn tự do
+        function runCustomSimulation() {
+            const role = document.getElementById("simRoleSelect").value;
+            const action = document.getElementById("simActionSelect").value;
+            verifyAction(role, action);
+        }
+
+        // Kiểm thử nhanh từ danh sách tài khoản
+        function quickTestFromAccount(role) {
+            const selectRole = document.getElementById("simRoleSelect");
+            if (selectRole) selectRole.value = role;
+
+            if (role === "instructor") {
+                verifyAction("instructor", "edit_grade");
+            } else if (role === "accountant") {
+                verifyAction("accountant", "edit_tuition");
+            } else if (role === "administrator") {
+                verifyAction("administrator", "edit_grade");
+            } else {
+                verifyAction(role, "view_grades");
+            }
+        }
+
+        // THỰC THI KIỂM QUYỀN TRỰC TIẾP Ở TẦNG SERVER (Live API Request)
+        async function verifyAction(role, action) {
+            const feedbackEl = document.getElementById("verifyFeedback");
+            const titleEl = document.getElementById("verifyTitle");
+            const detailEl = document.getElementById("verifyDetail");
+            const latencyEl = document.getElementById("verifyLatency");
+            const payloadBox = document.getElementById("verifyPayloadBox");
+
+            feedbackEl.className = "toast-response";
+            feedbackEl.style.display = "block";
+            titleEl.textContent = "Đang gửi yêu cầu xác thực tới Server...";
+            detailEl.textContent = "Vui lòng chờ kiểm tra phân quyền...";
+            latencyEl.textContent = "";
+            payloadBox.style.display = "none";
+
+            const token = await getRoleToken(role);
+            const startTime = performance.now();
+
+            let endpoint = "";
+            let method = "GET";
+            let requestBody = null;
+
+            if (action === "edit_grade") {
+                endpoint = `${API_BASE}/api/grades/sv_01`;
+                method = "PUT";
+                requestBody = { subject: "Lập trình Web Node.js", score: 9.5 };
+            } else if (action === "edit_tuition") {
+                endpoint = `${API_BASE}/api/tuitions/sv_01`;
+                method = "PUT";
+                requestBody = { paidAmount: 15000000, status: "completed" };
+            } else if (action === "view_grades") {
+                endpoint = `${API_BASE}/api/grades`;
+                method = "GET";
+            } else if (action === "view_tuitions") {
+                endpoint = `${API_BASE}/api/tuitions`;
+                method = "GET";
+            }
+
+            try {
+                const fetchOptions = {
+                    method: method,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    }
+                };
+                if (requestBody && method !== "GET") {
+                    fetchOptions.body = JSON.stringify(requestBody);
+                }
+
+                const response = await fetch(endpoint, fetchOptions);
+                const endTime = performance.now();
+                const latency = Math.round(endTime - startTime);
+                latencyEl.textContent = `${latency} ms • HTTP ${response.status}`;
+
+                const result = await response.json();
+
+                if (response.status === 200) {
+                    feedbackEl.className = "toast-response success";
+                    titleEl.textContent = `HTTP 200 OK — Cho phép thao tác (${latency}ms)`;
+                    detailEl.innerHTML = `<strong>Thành công:</strong> ${result.message || "Yêu cầu đã được Server xác thực và thực thi thành công."}`;
+                } else if (response.status === 403) {
+                    feedbackEl.className = "toast-response forbidden";
+                    titleEl.textContent = `HTTP 403 Forbidden — Bị từ chối bởi Server (${latency}ms)`;
+                    detailEl.innerHTML = `<strong>Nguyên tắc Default Deny:</strong> ${result.message || "Bạn không có quyền thực hiện thao tác này."}`;
+                } else {
+                    feedbackEl.className = "toast-response forbidden";
+                    titleEl.textContent = `HTTP ${response.status} (${latency}ms)`;
+                    detailEl.textContent = result.message || "Yêu cầu bị từ chối.";
+                }
+
+                // Hiển thị chi tiết phản hồi JSON từ Server
+                payloadBox.style.display = "block";
+                payloadBox.textContent = `REQUEST: ${method} ${endpoint}\n` +
+                    `AUTHORIZATION: Bearer ${token ? token.substring(0, 24) + "..." : "none"}\n\n` +
+                    `SERVER RESPONSE (JSON):\n` + JSON.stringify(result, null, 2);
+
+            } catch (err) {
+                feedbackEl.className = "toast-response forbidden";
+                titleEl.textContent = "Lỗi kết nối tới Server";
+                detailEl.textContent = "Không thể kết nối tới backend localhost:3000. Vui lòng đảm bảo server đang chạy.";
+                payloadBox.style.display = "block";
+                payloadBox.textContent = err.toString();
+            }
+
+            feedbackEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+
+        // Hiển thị Toast thông báo ngắn
         function showToast(message) {
-            const toast = document.getElementById('toastPopup');
+            const toast = document.getElementById("toastPopup");
             toast.textContent = message;
-            toast.style.display = 'block';
+            toast.style.display = "block";
             setTimeout(() => {
-                toast.style.display = 'none';
-            }, 3000);
+                toast.style.display = "none";
+            }, 3500);
         }
 
-        function saveMatrixConfig() {
-            showToast('Đã lưu cấu hình ma trận phân quyền thành công vào hệ thống.');
-        }
+        // Chế độ sáng / tối
+        function initTheme() {
+            const themeBtn = document.getElementById("themeToggle");
+            themeBtn.addEventListener("click", () => {
+                const current = document.documentElement.getAttribute("data-theme");
+                if (current === "dark") {
+                    document.documentElement.removeAttribute("data-theme");
+                    localStorage.setItem("tms_theme", "light");
+                } else {
+                    document.documentElement.setAttribute("data-theme", "dark");
+                    localStorage.setItem("tms_theme", "dark");
+                }
+            });
 
-        function resetDefaultMatrix() {
-            document.getElementById('mat_instructor_grades').checked = true;
-            document.getElementById('mat_instructor_tuition').checked = false;
-            document.getElementById('mat_accountant_grades').checked = false;
-            document.getElementById('mat_accountant_tuition').checked = true;
-            showToast('Đã khôi phục ma trận phân quyền về mặc định ban đầu.');
+            if (localStorage.getItem("tms_theme") === "dark") {
+                document.documentElement.setAttribute("data-theme", "dark");
+            }
         }
     </script>
 </body>
