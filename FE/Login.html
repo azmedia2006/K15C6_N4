@@ -919,10 +919,17 @@
             }
         }
 
-        function handleSuccessfulLogin(role) {
+        function handleSuccessfulLogin(role, userData = null) {
             localStorage.setItem("tms_login_fail_count", "0");
             localStorage.removeItem("tms_login_lockout_until");
-            const destination = roleHome[role] || "./Index.html";
+            const cleanRole = String(role || "administrator").trim().toLowerCase().replace(/^role_/, "").replace(/[\s-]+/g, "_");
+            const userObj = userData || {
+                email: document.querySelector("#email").value.trim(),
+                role: cleanRole
+            };
+            localStorage.setItem("tms_current_user", JSON.stringify(userObj));
+            localStorage.setItem("tms_current_role", cleanRole);
+            const destination = roleHome[cleanRole] || `./Index.html?role=${cleanRole}`;
             showMessage(loginMessage, "Đăng nhập thành công! Đang chuyển hướng...", true);
             setTimeout(() => {
                 window.location.assign(destination);
@@ -961,7 +968,7 @@
                 }
 
                 const role = String(result.role || "").trim().toLowerCase().replace(/^role_/, "").replace(/[\s-]+/g, "_");
-                handleSuccessfulLogin(role);
+                handleSuccessfulLogin(role, result.user);
             } catch {
                 // Chế độ demo / offline client-side mô phỏng đầy đủ tiêu chí của user story KN-14
                 const inputEmail = document.querySelector("#email").value.trim().toLowerCase();
@@ -980,7 +987,7 @@
 
                 const matched = demoAccounts[inputEmail];
                 if (matched && matched.pass === inputPass) {
-                    handleSuccessfulLogin(matched.role);
+                    handleSuccessfulLogin(matched.role, { email: inputEmail, role: matched.role });
                     return;
                 }
 

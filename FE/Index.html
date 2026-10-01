@@ -1341,19 +1341,66 @@
             }
         });
 
-        // Dynamic Role Simulation from URL query param (e.g. ?role=instructor or ?role=student)
+        // KN-32: Điều hướng và thiết lập giao diện theo vai trò người dùng (RBAC)
         const params = new URLSearchParams(window.location.search);
-        const role = params.get("role") || "administrator";
+        const storedRole = localStorage.getItem("tms_current_role");
+        const role = params.get("role") || storedRole || "administrator";
+
         const roleTitles = {
-            visitor: { name: "Khách tham quan", role: "Khách truy cập (Visitor)", av: "KT" },
-            student: { name: "Lê Minh Tuấn", role: "Học viên (Student)", av: "MT" },
-            instructor: { name: "ThS. Trần Minh", role: "Giảng viên (Instructor)", av: "TM" },
-            teaching_assistant: { name: "Nguyễn Thu Hà", role: "Trợ giảng (TA)", av: "TH" },
-            admissions: { name: "Vũ Hải Yến", role: "Tư vấn tuyển sinh", av: "HY" },
-            accountant: { name: "Phạm Thanh Mai", role: "Kế toán đào tạo", av: "TM" },
-            training_manager: { name: "Đỗ Quốc Bảo", role: "Quản lý đào tạo", av: "QB" },
-            administrator: { name: "Nguyễn Văn Anh", role: "Quản trị hệ thống (Admin)", av: "NA" },
-            admin: { name: "Nguyễn Văn Anh", role: "Quản trị hệ thống (Admin)", av: "NA" }
+            visitor: { 
+                name: "Khách tham quan", 
+                role: "Khách truy cập (Visitor)", 
+                av: "KT",
+                sub: "Chào mừng bạn đến với Cổng thông tin đào tạo TMS. Khám phá các khóa học và dịch vụ đào tạo nổi bật."
+            },
+            student: { 
+                name: "Lê Minh Tuấn", 
+                role: "Học viên (Student)", 
+                av: "MT",
+                sub: "Hôm nay bạn có 2 buổi học cần tham dự. Nhớ kiểm tra bài tập và tiến độ chuyên cần lớp K15."
+            },
+            instructor: { 
+                name: "ThS. Trần Minh", 
+                role: "Giảng viên (Instructor)", 
+                av: "TM",
+                sub: "Hôm nay bạn phụ trách 2 ca giảng dạy tại phòng A2 và trực tuyến. Vui lòng hoàn thành điểm danh."
+            },
+            teaching_assistant: { 
+                name: "Nguyễn Thu Hà", 
+                role: "Trợ giảng (TA)", 
+                av: "TH",
+                sub: "Đã có 15 bài thực hành cần hỗ trợ review và chuẩn bị học liệu phòng lab trước 13:30."
+            },
+            admissions: { 
+                name: "Vũ Hải Yến", 
+                role: "Tư vấn tuyển sinh", 
+                av: "HY",
+                sub: "Có 42 hồ sơ quan tâm khóa học mới cần tư vấn và xếp lịch phỏng vấn đầu vào trong tuần."
+            },
+            accountant: { 
+                name: "Phạm Thanh Mai", 
+                role: "Kế toán đào tạo", 
+                av: "TM",
+                sub: "Tổng công nợ học phí cần thu đợt 4 là 148.5 Tr. Có 23 học viên đến hạn cần gửi thông báo nhắc nợ."
+            },
+            training_manager: { 
+                name: "Đỗ Quốc Bảo", 
+                role: "Quản lý đào tạo", 
+                av: "QB",
+                sub: "Toàn trung tâm đang vận hành 37 lớp học. Có 1 ca học cần bố trí giảng viên dạy thay khẩn cấp."
+            },
+            administrator: { 
+                name: "Nguyễn Văn Anh", 
+                role: "Quản trị hệ thống (Admin)", 
+                av: "NA",
+                sub: "Hệ thống hoạt động ổn định. Phân quyền và dữ liệu được bảo vệ an toàn chuẩn doanh nghiệp."
+            },
+            admin: { 
+                name: "Nguyễn Văn Anh", 
+                role: "Quản trị hệ thống (Admin)", 
+                av: "NA",
+                sub: "Hệ thống hoạt động ổn định. Phân quyền và dữ liệu được bảo vệ an toàn chuẩn doanh nghiệp."
+            }
         };
 
         const currentProfile = roleTitles[role] || roleTitles.administrator;
@@ -1361,6 +1408,16 @@
         document.getElementById("display-user-name").textContent = currentProfile.name;
         document.getElementById("display-user-role").textContent = currentProfile.role;
         document.getElementById("avatar-letters").textContent = currentProfile.av;
+        const subEl = document.querySelector(".welcome-sub");
+        if (subEl) subEl.textContent = currentProfile.sub;
+
+        // Xử lý nút đăng xuất: xóa phiên làm việc
+        document.querySelectorAll("a[href*='Login.html']").forEach(link => {
+            link.addEventListener("click", () => {
+                localStorage.removeItem("tms_current_user");
+                localStorage.removeItem("tms_current_role");
+            });
+        });
     </script>
 </body>
 </html>
