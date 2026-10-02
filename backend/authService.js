@@ -76,6 +76,20 @@ function generateToken(user) {
     return Buffer.from(JSON.stringify(payload)).toString("base64");
 }
 
+// Xác thực và giải mã session token
+function verifyToken(tokenString) {
+    if (!tokenString) return null;
+    try {
+        const decoded = Buffer.from(tokenString, "base64").toString("utf-8");
+        const payload = JSON.parse(decoded);
+        if (!payload.userId || !payload.expiresAt) return null;
+        if (Date.now() > payload.expiresAt) return null;
+        return payload;
+    } catch {
+        return null;
+    }
+}
+
 function getLockoutStatus(email) {
     const normalized = String(email || "").trim().toLowerCase();
     const now = Date.now();
@@ -137,6 +151,7 @@ module.exports = {
     verifyPassword,
     generateSalt,
     generateToken,
+    verifyToken,
     getLockoutStatus,
     recordFailedAttempt,
     recordSuccessfulLogin,

@@ -5,10 +5,20 @@ const {
     hashPassword,
     verifyPassword,
     generateToken,
+    verifyToken,
     getLockoutStatus,
     recordFailedAttempt,
     recordSuccessfulLogin
 } = require("./authService");
+
+const {
+    getAllRoles,
+    getUserWithRoles,
+    assignRoleToUser,
+    revokeRoleFromUser,
+    getUsersWithRolesList,
+    getAuditLogs
+} = require("./roleService");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,7 +26,73 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// KN-31: Xây dựng API đăng nhập bằng email và mật khẩu
+// KN-60: Middleware xác thực Token (Bearer Token)
+// Luôn lấy thông tin người dùng và vai trò mới nhất trực tiếp từ DB/Store (đảm bảo tính tức thời)
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers["authorization"] || "";
+    const token = authHeader.startsWith("Bearer ")
+        ? authHeader.slice(7).trim()
+        : authHeader.trim();
+
+    if (!token) {
+        return res.status(401).json({
+            success: false,
+            message: "Yêu cầu cung cấp token xác thực hợp lệ."
+        });
+    }
+
+    const payload = verifyToken(token);
+
+    if (!payload || !payload.userId) {
+        return res.status(401).json({
+            success: false,
+            message: "Phiên đăng nhập không hợp lệ hoặc đã hết hạn."
+        });
+    }
+
+    // Tra cứu thông tin người dùng kèm vai trò mới nhất từ Store (KN-60)
+    const userWithRoles = getUserWithRoles(payload.userId);
+
+    if (!userWithRoles) {
+        return res.status(401).json({
+            success: false,
+            message: "Tài khoản người dùng không tồn tại trong hệ thống."
+        });
+    }
+
+    req.user = userWithRoles;
+    req.tokenPayload = payload;
+    next();
+}
+
+// Middleware kiểm tra quyền truy cập (Role-Based Access Control)
+function requireRole(...allowedRoles) {
+    return (req, res, next) => {
+        if (!req.user || !Array.isArray(req.user.roles)) {
+            return res.status(401).json({
+                success: false,
+                message: "Chưa xác thực người dùng."
+            });
+        }
+
+        const userRoleCodes = req.user.roles.map(r => r.code || r.id);
+        const hasPermission = allowedRoles.some(role =>
+            userRoleCodes.includes(role)
+        );
+
+        if (!hasPermission) {
+            return res.status(403).json({
+                success: false,
+                message: "Bạn không có quyền thực hiện thao tác này."
+            });
+        }
+
+        next();
+    };
+}
+
+// KN-31: API đăng nhập bằng email và mật khẩu
+// Cập nhật trả về danh sách vai trò N-N
 app.post("/api/auth/login", (req, res) => {
     const { email, password } = req.body || {};
 
@@ -29,39 +105,48 @@ app.post("/api/auth/login", (req, res) => {
 
     const normalizedEmail = String(email).trim().toLowerCase();
 
-    // KN-34 & KN-36: Kiểm tra trạng thái khóa tài khoản trước khi xử lý
+    // KN-34 & KN-36: Kiểm tra trạng thái khóa tài khoản
     const lockout = getLockoutStatus(normalizedEmail);
+
     if (lockout.isLocked) {
         return res.status(423).json({
             success: false,
-            message: "Tài khoản tạm khóa do đăng nhập sai 5 lần liên tiếp. Vui lòng thử lại sau.",
+            message:
+                "Tài khoản tạm khóa do đăng nhập sai 5 lần liên tiếp. Vui lòng thử lại sau.",
             retryAfterSeconds: lockout.remainingSeconds
         });
     }
 
     const user = findUserByEmail(normalizedEmail);
 
-    // KN-37 & KN-35: Xác thực và bảo vệ mật khẩu an toàn với constant-time comparison
+    // KN-37 & KN-35: Xác thực và bảo vệ mật khẩu an toàn
     let isPasswordValid = false;
+
     if (user) {
-        isPasswordValid = verifyPassword(password, user.salt, user.passwordHash);
+        isPasswordValid = verifyPassword(
+            password,
+            user.salt,
+            user.passwordHash
+        );
     } else {
-        // KN-35 & KN-37: Chống tấn công phân tích thời gian (timing attack) khi người dùng không tồn tại
-        hashPassword(password, "dummy_constant_salt_for_timing_safety_321");
+        hashPassword(
+            password,
+            "dummy_constant_salt_for_timing_safety_321"
+        );
     }
 
-    // KN-36: Xử lý và lưu trạng thái đăng nhập sai
     if (!user || !isPasswordValid) {
         const failedResult = recordFailedAttempt(normalizedEmail);
+
         if (failedResult.isLocked) {
             return res.status(423).json({
                 success: false,
-                message: "Tài khoản tạm khóa 15 phút do đăng nhập sai 5 lần liên tiếp.",
+                message:
+                    "Tài khoản tạm khóa 15 phút do đăng nhập sai 5 lần liên tiếp.",
                 retryAfterSeconds: failedResult.remainingSeconds
             });
         }
 
-        // KN-35: Không tiết lộ email có tồn tại hay không
         return res.status(401).json({
             success: false,
             message: "Email hoặc mật khẩu không đúng",
@@ -69,184 +154,251 @@ app.post("/api/auth/login", (req, res) => {
         });
     }
 
-    // KN-36: Đăng nhập thành công -> Reset toàn bộ trạng thái sai
     recordSuccessfulLogin(normalizedEmail);
 
-    // KN-31 & KN-32: Trả về token và vai trò người dùng
+    // Lấy thông tin người dùng kèm danh sách vai trò N-N
+    const userWithRoles = getUserWithRoles(user.id);
     const token = generateToken(user);
+
     return res.status(200).json({
         success: true,
         message: "Đăng nhập thành công",
         token: token,
-        role: user.role,
+        role: userWithRoles.role,
+        roles: userWithRoles.roles,
         user: {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: user.role
+            id: userWithRoles.id,
+            email: userWithRoles.email,
+            name: userWithRoles.name,
+            role: userWithRoles.role,
+            roles: userWithRoles.roles
         }
     });
 });
 
-// Health check endpoint
-app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", timestamp: new Date().toISOString() });
-});
-
-// Middleware xác thực token đăng nhập
-function authenticateToken(req, res, next) {
-    const authHeader = req.headers["authorization"];
-    const token = authHeader && authHeader.split(" ")[1];
-
-    if (!token) {
-        return res.status(401).json({
-            success: false,
-            message: "Không tìm thấy token xác thực. Vui lòng đăng nhập."
-        });
-    }
-
-    try {
-        const payloadStr = Buffer.from(token, "base64").toString("utf-8");
-        const decoded = JSON.parse(payloadStr);
-
-        if (decoded.expiresAt && decoded.expiresAt < Date.now()) {
-            return res.status(401).json({
-                success: false,
-                message: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
-            });
-        }
-
-        req.user = decoded;
-        next();
-    } catch (err) {
-        return res.status(401).json({
-            success: false,
-            message: "Token xác thực không hợp lệ."
-        });
-    }
-}
-
-// Middleware kiểm tra quyền Quản trị viên (Administrator)
-function requireAdmin(req, res, next) {
-    if (!req.user || req.user.role !== "administrator") {
-        return res.status(403).json({
-            success: false,
-            message: "Truy cập bị từ chối: Chỉ Quản trị viên (Administrator) mới có quyền thực hiện thao tác này."
-        });
-    }
-    next();
-}
-
-// Import dịch vụ quản lý người dùng KN-11
-const {
-    VALID_ROLES,
-    getUsers,
-    getUserById,
-    createUser,
-    updateUser,
-    deleteUser
-} = require("./userService");
-
-// KN-11: Lấy danh mục các vai trò trong hệ thống
-app.get("/api/admin/roles", authenticateToken, requireAdmin, (req, res) => {
-    res.json({
+// KN-60: API lấy thông tin người dùng hiện tại
+// Đồng bộ tức thì trên Frontend
+app.get("/api/auth/me", authenticateToken, (req, res) => {
+    return res.status(200).json({
         success: true,
-        roles: VALID_ROLES
+        user: req.user
     });
 });
 
-// KN-11: API Tìm kiếm & lấy danh sách người dùng (hỗ trợ search, filter vai trò, trạng thái, phân trang)
-app.get("/api/admin/users", authenticateToken, requireAdmin, (req, res) => {
-    try {
-        const result = getUsers(req.query);
-        res.json({
+// ==========================================
+// CÁC ENDPOINT QUẢN TRỊ VAI TRÒ (ADMIN ONLY)
+// ==========================================
+
+// Lấy danh mục tất cả 8 vai trò của hệ thống TMS
+app.get(
+    "/api/admin/roles",
+    authenticateToken,
+    requireRole("administrator"),
+    (req, res) => {
+        return res.status(200).json({
+            success: true,
+            roles: getAllRoles()
+        });
+    }
+);
+
+// KN-62: Lấy danh sách người dùng kèm vai trò
+// Hỗ trợ phân trang, lọc theo vai trò, tìm kiếm
+app.get(
+    "/api/admin/users",
+    authenticateToken,
+    requireRole("administrator"),
+    (req, res) => {
+        const { page, limit, roleId, search } = req.query;
+
+        const result = getUsersWithRolesList({
+            page,
+            limit,
+            roleId,
+            search
+        });
+
+        return res.status(200).json({
             success: true,
             ...result
         });
-    } catch (err) {
-        res.status(err.status || 500).json({
-            success: false,
-            message: err.message || "Đã xảy ra lỗi khi lấy danh sách người dùng."
-        });
     }
-});
+);
 
-// KN-11: API Lấy chi tiết một người dùng
-app.get("/api/admin/users/:id", authenticateToken, requireAdmin, (req, res) => {
-    try {
-        const user = getUserById(req.params.id);
+// Lấy chi tiết một người dùng kèm danh sách vai trò
+app.get(
+    "/api/admin/users/:userId",
+    authenticateToken,
+    requireRole("administrator"),
+    (req, res) => {
+        const user = getUserWithRoles(req.params.userId);
+
         if (!user) {
             return res.status(404).json({
                 success: false,
                 message: "Không tìm thấy người dùng."
             });
         }
-        res.json({
+
+        return res.status(200).json({
             success: true,
-            user
-        });
-    } catch (err) {
-        res.status(err.status || 500).json({
-            success: false,
-            message: err.message || "Đã xảy ra lỗi."
+            user: user
         });
     }
-});
+);
 
-// KN-11: API Tạo mới tài khoản người dùng (cấp quyền truy cập cho nhân sự mới, gửi email kích hoạt kèm mật khẩu tạm)
-app.post("/api/admin/users", authenticateToken, requireAdmin, (req, res) => {
+// KN-58: Xây dựng API gán vai trò cho người dùng
+// POST /api/admin/users/:userId/roles
+// hoặc /admin/users/:userId/roles
+const handleAssignRole = (req, res) => {
+    const { userId } = req.params;
+    const { roleId, roleIds } = req.body || {};
+
+    const ip =
+        req.ip ||
+        req.connection.remoteAddress ||
+        "127.0.0.1";
+
+    const assignedBy = req.user.id;
+
+    // Cho phép truyền roleId đơn hoặc mảng roleIds
+    const targetRoleIds =
+        roleIds && Array.isArray(roleIds)
+            ? roleIds
+            : roleId
+                ? [roleId]
+                : [];
+
+    if (targetRoleIds.length === 0) {
+        return res.status(400).json({
+            success: false,
+            message:
+                "Vui lòng cung cấp vai trò cần gán (roleId hoặc roleIds)."
+        });
+    }
+
     try {
-        const result = createUser(req.body || {});
-        res.status(201).json({
+        let lastResult = null;
+
+        for (const rId of targetRoleIds) {
+            lastResult = assignRoleToUser({
+                userId,
+                roleId: rId,
+                assignedBy,
+                ip
+            });
+        }
+
+        return res.status(200).json({
             success: true,
-            message: `Tạo tài khoản người dùng '${result.user.name}' thành công. Đã gửi email kích hoạt kèm mật khẩu tạm.`,
-            user: result.user,
-            temporaryPassword: result.temporaryPassword,
-            emailSent: result.emailSent,
-            activationEmail: result.activationEmail
+            message: lastResult
+                ? lastResult.message
+                : "Gán vai trò thành công.",
+            roles: lastResult
+                ? lastResult.roles
+                : []
         });
     } catch (err) {
-        res.status(err.status || 500).json({
+        return res.status(err.statusCode || 500).json({
             success: false,
-            message: err.message || "Đã xảy ra lỗi khi tạo người dùng."
+            message:
+                err.message ||
+                "Lỗi khi gán vai trò."
         });
     }
-});
+};
 
-// KN-11: API Cập nhật / sửa thông tin tài khoản người dùng
-app.put("/api/admin/users/:id", authenticateToken, requireAdmin, (req, res) => {
+app.post(
+    "/api/admin/users/:userId/roles",
+    authenticateToken,
+    requireRole("administrator"),
+    handleAssignRole
+);
+
+app.post(
+    "/admin/users/:userId/roles",
+    authenticateToken,
+    requireRole("administrator"),
+    handleAssignRole
+);
+
+// KN-59 & KN-56: Xây dựng API thu hồi vai trò của người dùng
+// DELETE /api/admin/users/:userId/roles/:roleId
+// hoặc /admin/users/:userId/roles/:roleId
+const handleRevokeRole = (req, res) => {
+    const { userId, roleId } = req.params;
+
+    const ip =
+        req.ip ||
+        req.connection.remoteAddress ||
+        "127.0.0.1";
+
+    const revokedBy = req.user.id;
+
     try {
-        const updated = updateUser(req.params.id, req.body || {});
-        res.json({
+        const result = revokeRoleFromUser({
+            userId,
+            roleId,
+            revokedBy,
+            ip
+        });
+
+        return res.status(200).json({
             success: true,
-            message: `Cập nhật thông tin tài khoản '${updated.name}' thành công.`,
-            user: updated
+            message: result.message,
+            roles: result.roles
         });
     } catch (err) {
-        res.status(err.status || 500).json({
+        return res.status(err.statusCode || 500).json({
             success: false,
-            message: err.message || "Đã xảy ra lỗi khi cập nhật tài khoản."
+            message:
+                err.message ||
+                "Lỗi khi thu hồi vai trò."
         });
     }
-});
+};
 
-// KN-11: API Xóa / Vô hiệu hóa người dùng
-app.delete("/api/admin/users/:id", authenticateToken, requireAdmin, (req, res) => {
-    try {
-        const result = deleteUser(req.params.id, req.user ? req.user.userId : null);
-        res.json(result);
-    } catch (err) {
-        res.status(err.status || 500).json({
-            success: false,
-            message: err.message || "Đã xảy ra lỗi khi xóa người dùng."
+app.delete(
+    "/api/admin/users/:userId/roles/:roleId",
+    authenticateToken,
+    requireRole("administrator"),
+    handleRevokeRole
+);
+
+app.delete(
+    "/admin/users/:userId/roles/:roleId",
+    authenticateToken,
+    requireRole("administrator"),
+    handleRevokeRole
+);
+
+// KN-63: API xem nhật ký thao tác (Audit Logs)
+app.get(
+    "/api/admin/audit-logs",
+    authenticateToken,
+    requireRole("administrator"),
+    (req, res) => {
+        return res.status(200).json({
+            success: true,
+            auditLogs: getAuditLogs()
         });
     }
+);
+
+// Health check endpoint
+app.get("/api/health", (req, res) => {
+    res.json({
+        status: "ok",
+        timestamp: new Date().toISOString()
+    });
 });
 
-// Chỉ listen khi chạy trực tiếp file server.js (hỗ trợ kiểm thử require module)
+// Chỉ listen khi chạy trực tiếp file server.js
 if (require.main === module) {
     app.listen(PORT, () => {
-        console.log(`TMS Auth Server running at http://localhost:${PORT}`);
+        console.log(
+            `TMS Auth Server running at http://localhost:${PORT}`
+        );
     });
 }
 
