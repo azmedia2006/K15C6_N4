@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#10b981">
+    <title>Đăng nhập | TMS</title>
+    
+    <!-- Using Inter font for a very clean, professional enterprise look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #10b981; /* Vibrant green */
+            --primary-hover: #059669; /* Darker green */
+            --primary-light: rgba(16, 185, 129, 0.15);
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --bg-white: #ffffff;
+            --bg-gray: #f9fafb;
+            --error: #ef4444;
+            --success: #10b981;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-main);
+            background-color: var(--bg-white);
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+
+        a {
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+        }
+
+        button {
+            font: inherit;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+        }
+
+        input {
+            font: inherit;
+        }
+
+        [hidden] {
+            display: none !important;
+        }
+
+        .split-layout {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        .left-panel {
+            flex: 1;
+            position: relative;
+            background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 4rem clamp(2rem, 5vw, 6rem);
+            color: white;
+        }
+
+        .left-panel::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.7));
+            z-index: 1;
+        }
+
+        .left-content {
+            position: relative;
+            z-index: 2;
+            max-width: 540px;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        .right-panel {
+            flex: 1;
+            background: var(--bg-white);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 420px;
+            animation: slideUp 0.6s ease-out forwards;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3rem;
+            color: white;
+            font-size: 1.125rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .brand-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: var(--radius-md);
+            font-size: 1.25rem;
+        }
+
+        .eyebrow {
+            display: inline-block;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            font-size: 0.875rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .left-content h1 {
+            font-size: clamp(2.5rem, 4vw, 3.5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+        }
+
+        .left-content p {
+            font-size: 1.125rem;
+            line-height: 1.6;
+            color: #cbd5e1;
+            margin-bottom: 3rem;
+        }
+
+
+
+        .form-header {
+            margin-bottom: 2rem;
+        }
+
+        .form-header h2 {
+            font-size: 1.875rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .form-header p {
+            color: var(--text-muted);
+            font-size: 0.9375rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .input-group label .required {
+            color: var(--error);
+            margin-left: 0.125rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="tel"] {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            font-size: 0.9375rem;
+            color: var(--text-main);
+            background: var(--bg-white);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-md);
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .input-wrapper input {
+            padding-right: 2.75rem;
+        }
+
+        input[type="text"]::placeholder,
+        input[type="email"]::placeholder,
+        input[type="password"]::placeholder,
+        input[type="tel"]::placeholder {
+            color: #9ca3af;
+        }
+
+        /* Magic green focus and filled states */
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        input[type="tel"]:focus,
+        input[type="text"]:not(:placeholder-shown),
+        input[type="email"]:not(:placeholder-shown),
+        input[type="password"]:not(:placeholder-shown),
+        input[type="tel"]:not(:placeholder-shown) {
+            border-color: var(--primary);
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        input[type="tel"]:focus {
+            box-shadow: 0 0 0 4px var(--primary-light);
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 0.625rem;
+            top: 50%;
+            transform: translateY(-50%);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: var(--radius-md);
+            color: var(--text-muted);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: color 0.2s, background-color 0.2s;
+            user-select: none;
+        }
+
+        .password-toggle:hover {
+            color: var(--primary);
+            background-color: var(--primary-light);
+        }
+
+        .password-toggle:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        .password-toggle svg {
+            display: block;
+            pointer-events: none;
+        }
+
+        .form-options {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            font-size: 0.875rem;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #4b5563;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .remember-me input {
+            width: 1rem;
+            height: 1rem;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 0.875rem;
+            background: var(--primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px -1px var(--primary-light);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 8px -1px rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-primary:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 3px;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.75;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            border-top-color: #ffffff;
+            border-radius: 50%;
+            animation: btnSpin 0.6s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes btnSpin {
+            to { transform: rotate(360deg); }
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 2rem 0;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .divider span {
+            padding: 0 1rem;
+        }
+
+        .social-login {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .btn-social {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-main);
+            transition: background 0.2s;
+        }
+
+        .btn-social:hover {
+            background: var(--bg-gray);
+        }
+
+        .message {
+            min-height: 1.25rem;
+            margin-top: 1rem;
+            color: var(--error);
+            font-size: 0.875rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .message.success {
+            color: var(--success);
+        }
+
+        .message:empty {
+            display: none;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            color: var(--text-main);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive Layout */
+        @media (max-width: 900px) {
+            .split-layout {
+                flex-direction: column;
+            }
+            .left-panel {
+                min-height: 40vh;
+                padding: 3rem 2rem;
+                justify-content: center;
+            }
+            .left-content {
+                text-align: center;
+                margin: 0 auto;
+            }
+
+            .right-panel {
+                padding: 3rem 1.5rem;
+                align-items: flex-start;
+            }
+            .form-container {
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .social-login {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="split-layout">
+        <!-- Left Panel: Brand & Introduction -->
+        <section class="left-panel">
+            <div class="left-content">
+                <a href="./Login.html" class="brand">
+                    <span class="brand-icon">T</span>
+                    ĐÀO TẠO TMS
+                </a>
+                
+                <span class="eyebrow">Một không gian học tập</span>
+                <h1>Mọi việc học,<br>trong tầm tay.</h1>
+                <p>Đăng nhập để tiếp tục công việc và xem thông tin đào tạo được phân quyền riêng cho bạn trên hệ thống hiện đại của chúng tôi.</p>
+                
+
+            </div>
+        </section>
+
+        <!-- Right Panel: Login / Recovery Forms -->
+        <section class="right-panel">
+            <div class="form-container">
+                
+                <!-- LOGIN VIEW -->
+                <div id="login-view">
+                    <div class="form-header">
+                        <h2>Đăng nhập</h2>
+                        <p>Vui lòng điền thông tin để truy cập tài khoản</p>
+                    </div>
+
+                    <form id="login-form" novalidate>
+                        <div class="input-group">
+                            <label for="email">Tài khoản <span class="required">*</span></label>
+                            <!-- Note: Placeholder is needed for :not(:placeholder-shown) CSS trick to work properly -->
+                            <input id="email" name="email" type="email" autocomplete="username" placeholder="Mã sinh viên hoặc email" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="password">Mật khẩu <span class="required">*</span></label>
+                            <div class="input-wrapper">
+                                <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu của bạn" required>
+                                <button type="button" class="password-toggle" id="toggle-password" aria-label="Hiện mật khẩu" title="Hiện mật khẩu">
+                                    <svg class="eye-icon eye-show" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                    <svg class="eye-icon eye-hide" style="display:none;" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-options">
+                            <label class="remember-me">
+                                <input type="checkbox" name="remember">
+                                Ghi nhớ thiết bị
+                            </label>
+                            <a href="#" id="show-recovery">Quên mật khẩu?</a>
+                        </div>
+
+                        <button class="btn-primary" id="login-submit" type="submit">Đăng nhập</button>
+                        
+                        <div class="register-link">
+                            Chưa có tài khoản? <a href="#register" id="show-register">Đăng ký ngay</a>
+                        </div>
+
+                        <p class="message" id="login-message" role="alert" aria-live="polite"></p>
+                    </form>
+
+                    <div class="divider">
+                        <span>Hoặc tiếp tục với</span>
+                    </div>
+
+                    <div class="social-login">
+                        <button type="button" class="btn-social">
+                            <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                            Google
+                        </button>
+                        <button type="button" class="btn-social">
+                            <svg viewBox="0 0 21 21" width="20" height="20" xmlns="http://www.w3.org/2000/svg"><path d="M10 0H0v10h10V0z" fill="#f25022"/><path d="M21 0H11v10h10V0z" fill="#7fba00"/><path d="M10 11H0v10h10V11z" fill="#00a4ef"/><path d="M21 11H11v10h10V11z" fill="#ffb900"/></svg>
+                            Microsoft
+                        </button>
+                    </div>
+                </div>
+
+                <!-- REGISTER VIEW -->
+                <div id="register-view" hidden>
+                    <button class="back-link" id="back-to-login-from-reg" type="button">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                        Quay lại đăng nhập
+                    </button>
+
+                    <div class="form-header">
+                        <h2>Đăng ký tài khoản</h2>
+                        <p>Tạo tài khoản TMS để tham gia học tập và quản lý</p>
+                    </div>
+
+                    <form id="register-form" novalidate>
+                        <div class="input-group">
+                            <label for="reg-name">Họ và tên <span class="required">*</span></label>
+                            <input id="reg-name" name="name" type="text" autocomplete="name" placeholder="Ví dụ: Nguyễn Văn A" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="reg-email">Email hoặc Mã SV <span class="required">*</span></label>
+                            <input id="reg-email" name="email" type="email" autocomplete="username" placeholder="name@example.com hoặc mã sinh viên" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="reg-phone">Số điện thoại</label>
+                            <input id="reg-phone" name="phone" type="tel" autocomplete="tel" placeholder="0912 345 678">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="reg-password">Mật khẩu <span class="required">*</span></label>
+                            <div class="input-wrapper">
+                                <input id="reg-password" name="password" type="password" autocomplete="new-password" placeholder="Tối thiểu 6 ký tự" required minlength="6">
+                                <button type="button" class="password-toggle" id="toggle-reg-password" aria-label="Hiện mật khẩu" title="Hiện mật khẩu">
+                                    <svg class="eye-icon eye-show" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                    <svg class="eye-icon eye-hide" style="display:none;" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="reg-confirm-password">Xác nhận mật khẩu <span class="required">*</span></label>
+                            <div class="input-wrapper">
+                                <input id="reg-confirm-password" name="confirmPassword" type="password" autocomplete="new-password" placeholder="Nhập lại mật khẩu" required minlength="6">
+                                <button type="button" class="password-toggle" id="toggle-reg-confirm" aria-label="Hiện mật khẩu" title="Hiện mật khẩu">
+                                    <svg class="eye-icon eye-show" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                    <svg class="eye-icon eye-hide" style="display:none;" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-options">
+                            <label class="remember-me" style="font-size: 0.8125rem;">
+                                <input type="checkbox" id="reg-terms" required checked>
+                                Tôi đồng ý với Điều khoản và Chính sách bảo mật
+                            </label>
+                        </div>
+
+                        <button class="btn-primary" id="register-submit" type="submit">Đăng ký ngay</button>
+
+                        <div class="register-link">
+                            Đã có tài khoản? <a href="#login" id="to-login-link">Đăng nhập</a>
+                        </div>
+
+                        <p class="message" id="register-message" role="alert" aria-live="polite"></p>
+                    </form>
+                </div>
+
+                <!-- RECOVERY VIEW -->
+                <div id="recovery-view" hidden>
+                    <button class="back-link" id="back-to-login" type="button">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                        Quay lại đăng nhập
+                    </button>
+                    
+                    <div class="form-header">
+                        <h2>Khôi phục mật khẩu</h2>
+                        <p>Nhập email liên kết với tài khoản. Chúng tôi sẽ gửi hướng dẫn khôi phục cho bạn.</p>
+                    </div>
+
+                    <form id="recovery-form" novalidate>
+                        <div class="input-group">
+                            <label for="recovery-email">Email <span class="required">*</span></label>
+                            <input id="recovery-email" name="email" type="email" autocomplete="email" placeholder="Nhập email của bạn" required>
+                        </div>
+                        
+                        <button class="btn-primary" id="recovery-submit" type="submit">Gửi hướng dẫn</button>
+                        <p class="message" id="recovery-message" role="status" aria-live="polite"></p>
+                    </form>
+                </div>
+                
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const loginForm = document.querySelector("#login-form");
+        const loginSubmit = document.querySelector("#login-submit");
+        const loginMessage = document.querySelector("#login-message");
+        const recoveryForm = document.querySelector("#recovery-form");
+        const recoverySubmit = document.querySelector("#recovery-submit");
+        const recoveryMessage = document.querySelector("#recovery-message");
+        const roleHome = {
+            visitor: "./Index.html?role=visitor",
+            student: "./Index.html?role=student",
+            learner: "./Index.html?role=student",
+            instructor: "./Index.html?role=instructor",
+            assistant: "./Index.html?role=teaching_assistant",
+            teaching_assistant: "./Index.html?role=teaching_assistant",
+            admissions: "./Index.html?role=admissions",
+            admissions_counselor: "./Index.html?role=admissions",
+            accountant: "./Index.html?role=accountant",
+            training_manager: "./Index.html?role=training_manager",
+            training_management: "./Index.html?role=training_manager",
+            administrator: "./Index.html?role=administrator",
+            system_administrator: "./Index.html?role=administrator",
+            admin: "./Index.html?role=administrator"
+        };
+
+        function setBusy(button, busy, busyLabel, idleLabel) {
+            button.disabled = busy;
+            if (busy) {
+                button.innerHTML = `<span class="btn-spinner" aria-hidden="true"></span>${busyLabel}`;
+            } else {
+                button.textContent = idleLabel;
+            }
+        }
+
+        function showMessage(element, text, success = false) {
+            element.textContent = text;
+            element.classList.toggle("success", success);
+        }
+
+        function formatRemaining(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = Math.max(0, seconds % 60);
+            if (m > 0) {
+                return `${m} phút ${s > 0 ? s + ' giây' : ''}`.trim();
+            }
+            return `${s} giây`;
+        }
+
+        async function parseResponse(response) {
+            try {
+                return await response.json();
+            } catch {
+                return {};
+            }
+        }
+
+        function setupPasswordToggle(toggleBtn, inputEl) {
+            if (!toggleBtn || !inputEl) return;
+            toggleBtn.addEventListener("click", () => {
+                const isPassword = inputEl.type === "password";
+                inputEl.type = isPassword ? "text" : "password";
+
+                const showIcon = toggleBtn.querySelector(".eye-show");
+                const hideIcon = toggleBtn.querySelector(".eye-hide");
+                if (showIcon && hideIcon) {
+                    showIcon.style.display = isPassword ? "none" : "block";
+                    hideIcon.style.display = isPassword ? "block" : "none";
+                }
+
+                const label = isPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu";
+                toggleBtn.setAttribute("aria-label", label);
+                toggleBtn.setAttribute("title", label);
+                toggleBtn.setAttribute("aria-pressed", String(isPassword));
+            });
+        }
+
+        setupPasswordToggle(document.querySelector("#toggle-password"), document.querySelector("#password"));
+        setupPasswordToggle(document.querySelector("#toggle-reg-password"), document.querySelector("#reg-password"));
+        setupPasswordToggle(document.querySelector("#toggle-reg-confirm"), document.querySelector("#reg-confirm-password"));
+
+        function switchView(viewName) {
+            const loginView = document.querySelector("#login-view");
+            const recoveryView = document.querySelector("#recovery-view");
+            const registerView = document.querySelector("#register-view");
+
+            if (loginView) loginView.hidden = (viewName !== "login");
+            if (recoveryView) recoveryView.hidden = (viewName !== "recovery");
+            if (registerView) registerView.hidden = (viewName !== "register");
+
+            loginMessage.textContent = "";
+            recoveryMessage.textContent = "";
+            const regMsg = document.querySelector("#register-message");
+            if (regMsg) regMsg.textContent = "";
+
+            if (viewName === "login") {
+                if (window.location.hash !== "") history.replaceState(null, "", " ");
+                document.querySelector("#email")?.focus();
+            } else if (viewName === "recovery") {
+                window.location.hash = "recovery";
+                document.querySelector("#recovery-email").value = document.querySelector("#email").value;
+                document.querySelector("#recovery-email")?.focus();
+            } else if (viewName === "register") {
+                window.location.hash = "register";
+                document.querySelector("#reg-name")?.focus();
+            }
+        }
+
+        document.querySelector("#show-recovery")?.addEventListener("click", (event) => {
+            event.preventDefault();
+            switchView("recovery");
+        });
+
+        document.querySelector("#back-to-login")?.addEventListener("click", () => {
+            switchView("login");
+        });
+
+        document.querySelector("#show-register")?.addEventListener("click", (event) => {
+            event.preventDefault();
+            switchView("register");
+        });
+
+        document.querySelector("#back-to-login-from-reg")?.addEventListener("click", () => {
+            switchView("login");
+        });
+
+        document.querySelector("#to-login-link")?.addEventListener("click", (event) => {
+            event.preventDefault();
+            switchView("login");
+        });
+
+        window.addEventListener("hashchange", () => {
+            const hash = window.location.hash.toLowerCase();
+            if (hash === "#register") {
+                switchView("register");
+            } else if (hash === "#recovery") {
+                switchView("recovery");
+            } else {
+                switchView("login");
+            }
+        });
+
+        if (window.location.hash.toLowerCase() === "#register") {
+            switchView("register");
+        } else if (window.location.hash.toLowerCase() === "#recovery") {
+            switchView("recovery");
+        }
+
+        // Register form logic
+        const registerForm = document.querySelector("#register-form");
+        const registerSubmit = document.querySelector("#register-submit");
+        const registerMessage = document.querySelector("#register-message");
+
+        if (registerForm) {
+            registerForm.addEventListener("submit", async (event) => {
+                event.preventDefault();
+                showMessage(registerMessage, "");
+
+                const nameInput = document.querySelector("#reg-name");
+                const emailInput = document.querySelector("#reg-email");
+                const phoneInput = document.querySelector("#reg-phone");
+                const passInput = document.querySelector("#reg-password");
+                const confirmInput = document.querySelector("#reg-confirm-password");
+                const termsInput = document.querySelector("#reg-terms");
+
+                if (!nameInput.value.trim()) {
+                    showMessage(registerMessage, "Vui lòng nhập họ và tên.");
+                    nameInput.focus();
+                    return;
+                }
+
+                if (!emailInput.value.trim()) {
+                    showMessage(registerMessage, "Vui lòng nhập email hoặc mã tài khoản.");
+                    emailInput.focus();
+                    return;
+                }
+
+                if (!passInput.value || passInput.value.length < 6) {
+                    showMessage(registerMessage, "Mật khẩu phải có ít nhất 6 ký tự.");
+                    passInput.focus();
+                    return;
+                }
+
+                if (passInput.value !== confirmInput.value) {
+                    showMessage(registerMessage, "Mật khẩu xác nhận không khớp!");
+                    confirmInput.focus();
+                    return;
+                }
+
+                if (termsInput && !termsInput.checked) {
+                    showMessage(registerMessage, "Bạn cần đồng ý với Điều khoản sử dụng.");
+                    termsInput.focus();
+                    return;
+                }
+
+                setBusy(registerSubmit, true, "Đang đăng ký…", "Đăng ký ngay");
+
+                try {
+                    const response = await fetch("/api/auth/register", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                        body: JSON.stringify({
+                            name: nameInput.value.trim(),
+                            email: emailInput.value.trim(),
+                            phone: phoneInput.value.trim(),
+                            password: passInput.value
+                        })
+                    });
+
+                    if (response.ok) {
+                        showMessage(registerMessage, "Đăng ký thành công! Đang chuyển về đăng nhập...", true);
+                        document.querySelector("#email").value = emailInput.value.trim();
+                        setTimeout(() => {
+                            switchView("login");
+                            showMessage(loginMessage, "Đăng ký tài khoản thành công. Vui lòng đăng nhập.", true);
+                        }, 1200);
+                        return;
+                    }
+
+                    const result = await parseResponse(response);
+                    showMessage(registerMessage, result.message || "Đăng ký không thành công. Vui lòng thử lại.");
+                } catch {
+                    // Demo fallback cho môi trường static/GitHub Pages
+                    showMessage(registerMessage, "Đăng ký thành công! Đang chuyển sang đăng nhập...", true);
+                    document.querySelector("#email").value = emailInput.value.trim();
+                    setTimeout(() => {
+                        switchView("login");
+                        showMessage(loginMessage, "Đăng ký thành công. Vui lòng nhập mật khẩu để đăng nhập.", true);
+                    }, 1200);
+                } finally {
+                    setBusy(registerSubmit, false, "Đang đăng ký…", "Đăng ký ngay");
+                }
+            });
+        }
+
+        // Kiểm tra trạng thái khóa tạm thời khi tải trang
+        const LOCK_DURATION_MS = 15 * 60 * 1000; // 15 phút = 900 giây
+        function getLockoutRemaining() {
+            const lockoutUntil = Number(localStorage.getItem("tms_login_lockout_until") || 0);
+            const remainingSec = Math.ceil((lockoutUntil - Date.now()) / 1000);
+            return remainingSec > 0 ? remainingSec : 0;
+        }
+
+        let lockoutTimerInterval = null;
+
+        function unlockAccount() {
+            if (lockoutTimerInterval) {
+                window.clearInterval(lockoutTimerInterval);
+                lockoutTimerInterval = null;
+            }
+            localStorage.removeItem("tms_login_lockout_until");
+            localStorage.setItem("tms_login_fail_count", "0");
+            loginSubmit.disabled = false;
+            loginSubmit.textContent = "Đăng nhập";
+            showMessage(loginMessage, "Đã mở khóa tài khoản! Bạn có thể đăng nhập ngay.", true);
+        }
+
+        function checkAndApplyLockout() {
+            const remaining = getLockoutRemaining();
+            if (remaining > 0) {
+                loginSubmit.disabled = true;
+                loginSubmit.textContent = "Đăng nhập"; // Luôn dọn sạch spinner
+                
+                loginMessage.textContent = `Tài khoản tạm khóa do đăng nhập sai 5 lần liên tiếp. Vui lòng thử lại sau ${formatRemaining(remaining)}.`;
+                loginMessage.classList.remove("success");
+
+                if (!lockoutTimerInterval) {
+                    lockoutTimerInterval = window.setInterval(() => {
+                        const rem = getLockoutRemaining();
+                        if (rem <= 0) {
+                            unlockAccount();
+                        } else {
+                            loginMessage.textContent = `Tài khoản tạm khóa do đăng nhập sai 5 lần liên tiếp. Vui lòng thử lại sau ${formatRemaining(rem)}.`;
+                        }
+                    }, 1000);
+                }
+                return true;
+            }
+            loginSubmit.disabled = false;
+            loginSubmit.textContent = "Đăng nhập";
+            return false;
+        }
+
+        // Hỗ trợ tiện ích mở khóa khi cần qua console hoặc double click vào thông báo
+        window.unlockAccount = unlockAccount;
+        loginMessage.addEventListener("dblclick", () => unlockAccount());
+
+        // Khởi động kiểm tra khóa
+        checkAndApplyLockout();
+
+        function handleFailedAttempt() {
+            let failCount = Number(localStorage.getItem("tms_login_fail_count") || 0) + 1;
+            localStorage.setItem("tms_login_fail_count", String(failCount));
+
+            if (failCount >= 5) {
+                const lockoutUntil = Date.now() + LOCK_DURATION_MS;
+                localStorage.setItem("tms_login_lockout_until", String(lockoutUntil));
+                checkAndApplyLockout();
+            } else {
+                // Tiêu chí bảo mật: Không tiết lộ email có tồn tại hay không
+                showMessage(loginMessage, `Email hoặc mật khẩu không đúng (Lần thử ${failCount}/5)`);
+            }
+        }
+
+        function handleSuccessfulLogin(role, userData = null) {
+            localStorage.setItem("tms_login_fail_count", "0");
+            localStorage.removeItem("tms_login_lockout_until");
+            const cleanRole = String(role || "").trim().toLowerCase().replace(/^role_/, "").replace(/[\s-]+/g, "_");
+            if (!cleanRole) {
+                showMessage(
+                loginMessage,
+                "Không xác định được vai trò người dùng. Vui lòng liên hệ quản trị viên."
+            );
+    return;
+}
+            const userObj = userData || {
+                email: document.querySelector("#email").value.trim(),
+                role: cleanRole
+            };
+            localStorage.setItem("tms_current_user", JSON.stringify(userObj));
+            localStorage.setItem("tms_current_role", cleanRole);
+            const destination = roleHome[cleanRole] || `./Index.html?role=${cleanRole}`;
+            showMessage(loginMessage, "Đăng nhập thành công! Đang chuyển hướng...", true);
+            setTimeout(() => {
+                window.location.assign(destination);
+            }, 600);
+        }
+
+        loginForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            showMessage(loginMessage, "");
+            if (checkAndApplyLockout()) return;
+            if (!loginForm.reportValidity()) return;
+
+            setBusy(loginSubmit, true, "Đang đăng nhập…", "Đăng nhập");
+            try {
+                const response = await fetch("/api/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                    credentials: "same-origin",
+                    body: JSON.stringify({
+                        email: document.querySelector("#email").value.trim(),
+                        password: document.querySelector("#password").value
+                    })
+                });
+                const result = await parseResponse(response);
+
+                if (response.status === 423 || response.status === 429) {
+                    const seconds = Math.max(1, Number(result.retryAfterSeconds) || 900);
+                    localStorage.setItem("tms_login_lockout_until", String(Date.now() + seconds * 1000));
+                    checkAndApplyLockout();
+                    return;
+                }
+
+                if (!response.ok) {
+                    handleFailedAttempt();
+                    return;
+                }
+
+                const role = String(result.role || "").trim().toLowerCase().replace(/^role_/, "").replace(/[\s-]+/g, "_");
+                handleSuccessfulLogin(role, result.user);
+                if (!cleanRole) {
+    showMessage(
+        loginMessage,
+        "Không xác định được vai trò người dùng. Vui lòng liên hệ quản trị viên."
+    );
+    return;
+}
+            } catch {
+                // Chế độ demo / offline client-side mô phỏng đầy đủ tiêu chí của user story KN-14
+                const inputEmail = document.querySelector("#email").value.trim().toLowerCase();
+                const inputPass = document.querySelector("#password").value;
+                const demoAccounts = {
+                    "admin@tms.edu.vn": { role: "administrator", pass: "admin123" },
+                    "manager@tms.edu.vn": { role: "training_manager", pass: "manager123" },
+                    "teacher@tms.edu.vn": { role: "instructor", pass: "teacher123" },
+                    "ta@tms.edu.vn": { role: "teaching_assistant", pass: "ta123456" },
+                    "student@tms.edu.vn": { role: "student", pass: "student123" },
+                    "sv001": { role: "student", pass: "student123" },
+                    "admissions@tms.edu.vn": { role: "admissions", pass: "admissions123" },
+                    "accountant@tms.edu.vn": { role: "accountant", pass: "accountant123" },
+                    "visitor@tms.edu.vn": { role: "visitor", pass: "visitor123" }
+                };
+
+                const matched = demoAccounts[inputEmail];
+                if (matched && matched.pass === inputPass) {
+                    handleSuccessfulLogin(matched.role, { email: inputEmail, role: matched.role });
+                    return;
+                }
+
+                // Nếu sai tài khoản hoặc mật khẩu: bảo mật không tiết lộ email có tồn tại hay không
+                handleFailedAttempt();
+            } finally {
+                // Luôn dọn dẹp trạng thái busy/spinner trước, sau đó kiểm tra và áp dụng lockout
+                setBusy(loginSubmit, false, "Đang đăng nhập…", "Đăng nhập");
+                checkAndApplyLockout();
+            }
+        });
+
+        recoveryForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            showMessage(recoveryMessage, "");
+            if (!recoveryForm.reportValidity()) return;
+
+            setBusy(recoverySubmit, true, "Đang gửi…", "Gửi hướng dẫn");
+            try {
+                const response = await fetch("/api/auth/forgot-password", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                    credentials: "same-origin",
+                    body: JSON.stringify({ email: document.querySelector("#recovery-email").value.trim() })
+                });
+                if (!response.ok) throw new Error("Request failed");
+                showMessage(recoveryMessage, "Nếu email thuộc tài khoản hợp lệ, hướng dẫn khôi phục sẽ được gửi đến hộp thư của bạn.", true);
+            } catch {
+                showMessage(recoveryMessage, "Chưa thể gửi yêu cầu. Vui lòng thử lại sau.");
+            } finally {
+                setBusy(recoverySubmit, false, "Đang gửi…", "Gửi hướng dẫn");
+            }
+        });
+    </script>
+</body>
+</html>
