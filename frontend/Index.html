@@ -17,43 +17,66 @@
             --primary-hover: #059669;
             --primary-light: rgba(16, 185, 129, 0.12);
             --primary-soft: #ecfdf5;
+            --primary-border: #a7f3d0;
             --text-main: #0f172a;
             --text-muted: #64748b;
+            --text-sub: #94a3b8;
             --border: #e2e8f0;
+            --border-light: #f1f5f9;
             --bg-body: #f8fafc;
             --bg-card: #ffffff;
-            --sidebar-bg: #0f172a;
-            --sidebar-hover: rgba(255, 255, 255, 0.08);
+            --sidebar-bg: #090d16;
+            --sidebar-hover: rgba(255, 255, 255, 0.07);
             --sidebar-active: #10b981;
             --sidebar-text: #94a3b8;
             --sidebar-text-active: #ffffff;
             --amber: #f59e0b;
-            --amber-soft: #fef3c7;
+            --amber-soft: #fffbeb;
+            --amber-border: #fde68a;
             --red: #ef4444;
-            --red-soft: #fee2e2;
-            --blue: #3b82f6;
-            --blue-soft: #dbeafe;
-            --purple: #8b5cf6;
-            --purple-soft: #ede9fe;
-            --radius-sm: 6px;
-            --radius-md: 10px;
-            --radius-lg: 16px;
+            --red-soft: #fef2f2;
+            --red-border: #fecaca;
+            --blue: #2563eb;
+            --blue-soft: #eff6ff;
+            --blue-border: #bfdbfe;
+            --purple: #7c3aed;
+            --purple-soft: #f5f3ff;
+            --purple-border: #ddd6fe;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+            --radius-xl: 24px;
             --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
+            --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 6px 16px -2px rgba(0, 0, 0, 0.03);
+            --shadow-hover: 0 12px 24px -4px rgba(0, 0, 0, 0.08), 0 4px 8px -2px rgba(0, 0, 0, 0.03);
             --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         [data-theme="dark"] {
-            --text-main: #f1f5f9;
+            --text-main: #f8fafc;
             --text-muted: #94a3b8;
+            --text-sub: #64748b;
             --border: #334155;
+            --border-light: #1e293b;
             --bg-body: #0b1120;
-            --bg-card: #1e293b;
+            --bg-card: #131c2e;
             --primary-soft: rgba(16, 185, 129, 0.15);
+            --primary-border: rgba(16, 185, 129, 0.3);
+            --amber-soft: rgba(245, 158, 11, 0.15);
+            --amber-border: rgba(245, 158, 11, 0.3);
+            --red-soft: rgba(239, 68, 68, 0.15);
+            --red-border: rgba(239, 68, 68, 0.3);
+            --blue-soft: rgba(37, 99, 235, 0.15);
+            --blue-border: rgba(37, 99, 235, 0.3);
+            --purple-soft: rgba(124, 58, 237, 0.15);
+            --purple-border: rgba(124, 58, 237, 0.3);
             --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 6px 16px -2px rgba(0, 0, 0, 0.2);
+            --shadow-hover: 0 12px 24px -4px rgba(0, 0, 0, 0.4);
         }
 
         * {
@@ -68,23 +91,12 @@
             background-color: var(--bg-body);
             -webkit-font-smoothing: antialiased;
             min-height: 100vh;
+            line-height: 1.5;
         }
 
-        a {
-            color: inherit;
-            text-decoration: none;
-        }
-
-        button {
-            font: inherit;
-            cursor: pointer;
-            border: none;
-            background: transparent;
-        }
-
-        input, select {
-            font: inherit;
-        }
+        a { color: inherit; text-decoration: none; }
+        button { font: inherit; cursor: pointer; border: none; background: transparent; }
+        input, select { font: inherit; }
 
         /* Layout */
         .app-layout {
@@ -93,13 +105,13 @@
             min-height: 100vh;
         }
 
-        /* Sidebar */
+        /* Sidebar Navigation */
         aside.sidebar {
             background-color: var(--sidebar-bg);
             color: var(--sidebar-text);
             display: flex;
             flex-direction: column;
-            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
             position: sticky;
             top: 0;
             height: 100vh;
@@ -116,19 +128,20 @@
             font-weight: 800;
             letter-spacing: -0.02em;
             color: #ffffff;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .brand-badge {
             width: 36px;
             height: 36px;
-            border-radius: var(--radius-md);
+            border-radius: var(--radius-sm);
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             display: grid;
             place-items: center;
             font-size: 1.125rem;
+            font-weight: 800;
             color: white;
-            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.35);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
         }
 
         .sidebar-nav {
@@ -152,8 +165,8 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 10px 12px;
-            border-radius: var(--radius-md);
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
             font-size: 0.875rem;
             font-weight: 500;
             color: var(--sidebar-text);
@@ -163,8 +176,8 @@
         }
 
         .nav-item svg {
-            width: 20px;
-            height: 20px;
+            width: 19px;
+            height: 19px;
             flex-shrink: 0;
             transition: transform 0.2s ease;
         }
@@ -182,7 +195,7 @@
             background-color: var(--sidebar-active);
             color: var(--sidebar-text-active);
             font-weight: 600;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.32);
         }
 
         .nav-badge {
@@ -191,7 +204,7 @@
             color: #ffffff;
             font-size: 0.6875rem;
             font-weight: 700;
-            padding: 2px 7px;
+            padding: 2px 8px;
             border-radius: 99px;
         }
 
@@ -202,11 +215,11 @@
 
         .sidebar-user {
             padding: 16px 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
             display: flex;
             align-items: center;
             gap: 12px;
-            background: rgba(0, 0, 0, 0.15);
+            background: rgba(0, 0, 0, 0.2);
         }
 
         .user-avatar {
@@ -220,6 +233,7 @@
             font-size: 0.875rem;
             color: white;
             flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
 
         .user-info {
@@ -246,14 +260,14 @@
 
         .logout-btn {
             color: var(--sidebar-text);
-            padding: 6px;
+            padding: 8px;
             border-radius: var(--radius-sm);
             transition: var(--transition);
         }
 
         .logout-btn:hover {
             color: #ef4444;
-            background: rgba(239, 68, 68, 0.1);
+            background: rgba(239, 68, 68, 0.15);
         }
 
         .sidebar-footer {
@@ -328,8 +342,13 @@
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius-md);
-            padding: 4px 10px;
+            padding: 6px 12px;
             box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .role-switcher-wrap:hover {
+            border-color: #cbd5e1;
         }
 
         .role-switcher-select {
@@ -360,6 +379,7 @@
             color: var(--primary);
             border-color: var(--primary);
             background: var(--primary-soft);
+            transform: translateY(-1px);
         }
 
         .badge-dot {
@@ -373,677 +393,37 @@
             border: 2px solid var(--bg-card);
         }
 
-        /* Overview Page Header */
-        .welcome-banner {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 24px 28px;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-            margin-bottom: 24px;
-            box-shadow: var(--shadow-sm);
-            position: relative;
-        }
-
-        .page-eyebrow {
-            font-size: 0.6875rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--text-muted);
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .welcome-title {
-            font-size: 1.375rem;
-            font-weight: 700;
-            line-height: 1.3;
-            margin-bottom: 4px;
-            color: var(--text-main);
-            letter-spacing: -0.02em;
-        }
-
-        .welcome-sub {
-            color: var(--text-muted);
-            font-size: 0.875rem;
-            max-width: 600px;
-            line-height: 1.5;
-        }
-
-        .banner-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .btn-banner-light {
-            background: var(--text-main);
-            color: #ffffff;
-            font-weight: 600;
-            font-size: 0.8125rem;
-            padding: 9px 16px;
-            border-radius: var(--radius-md);
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        }
-
-        .btn-banner-light:hover {
-            background: #1e293b;
-            color: #ffffff;
-            transform: translateY(-1px);
-        }
-
-        .btn-banner-outline {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-            font-weight: 600;
-            font-size: 0.8125rem;
-            padding: 9px 16px;
-            border-radius: var(--radius-md);
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-banner-outline:hover {
-            background: var(--bg-body);
-            border-color: #cbd5e1;
-            transform: translateY(-1px);
-        }
-
-        [data-theme="dark"] .btn-banner-light {
-            background: #ffffff;
-            color: #0f172a;
-        }
-
-        [data-theme="dark"] .btn-banner-light:hover {
-            background: #f1f5f9;
-            color: #0f172a;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .stat-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 18px 20px;
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .stat-card:hover {
-            border-color: #cbd5e1;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-
-        .stat-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-
-        .stat-label {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .stat-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: var(--radius-sm);
-            display: grid;
-            place-items: center;
-            background: var(--bg-body);
-            border: 1px solid var(--border);
-        }
-
-        .stat-icon.teal { color: #059669; background: #ecfdf5; border-color: #a7f3d0; }
-        .stat-icon.blue { color: #2563eb; background: #eff6ff; border-color: #bfdbfe; }
-        .stat-icon.purple { color: #7c3aed; background: #f5f3ff; border-color: #ddd6fe; }
-        .stat-icon.amber { color: #d97706; background: #fffbeb; border-color: #fde68a; }
-
-        .stat-value {
-            font-size: 1.625rem;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            color: var(--text-main);
-            margin-bottom: 6px;
-        }
-
-        .stat-trend {
-            font-size: 0.75rem;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-weight: 500;
-        }
-
-        .stat-trend.up { color: #059669; }
-        .stat-trend.down { color: var(--red); }
-        .stat-trend.neutral { color: var(--text-muted); }
-
-        /* Dashboard 2-Column Grid */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1.55fr 1fr;
-            gap: 24px;
-        }
-
-        .grid-column {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        /* Generic UI Card */
-        .ui-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 24px;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .card-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-
-        .card-head h2 {
-            font-size: 1.125rem;
-            font-weight: 700;
-            letter-spacing: -0.01em;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .card-action-link {
-            font-size: 0.8125rem;
-            font-weight: 600;
-            color: var(--primary);
-            cursor: pointer;
-        }
-
-        .card-action-link:hover {
-            text-decoration: underline;
-        }
-
-        /* Timelines */
-        .timeline-list {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .timeline-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 16px;
-            padding: 14px 16px;
-            border-radius: var(--radius-md);
-            background: var(--bg-body);
-            border: 1px solid transparent;
-            transition: var(--transition);
-        }
-
-        .timeline-item:hover {
-            background: var(--bg-card);
-            border-color: var(--border);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .timeline-item.active-class {
-            background: var(--primary-soft);
-            border-color: rgba(16, 185, 129, 0.3);
-        }
-
-        .timeline-time {
-            font-weight: 700;
-            font-size: 0.9375rem;
-            color: var(--primary);
-            min-width: 60px;
-            line-height: 1.2;
-        }
-
-        .timeline-time small {
-            display: block;
-            font-size: 0.6875rem;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-
-        .timeline-info {
-            flex: 1;
-        }
-
-        .timeline-info strong {
-            display: block;
-            font-size: 0.9375rem;
-            color: var(--text-main);
-            margin-bottom: 2px;
-        }
-
-        .timeline-meta {
-            font-size: 0.8125rem;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .meta-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        /* Badges */
-        .badge {
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 99px;
-            white-space: nowrap;
-        }
-
-        .badge-success { background: var(--primary-soft); color: var(--primary); }
-        .badge-warning { background: var(--amber-soft); color: var(--amber); }
-        .badge-danger { background: var(--red-soft); color: var(--red); }
-        .badge-neutral { background: #f1f5f9; color: #64748b; }
-        .badge-blue { background: var(--blue-soft); color: var(--blue); }
-
-        /* Courses Table */
-        .table-responsive {
-            overflow-x: auto;
-        }
-
-        table.data-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.875rem;
-        }
-
-        table.data-table th {
-            text-align: left;
-            padding: 10px 12px;
-            color: var(--text-muted);
-            font-weight: 600;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            border-bottom: 1px solid var(--border);
-        }
-
-        table.data-table td {
-            padding: 14px 12px;
-            border-bottom: 1px solid var(--border);
-            vertical-align: middle;
-        }
-
-        table.data-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        .course-title {
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 2px;
-        }
-
-        .course-code {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .progress-bar-container {
-            width: 100%;
-            min-width: 110px;
-        }
-
-        .progress-bar {
-            height: 7px;
-            background: var(--border);
-            border-radius: 99px;
-            overflow: hidden;
-            margin-bottom: 4px;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            background: var(--primary);
-            border-radius: 99px;
-            transition: width 0.4s ease;
-        }
-
-        .progress-percent {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-muted);
-        }
-
-        /* SVG Chart */
-        .chart-box {
-            padding: 12px 0;
-        }
-
-        .chart-svg {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        .chart-svg text {
-            fill: var(--text-muted);
-            font-size: 11px;
-            font-family: inherit;
-        }
-
-        /* Urgent To-Do Items */
-        .todo-list {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .todo-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 14px;
-            padding: 12px;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border);
-            background: var(--bg-body);
-            transition: var(--transition);
-            cursor: pointer;
-        }
-
-        .todo-item:hover {
-            background: var(--bg-card);
-            border-color: #cbd5e1;
-            transform: translateX(4px);
-        }
-
-        .todo-content {
-            flex: 1;
-        }
-
-        .todo-content strong {
-            display: block;
-            font-size: 0.875rem;
-            color: var(--text-main);
-            margin-bottom: 2px;
-        }
-
-        .todo-content small {
-            font-size: 0.8125rem;
-            color: var(--text-muted);
-            line-height: 1.4;
-        }
-
-        /* Shortcuts */
-        .shortcuts-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-        }
-
-        .shortcut-btn {
-            background: var(--bg-body);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            font-size: 0.8125rem;
-            font-weight: 600;
-            color: var(--text-main);
-            transition: var(--transition);
-            text-align: center;
-        }
-
-        .shortcut-btn svg {
-            width: 22px;
-            height: 22px;
-            color: var(--primary);
-            transition: transform 0.2s ease;
-        }
-
-        .shortcut-btn:hover {
-            background: var(--bg-card);
-            border-color: var(--primary);
-            color: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .shortcut-btn:hover svg {
-            transform: scale(1.15);
-        }
-
-        /* Section View Container */
-        .view-section {
-            display: none;
-            animation: fadeIn 0.25s ease;
-        }
-
-        .view-section.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Modal Dialog */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(15, 23, 42, 0.65);
-            backdrop-filter: blur(4px);
-            z-index: 1000;
-            display: none;
-            place-items: center;
-            padding: 16px;
-            animation: fadeIn 0.2s ease;
-        }
-
-        .modal-card {
-            background: var(--bg-card);
-            border-radius: var(--radius-lg);
-            width: 100%;
-            max-width: 520px;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .modal-header {
-            padding: 20px 24px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .modal-header h3 {
-            font-size: 1.125rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .modal-body {
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            font-size: 0.875rem;
-        }
-
-        .modal-footer {
-            padding: 16px 24px;
-            border-top: 1px solid var(--border);
-            background: var(--bg-body);
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .form-group label {
-            font-size: 0.8125rem;
-            font-weight: 600;
-            color: var(--text-main);
-        }
-
-        .form-control {
-            padding: 10px 14px;
-            border-radius: var(--radius-md);
-            border: 1px solid var(--border);
-            background: var(--bg-card);
-            color: var(--text-main);
-            outline: none;
-            transition: var(--transition);
-        }
-
-        .form-control:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-light);
-        }
-
-        .btn {
-            padding: 9px 18px;
-            border-radius: var(--radius-md);
-            font-size: 0.875rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: var(--transition);
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-hover);
-        }
-
-        .btn-secondary {
-            background: var(--bg-body);
-            border: 1px solid var(--border);
-            color: var(--text-main);
-        }
-
-        .btn-secondary:hover {
-            background: var(--border);
-        }
-
-        /* Toast notifications */
-        .toast-container {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .toast {
-            background: var(--bg-card);
-            color: var(--text-main);
-            border-left: 4px solid var(--primary);
-            border-radius: var(--radius-md);
-            padding: 14px 20px;
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            animation: slideInRight 0.3s ease;
-            min-width: 280px;
-            border: 1px solid var(--border);
-        }
-
-        @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
         /* Notifications Dropdown */
         .notif-dropdown {
             position: absolute;
-            top: 60px;
+            top: 75px;
             right: 36px;
-            width: 340px;
+            width: 320px;
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
-            z-index: 500;
+            box-shadow: var(--shadow-hover);
             display: none;
             flex-direction: column;
+            z-index: 200;
             overflow: hidden;
-            animation: fadeIn 0.2s ease;
+            animation: fadeIn 0.2s ease-in;
         }
 
         .notif-header {
             padding: 14px 18px;
-            font-weight: 700;
-            font-size: 0.875rem;
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            font-size: 0.875rem;
+            font-weight: 700;
+            background: var(--bg-body);
         }
 
         .notif-list {
             list-style: none;
-            max-height: 280px;
+            max-height: 320px;
             overflow-y: auto;
         }
 
@@ -1069,7 +449,671 @@
             color: var(--text-muted);
         }
 
-        /* Responsive */
+        /* Overview Page Hero Banner */
+        .welcome-banner {
+            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(16, 185, 129, 0.04) 50%, rgba(37, 99, 235, 0.04) 100%);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 26px 30px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-card);
+            position: relative;
+        }
+
+        [data-theme="dark"] .welcome-banner {
+            background: linear-gradient(135deg, #131c2e 0%, rgba(16, 185, 129, 0.08) 100%);
+        }
+
+        .page-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.6875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #059669;
+            background: var(--primary-soft);
+            border: 1px solid var(--primary-border);
+            padding: 3px 10px;
+            border-radius: 99px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .welcome-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            line-height: 1.3;
+            margin-bottom: 6px;
+            color: var(--text-main);
+            letter-spacing: -0.025em;
+        }
+
+        .welcome-sub {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            max-width: 620px;
+            line-height: 1.5;
+        }
+
+        .banner-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-banner-light {
+            background: #0f172a;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.8125rem;
+            padding: 10px 18px;
+            border-radius: var(--radius-md);
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+        }
+
+        .btn-banner-light:hover {
+            background: #1e293b;
+            color: #ffffff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+        }
+
+        .btn-banner-outline {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 0.8125rem;
+            padding: 10px 18px;
+            border-radius: var(--radius-md);
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-banner-outline:hover {
+            background: var(--bg-body);
+            border-color: #cbd5e1;
+            transform: translateY(-1px);
+        }
+
+        [data-theme="dark"] .btn-banner-light {
+            background: #ffffff;
+            color: #0f172a;
+        }
+
+        /* Generic Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #10b981;
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-primary:hover {
+            background: #059669;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-body);
+            border-color: #cbd5e1;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 20px 22px;
+            box-shadow: var(--shadow-card);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .stat-card:hover {
+            border-color: #cbd5e1;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            display: grid;
+            place-items: center;
+            background: var(--bg-body);
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover .stat-icon {
+            transform: scale(1.05);
+        }
+
+        .stat-icon.teal { color: #059669; background: var(--primary-soft); border-color: var(--primary-border); }
+        .stat-icon.blue { color: #2563eb; background: var(--blue-soft); border-color: var(--blue-border); }
+        .stat-icon.purple { color: #7c3aed; background: var(--purple-soft); border-color: var(--purple-border); }
+        .stat-icon.amber { color: #d97706; background: var(--amber-soft); border-color: var(--amber-border); }
+
+        .stat-value {
+            font-size: 1.875rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--text-main);
+            margin-bottom: 6px;
+            line-height: 1.2;
+        }
+
+        .stat-trend {
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 600;
+        }
+
+        .stat-trend.up { color: #059669; }
+        .stat-trend.down { color: var(--red); }
+        .stat-trend.neutral { color: var(--text-muted); }
+
+        /* Dashboard 2-Column Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.55fr 1fr;
+            gap: 24px;
+        }
+
+        .grid-column {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Generic UI Card */
+        .ui-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-card);
+            transition: var(--transition);
+        }
+
+        .card-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .card-head h2 {
+            font-size: 1.125rem;
+            font-weight: 700;
+            letter-spacing: -0.015em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-action-link {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--primary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .card-action-link:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        /* Timelines */
+        .timeline-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 14px 18px;
+            border-radius: var(--radius-md);
+            background: var(--bg-body);
+            border: 1px solid var(--border-light);
+            transition: var(--transition);
+        }
+
+        .timeline-item:hover {
+            background: var(--bg-card);
+            border-color: var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .timeline-item.active-class {
+            background: var(--primary-soft);
+            border-color: var(--primary-border);
+            border-left: 4px solid var(--primary);
+        }
+
+        .timeline-time {
+            font-weight: 800;
+            font-size: 0.9375rem;
+            color: var(--primary);
+            min-width: 60px;
+            line-height: 1.2;
+        }
+
+        .timeline-time small {
+            display: block;
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-top: 2px;
+        }
+
+        .timeline-info {
+            flex: 1;
+        }
+
+        .timeline-info strong {
+            display: block;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .timeline-meta {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .meta-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(0, 0, 0, 0.03);
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+        }
+
+        /* Badges */
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 99px;
+            white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge-success { background: var(--primary-soft); color: #059669; border: 1px solid var(--primary-border); }
+        .badge-warning { background: var(--amber-soft); color: #b45309; border: 1px solid var(--amber-border); }
+        .badge-danger { background: var(--red-soft); color: #b91c1c; border: 1px solid var(--red-border); }
+        .badge-neutral { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+        .badge-blue { background: var(--blue-soft); color: #1d4ed8; border: 1px solid var(--blue-border); }
+
+        /* Courses Table */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+        }
+
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+            background: var(--bg-card);
+        }
+
+        table.data-table th {
+            text-align: left;
+            padding: 12px 16px;
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: var(--bg-body);
+            border-bottom: 1px solid var(--border);
+        }
+
+        table.data-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        table.data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        table.data-table tr:hover td {
+            background-color: rgba(0, 0, 0, 0.015);
+        }
+
+        .course-title {
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 2px;
+        }
+
+        .course-code {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .progress-bar-container {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 140px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            width: 100%;
+            background: var(--border);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+            border-radius: 99px;
+        }
+
+        .progress-percent {
+            font-size: 0.6875rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        /* To-Do List */
+        .todo-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            border-radius: var(--radius-md);
+            background: var(--bg-body);
+            border: 1px solid var(--border-light);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .todo-item:hover {
+            background: var(--bg-card);
+            border-color: #cbd5e1;
+            transform: translateX(2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .todo-content {
+            flex: 1;
+        }
+
+        .todo-content strong {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--text-main);
+            margin-bottom: 2px;
+        }
+
+        .todo-content small {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        /* Shortcuts Grid */
+        .shortcuts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .shortcut-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 18px 12px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-main);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .shortcut-btn svg {
+            width: 24px;
+            height: 24px;
+            color: var(--primary);
+            transition: transform 0.2s ease;
+        }
+
+        .shortcut-btn:hover {
+            border-color: var(--primary);
+            background: var(--primary-soft);
+            color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .shortcut-btn:hover svg {
+            transform: scale(1.1);
+        }
+
+        /* View Section Handling */
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active {
+            display: block;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Modal Overlay & Card */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            display: none;
+            place-items: center;
+            z-index: 1000;
+            padding: 20px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 580px;
+            box-shadow: var(--shadow-hover);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-header h3 {
+            font-size: 1.125rem;
+            font-weight: 700;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            background: var(--bg-body);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-top: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-main);
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        /* Toast Container */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 2000;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: #0f172a;
+            color: white;
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 500;
+            box-shadow: var(--shadow-hover);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            pointer-events: auto;
+            transition: var(--transition);
+            border-left: 4px solid #10b981;
+        }
+
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+
+        .toast.info {
+            border-left-color: #3b82f6;
+        }
+
         /* Mobile Navigation Drawer & Backdrop */
         .mobile-menu-btn {
             display: none;
@@ -1091,6 +1135,7 @@
             opacity: 1;
         }
 
+        /* Responsive */
         @media (max-width: 1024px) {
             .app-layout { grid-template-columns: 1fr; }
             .mobile-menu-btn { display: grid; }
@@ -1122,11 +1167,7 @@
             .top-header { flex-direction: column; align-items: stretch; gap: 12px; }
             .header-search { max-width: 100%; }
         }
-            .welcome-banner { flex-direction: column; align-items: flex-start; }
-            .top-header { flex-direction: column; align-items: stretch; }
-            .header-search { max-width: 100%; }
-        }
-    
+
         /* Print Styles for Clean Report Export */
         @media print {
             aside.sidebar,
@@ -2019,6 +2060,57 @@
         </div>
     </div>
 
+        <!-- Report Preview & Download Modal -->
+    <div class="modal-overlay" id="report-modal">
+        <div class="modal-card" style="max-width: 720px;">
+            <div class="modal-header">
+                <div>
+                    <h3 id="report-modal-title">Báo Cáo Hoạt Động Đào Tạo TMS</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;" id="report-modal-subtitle">File báo cáo đã được kết xuất sẵn sàng</p>
+                </div>
+                <button onclick="closeReportModal()" style="font-size: 24px; color: var(--text-muted); line-height: 1;">&times;</button>
+            </div>
+            <div class="modal-body" style="max-height: 480px; overflow-y: auto;">
+                <div style="background: var(--bg-body); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px 18px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <div style="font-weight: 700; font-size: 13px; color: var(--text-main);" id="report-file-name">Bao_Cao_TMS.csv</div>
+                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;" id="report-file-meta">Định dạng: Microsoft Excel (.csv UTF-8 BOM) • Đã tạo lúc 16:35</div>
+                    </div>
+                    <span class="badge badge-success">Sẵn sàng</span>
+                </div>
+                
+                <div class="table-responsive" style="margin-bottom: 16px;">
+                    <table class="data-table" id="report-preview-table">
+                        <thead id="report-preview-thead">
+                            <tr><th>Chỉ số</th><th>Kết quả</th><th>Đánh giá</th></tr>
+                        </thead>
+                        <tbody id="report-preview-tbody">
+                            <!-- Preview injected via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button class="btn btn-primary" id="btn-re-download-csv" onclick="triggerLastDownload()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Tải file Excel (.csv)
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportPDFReport()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                        In / Lưu PDF
+                    </button>
+                    <button class="btn btn-secondary" onclick="copyReportData()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        Sao chép dữ liệu
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeReportModal()">Đóng cửa sổ</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notifications Container -->
     <div class="toast-container" id="toast-container"></div>
 
@@ -2043,29 +2135,109 @@
 
         
         // =====================================================================
-        // CHỨC NĂNG XUẤT BÁO CÁO THỰC TẾ (FILE DOWNLOAD & PRINT PDF)
+        // CHỨC NĂNG XUẤT BÁO CÁO THỰC TẾ & XEM TRƯỚC (REAL FILE DOWNLOAD & MODAL)
         // =====================================================================
+        let lastReportFilename = "";
+        let lastReportContent = "";
+
         function downloadCSV(filename, csvContent) {
-            // Thêm ký tự UTF-8 BOM (﻿) để Excel hiển thị đúng 100% tiếng Việt có dấu
-            const bom = "\uFEFF";
-            const blob = new Blob([bom + csvContent], { type: "text/csv;charset=utf-8;" });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.setAttribute("href", url);
-            link.setAttribute("download", filename);
-            link.style.visibility = "hidden";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            lastReportFilename = filename;
+            lastReportContent = csvContent;
+
+            try {
+                // Thêm ký tự UTF-8 BOM (\uFEFF) để Excel tự động nhận diện và hiển thị 100% tiếng Việt
+                const bom = "\uFEFF";
+                const blob = new Blob([bom + csvContent], { type: "text/csv;charset=utf-8;" });
+
+                // Hỗ trợ Microsoft Edge / IE cũ nếu có
+                if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+                    window.navigator.msSaveOrOpenBlob(blob, filename);
+                    return;
+                }
+
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.setAttribute("download", filename);
+                link.style.display = "none";
+                document.body.appendChild(link);
+                link.click();
+
+                // Quan trọng: Giữ URL trong 60 giây để trình duyệt kịp tải xong file, KHÔNG thu hồi ngay
+                setTimeout(() => {
+                    if (link.parentNode) link.parentNode.removeChild(link);
+                    URL.revokeObjectURL(url);
+                }, 60000);
+            } catch (err) {
+                console.warn("Lỗi khi tải blob, dùng fallback data URI:", err);
+                const encodedUri = encodeURI("data:text/csv;charset=utf-8,\uFEFF" + csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", filename);
+                document.body.appendChild(link);
+                link.click();
+                setTimeout(() => { if (link.parentNode) link.parentNode.removeChild(link); }, 2000);
+            }
         }
         window.downloadCSV = downloadCSV;
+
+        function triggerLastDownload() {
+            if (lastReportFilename && lastReportContent) {
+                downloadCSV(lastReportFilename, lastReportContent);
+                showToast("Đang tải lại file " + lastReportFilename + "...");
+            }
+        }
+        window.triggerLastDownload = triggerLastDownload;
+
+        function openReportModal(title, subtitle, filename, rows) {
+            const modal = document.getElementById("report-modal");
+            if (!modal) return;
+
+            document.getElementById("report-modal-title").textContent = title;
+            document.getElementById("report-modal-subtitle").textContent = subtitle;
+            document.getElementById("report-file-name").textContent = filename;
+            document.getElementById("report-file-meta").textContent = "Định dạng: Microsoft Excel (.csv UTF-8 BOM) • Kết xuất lúc " + new Date().toLocaleTimeString("vi-VN");
+
+            const thead = document.getElementById("report-preview-thead");
+            const tbody = document.getElementById("report-preview-tbody");
+
+            if (rows && rows.length > 0) {
+                const headerRow = rows[0];
+                thead.innerHTML = "<tr>" + headerRow.map(h => "<th>" + h + "</th>").join("") + "</tr>";
+
+                const bodyRows = rows.slice(1);
+                tbody.innerHTML = bodyRows.map(r => 
+                    "<tr>" + r.map((c, i) => i === 0 ? "<td><strong>" + c + "</strong></td>" : "<td>" + c + "</td>").join("") + "</tr>"
+                ).join("");
+            }
+
+            modal.style.display = "grid";
+        }
+        window.openReportModal = openReportModal;
+
+        function closeReportModal() {
+            const modal = document.getElementById("report-modal");
+            if (modal) modal.style.display = "none";
+        }
+        window.closeReportModal = closeReportModal;
+
+        function copyReportData() {
+            if (lastReportContent) {
+                navigator.clipboard.writeText(lastReportContent).then(() => {
+                    showToast("Đã sao chép toàn bộ dữ liệu báo cáo vào bộ nhớ tạm (Clipboard)!");
+                }).catch(() => {
+                    showToast("Vui lòng cho phép quyền truy cập bộ nhớ tạm.");
+                });
+            }
+        }
+        window.copyReportData = copyReportData;
 
         function exportSystemReport() {
             const now = new Date();
             const dateStr = now.toLocaleDateString("vi-VN");
             const timeStr = now.toLocaleTimeString("vi-VN");
             const fileDate = now.toISOString().slice(0, 10).replace(/-/g, "");
+            const filename = "Bao_Cao_Tong_Quan_TMS_" + fileDate + ".csv";
 
             let csv = "HỆ THỐNG QUẢN LÝ ĐÀO TẠO TMS - BÁO CÁO TỔNG QUAN VẬN HÀNH\n";
             csv += "Thời gian xuất báo cáo," + timeStr + " " + dateStr + "\n";
@@ -2098,8 +2270,17 @@
             csv += "Đã thực thu trong quý,2180000000,88.9%\n";
             csv += "Công nợ còn lại đến hạn,270000000,11.1%\n";
 
-            downloadCSV("Bao_Cao_Tong_Quan_TMS_" + fileDate + ".csv", csv);
-            showToast("Đã tải xuống file 'Bao_Cao_Tong_Quan_TMS_" + fileDate + ".csv' thành công!");
+            downloadCSV(filename, csv);
+
+            const previewData = [
+                ["Mã khóa", "Tên chương trình", "Giảng viên", "Học viên", "Tiến độ"],
+                ["KH-PMP", "Quản trị dự án PMP Quốc tế", "ThS. Trần Minh", "45", "72% hoàn thành"],
+                ["KH-DATA", "Phân tích dữ liệu & BI Dashboard", "Lê Hoa", "52", "91% hoàn thành"],
+                ["KH-DEV", "Lập trình Web Enterprise", "Phạm Quân", "68", "48% hoàn thành"],
+                ["KH-SOFT", "Kỹ năng mềm & Đàm phán", "Lê Hoa", "30", "65% hoàn thành"]
+            ];
+            openReportModal("Báo Cáo Tổng Quan Vận Hành TMS", "File Excel đã được tải xuống máy của bạn (" + filename + ")", filename, previewData);
+            showToast("Đã tải xuống file " + filename + " thành công!");
         }
         window.exportSystemReport = exportSystemReport;
 
@@ -2107,6 +2288,7 @@
             const now = new Date();
             const dateStr = now.toLocaleDateString("vi-VN");
             const fileDate = now.toISOString().slice(0, 10).replace(/-/g, "");
+            const filename = "Bao_Cao_Thong_Ke_Quy_TMS_" + fileDate + ".csv";
 
             let csv = "BÁO CÁO THỐNG KÊ HOẠT ĐỘNG ĐÀO TẠO THEO CHU KỲ QUÝ\n";
             csv += "Ngày kết xuất," + dateStr + "\n";
@@ -2128,8 +2310,17 @@
             csv += "4,KH-DEV,Lập trình Web Enterprise,68,91.2%,4.8 / 5.0\n";
             csv += "5,KH-SOFT,Kỹ năng thuyết trình & Đàm phán,30,93.3%,4.8 / 5.0\n";
 
-            downloadCSV("Bao_Cao_Thong_Ke_Quy_TMS_" + fileDate + ".csv", csv);
-            showToast("Đã tải xuống file 'Bao_Cao_Thong_Ke_Quy_TMS_" + fileDate + ".csv' thành công!");
+            downloadCSV(filename, csv);
+
+            const previewData = [
+                ["Chỉ số hoạt động", "Quý 3", "Quý 4", "Tăng trưởng"],
+                ["Học viên ghi danh", "1,120", "1,248", "+11.4%"],
+                ["Lớp học hoàn thành", "32 lớp", "37 lớp", "+15.6%"],
+                ["Tỷ lệ tốt nghiệp", "92.8%", "94.2%", "+1.4%"],
+                ["Doanh thu đào tạo", "2.18 Tỷ", "2.45 Tỷ", "+12.4%"]
+            ];
+            openReportModal("Báo Cáo Thống Kê Quý TMS", "File Excel đã được tải xuống máy của bạn (" + filename + ")", filename, previewData);
+            showToast("Đã tải xuống file " + filename + " thành công!");
         }
         window.exportExcelReport = exportExcelReport;
 
@@ -2137,6 +2328,7 @@
             const now = new Date();
             const dateStr = now.toLocaleDateString("vi-VN");
             const fileDate = now.toISOString().slice(0, 10).replace(/-/g, "");
+            const filename = "Thoi_Khoa_Bieu_TMS_" + fileDate + ".csv";
 
             let csv = "THỜI KHÓA BIỂU TOÀN TRUNG TÂM TMS - TUẦN HIỆN TẠI\n";
             csv += "Ngày xuất," + dateStr + "\n\n";
@@ -2145,8 +2337,16 @@
             csv += "Chiều (13:30 - 17:00),Web Dev K16 (Lab C1 - GV Phạm Quân),Tiếng Anh K15 (Online Zoom - GV Thu Hà),Web Dev K16 (Lab C1 - GV Phạm Quân),Kỹ năng mềm (Hội trường 1 - GV Lê Hoa),Thực hành Lab (Trợ giảng Thu Hà),Trống phòng\n";
             csv += "Tối (18:00 - 21:00),AI K15 (Lab B1 - GV Đỗ Hải),Trống phòng,AI K15 (Lab B1 - GV Đỗ Hải),Trống phòng,Ôn tập chuyên đề,Trống phòng\n";
 
-            downloadCSV("Thoi_Khoa_Bieu_TMS_" + fileDate + ".csv", csv);
-            showToast("Đã tải xuống file 'Thoi_Khoa_Bieu_TMS_" + fileDate + ".csv' thành công!");
+            downloadCSV(filename, csv);
+
+            const previewData = [
+                ["Ca học", "Thứ 2", "Thứ 4", "Thứ 6"],
+                ["Sáng", "PMP K15 (Phòng A2)", "Data BI K15 (Phòng B1)", "PMP K15 (Phòng A2)"],
+                ["Chiều", "Web Dev K16 (Lab C1)", "Web Dev K16 (Lab C1)", "Thực hành Lab"],
+                ["Tối", "AI K15 (Lab B1)", "AI K15 (Lab B1)", "Ôn tập chuyên đề"]
+            ];
+            openReportModal("Thời Khóa Biểu Trung Tâm TMS", "File Excel đã được tải xuống máy của bạn (" + filename + ")", filename, previewData);
+            showToast("Đã tải xuống file " + filename + " thành công!");
         }
         window.exportScheduleReport = exportScheduleReport;
 
@@ -2154,6 +2354,7 @@
             const now = new Date();
             const dateStr = now.toLocaleDateString("vi-VN");
             const fileDate = now.toISOString().slice(0, 10).replace(/-/g, "");
+            const filename = "Bao_Cao_Cong_No_Hoc_Phi_" + fileDate + ".csv";
 
             let csv = "BÁO CÁO CÔNG NỢ & THEO DÕI HỌC PHÍ HỌC VIÊN TMS\n";
             csv += "Ngày kết xuất," + dateStr + "\n\n";
@@ -2164,20 +2365,28 @@
             csv += "SV004,Nguyễn Văn An,K15-DA02,5200000,3000000,2200000,15/10/2026,Chờ nộp đợt 2\n";
             csv += "SV005,Phạm Thị Mai,K16-WEB01,6800000,6800000,0,Đã nộp,Đã hoàn thành\n";
 
-            downloadCSV("Bao_Cao_Cong_No_Hoc_Phi_" + fileDate + ".csv", csv);
-            showToast("Đã tải xuống file 'Bao_Cao_Cong_No_Hoc_Phi_" + fileDate + ".csv' thành công!");
+            downloadCSV(filename, csv);
+
+            const previewData = [
+                ["Mã SV", "Họ và Tên", "Khóa học", "Tổng học phí", "Còn nợ", "Trạng thái"],
+                ["SV001", "Lê Minh Tuấn", "Quản trị PMP", "4.500.000 đ", "0 đ", "Đã hoàn thành"],
+                ["SV002", "Hoàng Thùy Linh", "Quản trị PMP", "4.500.000 đ", "0 đ", "Đã hoàn thành"],
+                ["SV003", "Trần Đình Trọng", "Quản trị PMP", "4.500.000 đ", "2.500.000 đ", "Quá hạn đợt 2"],
+                ["SV004", "Nguyễn Văn An", "Phân tích dữ liệu", "5.200.000 đ", "2.200.000 đ", "Chờ nộp đợt 2"]
+            ];
+            openReportModal("Báo Cáo Công Nợ Học Phí TMS", "File Excel đã được tải xuống máy của bạn (" + filename + ")", filename, previewData);
+            showToast("Đã tải xuống file " + filename + " thành công!");
         }
         window.exportDebtReport = exportDebtReport;
 
         function exportPDFReport() {
-            showToast("Đang chuẩn bị trang in / lưu PDF...", "info");
+            showToast("Đang mở trang in / lưu PDF...", "info");
             setTimeout(() => {
                 window.print();
             }, 300);
         }
         window.exportPDFReport = exportPDFReport;
-
-        // Dark / Light Theme Toggle
+// Dark / Light Theme Toggle
         const themeToggleBtn = document.getElementById("theme-toggle");
         const currentTheme = localStorage.getItem("tms-theme") || "light";
         if (currentTheme === "dark") {
