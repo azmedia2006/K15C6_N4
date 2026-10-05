@@ -3,81 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#10b981">
-    <title>Hệ Thống Đào Tạo TMS | Quản Lý Tài Khoản Người Dùng (KN-11)</title>
+    <meta name="theme-color" content="#0f172a">
+    <title>Hệ Thống Đào Tạo TMS | Quản Lý Tài Khoản & Nhân Sự</title>
     
-    <!-- Client-Side Access Guard (KN-48) -->
+    <!-- Client-Side Access Guard -->
     <script src="/authGuard.js" data-required="administrator"></script>
     
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
     <style>
         :root {
+            --bg-page: #f8fafc;
+            --bg-surface: #ffffff;
+            --border-color: #e2e8f0;
+            --border-subtle: #f1f5f9;
+            --text-heading: #0f172a;
+            --text-body: #334155;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
             --primary: #10b981;
             --primary-hover: #059669;
-            --primary-light: rgba(16, 185, 129, 0.12);
             --primary-soft: #ecfdf5;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --bg-body: #f8fafc;
-            --bg-card: #ffffff;
+            --primary-border: #a7f3d0;
             --sidebar-bg: #0f172a;
+            --sidebar-text: #94a3b8;
             --sidebar-hover: rgba(255, 255, 255, 0.08);
             --sidebar-active: #10b981;
-            --sidebar-text: #94a3b8;
-            --sidebar-text-active: #ffffff;
-            --amber: #f59e0b;
-            --amber-soft: #fef3c7;
-            --red: #ef4444;
-            --red-soft: #fee2e2;
-            --blue: #3b82f6;
-            --blue-soft: #dbeafe;
-            --purple: #8b5cf6;
-            --purple-soft: #ede9fe;
             --radius-sm: 6px;
             --radius-md: 10px;
-            --radius-lg: 16px;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+            --radius-lg: 14px;
+            --radius-xl: 18px;
+            --shadow-subtle: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+            --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05), 0 6px 16px -2px rgba(0, 0, 0, 0.03);
+            --shadow-hover: 0 10px 20px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+            --shadow-modal: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
             --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         [data-theme="dark"] {
-            --text-main: #f1f5f9;
+            --bg-page: #0b0f19;
+            --bg-surface: #111827;
+            --border-color: #1f2937;
+            --border-subtle: #1e293b;
+            --text-heading: #f8fafc;
+            --text-body: #cbd5e1;
             --text-muted: #94a3b8;
-            --border: #334155;
-            --bg-body: #0b1120;
-            --bg-card: #1e293b;
+            --text-light: #64748b;
             --primary-soft: rgba(16, 185, 129, 0.15);
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            --primary-border: rgba(16, 185, 129, 0.3);
+            --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 6px 16px -2px rgba(0, 0, 0, 0.2);
+            --shadow-hover: 0 10px 20px -3px rgba(0, 0, 0, 0.4);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            color: var(--text-main);
-            background-color: var(--bg-body);
-            -webkit-font-smoothing: antialiased;
+            background-color: var(--bg-page);
+            color: var(--text-body);
+            font-size: 14px;
+            line-height: 1.5;
             min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
         }
 
         a { color: inherit; text-decoration: none; }
         button { font: inherit; cursor: pointer; border: none; background: transparent; }
         input, select, textarea { font: inherit; }
 
-        /* Layout */
+        /* Unified Layout Structure */
         .app-layout {
             display: grid;
             grid-template-columns: 260px 1fr;
@@ -190,9 +191,10 @@
             background: rgba(255, 255, 255, 0.03);
             border-radius: var(--radius-md);
             margin: 0 12px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
         }
 
-        .user-avatar {
+        .user-avatar-initials {
             width: 36px;
             height: 36px;
             border-radius: 50%;
@@ -220,12 +222,12 @@
 
         /* Main Workspace */
         main.main-content {
-            padding: 24px 32px 48px;
+            padding: 28px 36px 56px;
             min-width: 0;
             overflow-x: hidden;
         }
 
-        /* Top Header */
+        /* Top Header Bar */
         header.top-header {
             display: flex;
             align-items: center;
@@ -238,12 +240,16 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 0.875rem;
+            font-size: 0.8125rem;
             color: var(--text-muted);
         }
 
+        .header-breadcrumb a:hover {
+            color: var(--primary);
+        }
+
         .header-breadcrumb span.current {
-            color: var(--text-main);
+            color: var(--text-heading);
             font-weight: 600;
         }
 
@@ -254,17 +260,17 @@
         }
 
         .action-icon-btn {
-            width: 40px;
-            height: 40px;
+            width: 38px;
+            height: 38px;
             border-radius: var(--radius-md);
-            border: 1px solid var(--border);
-            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            background: var(--bg-surface);
             color: var(--text-muted);
             display: grid;
             place-items: center;
             position: relative;
             transition: var(--transition);
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow-subtle);
         }
 
         .action-icon-btn:hover {
@@ -273,40 +279,75 @@
             background: var(--primary-soft);
         }
 
-        /* Page Title Banner */
-        .page-header {
+        /* Executive Header Banner */
+        .page-header-box {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px 28px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-card);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 16px;
-            margin-bottom: 24px;
+            gap: 20px;
             flex-wrap: wrap;
         }
 
-        .page-title h1 {
-            font-size: 1.5rem;
+        .page-header-left {
+            max-width: 680px;
+        }
+
+        .live-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.6875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #059669;
+            background: var(--primary-soft);
+            border: 1px solid var(--primary-border);
+            padding: 3px 10px;
+            border-radius: 99px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .pulse-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .page-header-title {
+            font-size: 1.375rem;
             font-weight: 800;
-            letter-spacing: -0.02em;
-            color: var(--text-main);
+            color: var(--text-heading);
+            letter-spacing: -0.025em;
+            margin-bottom: 4px;
+        }
+
+        .page-header-desc {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .page-header-actions {
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-
-        .page-title p {
-            color: var(--text-muted);
-            font-size: 0.875rem;
-            margin-top: 4px;
-        }
-
-        .badge-jira {
-            font-size: 0.75rem;
-            background: #ede9fe;
-            color: #7c3aed;
-            padding: 3px 8px;
-            border-radius: 6px;
-            font-weight: 700;
-            border: 1px solid rgba(124, 58, 237, 0.2);
+            flex-wrap: wrap;
         }
 
         /* Buttons */
@@ -315,169 +356,223 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            padding: 10px 18px;
+            padding: 9px 16px;
             border-radius: var(--radius-md);
             font-weight: 600;
-            font-size: 0.875rem;
+            font-size: 0.8125rem;
             transition: var(--transition);
             cursor: pointer;
+            white-space: nowrap;
         }
 
         .btn-primary {
             background-color: var(--primary);
             color: white;
-            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
         }
 
         .btn-primary:hover {
             background-color: var(--primary-hover);
             transform: translateY(-1px);
-            box-shadow: 0 6px 14px rgba(16, 185, 129, 0.4);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
         }
 
         .btn-secondary {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            color: var(--text-main);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            color: var(--text-heading);
+            box-shadow: var(--shadow-subtle);
         }
 
         .btn-secondary:hover {
-            background: var(--bg-body);
+            background: var(--bg-page);
             border-color: #cbd5e1;
+            transform: translateY(-1px);
         }
 
-        .btn-danger {
-            background: #ef4444;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #dc2626;
-        }
-
-        /* Metric Cards */
-        .metric-cards {
+        /* Executive Metrics Strip */
+        .metrics-strip {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 18px;
+            gap: 16px;
             margin-bottom: 24px;
         }
 
-        .metric-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 18px 20px;
-            box-shadow: var(--shadow-sm);
+        .metric-tile {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            box-shadow: var(--shadow-card);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .metric-tile:hover {
+            border-color: #cbd5e1;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .metric-tile-header {
             display: flex;
             align-items: center;
-            gap: 16px;
-            transition: var(--transition);
+            justify-content: space-between;
+            margin-bottom: 8px;
         }
 
-        .metric-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
+        .metric-tile-label {
+            font-size: 0.6875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
         }
 
-        .metric-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: var(--radius-md);
+        .metric-tile-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-sm);
             display: grid;
             place-items: center;
-            font-size: 1.25rem;
-            flex-shrink: 0;
+            background: var(--bg-page);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
         }
 
-        .metric-icon.green { background: var(--primary-soft); color: var(--primary); }
-        .metric-icon.blue { background: var(--blue-soft); color: var(--blue); }
-        .metric-icon.purple { background: var(--purple-soft); color: var(--purple); }
-        .metric-icon.amber { background: var(--amber-soft); color: var(--amber); }
-
-        .metric-info h3 {
-            font-size: 1.375rem;
+        .metric-tile-value {
+            font-size: 1.625rem;
             font-weight: 800;
-            color: var(--text-main);
+            color: var(--text-heading);
+            letter-spacing: -0.03em;
             line-height: 1.2;
+            margin-bottom: 4px;
         }
 
-        .metric-info p {
+        .metric-tile-sub {
             font-size: 0.75rem;
             color: var(--text-muted);
-            font-weight: 600;
-            margin-top: 2px;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        /* Filter & Search Bar */
+        .metric-tile-sub span.trend-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 0.6875rem;
+            font-weight: 700;
+            background: var(--primary-soft);
+            color: #059669;
+        }
+
+        /* Filter & Search Bar with Segmented Control */
         .card-table-wrapper {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow-card);
             overflow: hidden;
         }
 
         .table-toolbar {
             padding: 16px 20px;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 16px;
             flex-wrap: wrap;
+            background: var(--bg-surface);
+        }
+
+        /* Linear/Stripe Segmented Filter Control */
+        .segmented-control {
+            display: inline-flex;
+            align-items: center;
+            background: var(--bg-page);
+            padding: 3px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            gap: 2px;
+        }
+
+        .seg-btn {
+            padding: 6px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: var(--transition);
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .seg-btn:hover {
+            color: var(--text-heading);
+        }
+
+        .seg-btn.active {
+            background: var(--bg-surface);
+            color: var(--text-heading);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            flex: 1;
+            justify-content: flex-end;
         }
 
         .search-box {
             position: relative;
-            flex: 1;
             min-width: 260px;
-            max-width: 400px;
+            max-width: 380px;
+            flex: 1;
         }
 
         .search-box input {
             width: 100%;
-            padding: 9px 14px 9px 38px;
-            border: 1px solid var(--border);
+            padding: 8px 12px 8px 36px;
+            border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
-            background: var(--bg-body);
-            color: var(--text-main);
+            background: var(--bg-page);
+            color: var(--text-heading);
             outline: none;
-            font-size: 0.875rem;
+            font-size: 0.8125rem;
             transition: var(--transition);
         }
 
         .search-box input:focus {
-            background: var(--bg-card);
+            background: var(--bg-surface);
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-light);
+            box-shadow: 0 0 0 3px var(--primary-soft);
         }
 
         .search-box svg {
             position: absolute;
-            left: 12px;
+            left: 11px;
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-muted);
             pointer-events: none;
         }
 
-        .filter-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
         .filter-select {
-            padding: 9px 14px;
-            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
-            background: var(--bg-card);
-            color: var(--text-main);
-            font-size: 0.875rem;
+            background: var(--bg-surface);
+            color: var(--text-heading);
+            font-size: 0.8125rem;
             font-weight: 500;
             outline: none;
             cursor: pointer;
@@ -488,7 +583,7 @@
             border-color: var(--primary);
         }
 
-        /* Table */
+        /* Modern Enterprise Table */
         .table-container {
             overflow-x: auto;
         }
@@ -496,31 +591,36 @@
         table.user-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.875rem;
+            font-size: 0.8125rem;
             text-align: left;
         }
 
         table.user-table th {
             padding: 12px 18px;
-            background: var(--bg-body);
+            background: var(--bg-page);
             color: var(--text-muted);
-            font-weight: 600;
-            font-size: 0.75rem;
+            font-weight: 700;
+            font-size: 0.6875rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            border-bottom: 1px solid var(--border);
+            letter-spacing: 0.06em;
+            border-bottom: 1px solid var(--border-color);
             white-space: nowrap;
         }
 
         table.user-table td {
             padding: 14px 18px;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--border-color);
             vertical-align: middle;
-            color: var(--text-main);
+            color: var(--text-body);
+            transition: background 0.15s ease;
         }
 
         table.user-table tr:hover td {
-            background-color: var(--primary-soft);
+            background-color: rgba(16, 185, 129, 0.03);
+        }
+
+        [data-theme="dark"] table.user-table tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
         }
 
         table.user-table tr:last-child td {
@@ -535,16 +635,16 @@
         }
 
         .user-cell-avatar {
-            width: 38px;
-            height: 38px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             display: grid;
             place-items: center;
             font-weight: 700;
             color: white;
-            font-size: 0.875rem;
+            font-size: 0.8125rem;
             flex-shrink: 0;
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .user-cell-meta {
@@ -553,52 +653,71 @@
 
         .user-cell-name {
             font-weight: 600;
-            color: var(--text-main);
+            color: var(--text-heading);
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
+        }
+
+        .code-id-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6875rem;
+            color: var(--text-light);
+            background: var(--bg-page);
+            padding: 1px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .code-id-badge:hover {
+            color: var(--primary);
+            border-color: var(--primary);
         }
 
         .user-cell-email {
-            font-size: 0.8125rem;
+            font-size: 0.75rem;
             color: var(--text-muted);
+            margin-top: 2px;
         }
 
-        /* Role Badges */
-        .badge-role {
+        /* Subtle Role Pills with Status Dots */
+        .role-pill-saas {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 4px 10px;
+            padding: 3px 10px;
             border-radius: 99px;
             font-size: 0.75rem;
             font-weight: 600;
+            background: var(--bg-page);
+            border: 1px solid var(--border-color);
+            color: var(--text-heading);
             white-space: nowrap;
         }
 
-        .badge-admin { background: #ede9fe; color: #7c3aed; }
-        .badge-manager { background: #e0f2fe; color: #0284c7; }
-        .badge-instructor { background: var(--primary-soft); color: #059669; }
-        .badge-ta { background: #fef3c7; color: #d97706; }
-        .badge-student { background: #dcfce7; color: #16a34a; }
-        .badge-admissions { background: #ffedd5; color: #ea580c; }
-        .badge-accountant { background: #fce7f3; color: #db2777; }
-        .badge-visitor { background: #f1f5f9; color: #64748b; }
+        .role-pill-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
 
         /* Status Badges */
         .badge-status {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 4px 10px;
+            padding: 3px 10px;
             border-radius: 99px;
             font-size: 0.75rem;
             font-weight: 600;
         }
 
         .badge-status.active {
-            background: #dcfce7;
-            color: #15803d;
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
         }
 
         .badge-status.active::before {
@@ -606,13 +725,14 @@
             width: 6px;
             height: 6px;
             border-radius: 50%;
-            background: #16a34a;
-            box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2);
+            background: #10b981;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
         }
 
         .badge-status.locked {
-            background: #fee2e2;
-            color: #b91c1c;
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
         }
 
         .badge-status.locked::before {
@@ -620,14 +740,14 @@
             width: 6px;
             height: 6px;
             border-radius: 50%;
-            background: #dc2626;
+            background: #ef4444;
         }
 
         /* Action Buttons in Row */
         .action-cell {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
         }
 
         .btn-table-action {
@@ -642,25 +762,27 @@
         }
 
         .btn-table-action:hover {
-            color: var(--text-main);
-            background: var(--bg-body);
-            border-color: var(--border);
+            color: var(--text-heading);
+            background: var(--bg-page);
+            border-color: var(--border-color);
         }
 
         .btn-table-action.edit:hover {
-            color: var(--blue);
-            background: var(--blue-soft);
+            color: #2563eb;
+            background: #eff6ff;
+            border-color: #bfdbfe;
         }
 
         .btn-table-action.delete:hover {
-            color: var(--red);
-            background: var(--red-soft);
+            color: #ef4444;
+            background: #fef2f2;
+            border-color: #fecaca;
         }
 
         /* Pagination & Footer */
         .table-footer {
             padding: 14px 20px;
-            border-top: 1px solid var(--border);
+            border-top: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -668,9 +790,10 @@
             color: var(--text-muted);
             flex-wrap: wrap;
             gap: 12px;
+            background: var(--bg-surface);
         }
 
-        /* Modal Styles */
+        /* Modals */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -691,14 +814,14 @@
         }
 
         .modal-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
             width: 100%;
-            max-width: 540px;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2), 0 10px 10px -5px rgba(0,0,0,0.1);
+            max-width: 520px;
+            box-shadow: var(--shadow-modal);
             overflow: hidden;
-            transform: scale(0.95);
+            transform: scale(0.96);
             transition: transform 0.2s ease;
         }
 
@@ -707,17 +830,18 @@
         }
 
         .modal-header {
-            padding: 20px 24px;
-            border-bottom: 1px solid var(--border);
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
         .modal-header h3 {
-            font-size: 1.125rem;
+            font-size: 1.0625rem;
             font-weight: 700;
-            color: var(--text-main);
+            color: var(--text-heading);
+            letter-spacing: -0.02em;
         }
 
         .modal-close {
@@ -728,15 +852,15 @@
         }
 
         .modal-close:hover {
-            color: var(--red);
-            background: var(--red-soft);
+            color: #ef4444;
+            background: #fef2f2;
         }
 
         .modal-body {
             padding: 24px;
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 16px;
             max-height: 75vh;
             overflow-y: auto;
         }
@@ -750,20 +874,20 @@
         .form-group label {
             font-size: 0.8125rem;
             font-weight: 600;
-            color: var(--text-main);
+            color: var(--text-heading);
         }
 
         .form-group label .required {
-            color: var(--red);
+            color: #ef4444;
             margin-left: 2px;
         }
 
         .form-group input, .form-group select {
-            padding: 10px 14px;
-            border: 1px solid var(--border);
+            padding: 9px 13px;
+            border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
-            background: var(--bg-card);
-            color: var(--text-main);
+            background: var(--bg-surface);
+            color: var(--text-heading);
             outline: none;
             transition: var(--transition);
             font-size: 0.875rem;
@@ -771,7 +895,7 @@
 
         .form-group input:focus, .form-group select:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-light);
+            box-shadow: 0 0 0 3px var(--primary-soft);
         }
 
         .form-hint {
@@ -781,18 +905,18 @@
 
         .modal-footer {
             padding: 16px 24px;
-            border-top: 1px solid var(--border);
-            background: var(--bg-body);
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-page);
             display: flex;
             align-items: center;
             justify-content: flex-end;
-            gap: 12px;
+            gap: 10px;
         }
 
-        /* Success Card with Credentials */
+        /* Success Credential Box */
         .credential-box {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
+            background: var(--bg-page);
+            border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
             padding: 16px;
             margin-top: 10px;
@@ -803,22 +927,27 @@
             justify-content: space-between;
             align-items: center;
             padding: 6px 0;
-            font-size: 0.875rem;
+            font-size: 0.8125rem;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .credential-row:last-child {
+            border-bottom: none;
         }
 
         .credential-key {
-            color: #166534;
-            font-weight: 600;
+            color: var(--text-muted);
+            font-weight: 500;
         }
 
         .credential-value {
-            font-family: monospace;
-            background: #ffffff;
-            padding: 4px 8px;
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg-surface);
+            padding: 3px 8px;
             border-radius: 4px;
-            border: 1px solid #86efac;
-            font-weight: 700;
-            color: #15803d;
+            border: 1px solid var(--border-color);
+            font-weight: 600;
+            color: var(--text-heading);
         }
 
         /* Toast Notifications */
@@ -829,7 +958,8 @@
             z-index: 1000;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
+            pointer-events: none;
         }
 
         .toast {
@@ -837,34 +967,38 @@
             color: #ffffff;
             padding: 12px 18px;
             border-radius: var(--radius-md);
-            box-shadow: var(--shadow-lg);
-            font-size: 0.875rem;
+            box-shadow: var(--shadow-modal);
+            font-size: 0.8125rem;
+            font-weight: 500;
             display: flex;
             align-items: center;
             gap: 10px;
-            animation: slideIn 0.3s ease;
+            pointer-events: auto;
+            border-left: 4px solid var(--primary);
+            animation: slideIn 0.25s ease;
         }
 
-        .toast.success { border-left: 4px solid var(--primary); }
-        .toast.error { border-left: 4px solid var(--red); }
+        .toast.error { border-left-color: #ef4444; }
 
         @keyframes slideIn {
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
 
-        /* Responsive */
-        @media (max-width: 900px) {
+        /* Responsive Layout */
+        @media (max-width: 1024px) {
             .app-layout { grid-template-columns: 1fr; }
             aside.sidebar { display: none; }
-            .metric-cards { grid-template-columns: repeat(2, 1fr); }
-            main.main-content { padding: 18px; }
+            .metrics-strip { grid-template-columns: repeat(2, 1fr); }
+            main.main-content { padding: 20px; }
         }
 
-        @media (max-width: 540px) {
-            .metric-cards { grid-template-columns: 1fr; }
+        @media (max-width: 640px) {
+            .metrics-strip { grid-template-columns: 1fr; }
             .table-toolbar { flex-direction: column; align-items: stretch; }
+            .toolbar-right { justify-content: stretch; }
             .search-box { max-width: 100%; }
+            .page-header-box { flex-direction: column; align-items: flex-start; }
         }
     </style>
 </head>
@@ -880,7 +1014,7 @@
 
         <nav class="sidebar-nav">
             <span class="nav-label">Hệ thống</span>
-            <a href="./Index.html" class="nav-item">
+            <a href="./Dashboard.html" class="nav-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                 <span>Tổng quan</span>
             </a>
@@ -890,42 +1024,60 @@
                 <span class="nav-badge" id="sidebar-total-badge">9</span>
             </a>
             <a href="./RoleManagement.html" class="nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                <span>Vai trò & Phân quyền</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="11" r="3"/></svg>
+                <span>Phân quyền vai trò</span>
+            </a>
+
+            <span class="nav-label">Đào tạo & Lớp học</span>
+            <a href="./Dashboard.html#courses" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                <span>Khóa đào tạo</span>
+            </a>
+            <a href="./Dashboard.html#classes" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <span>Lớp học</span>
+            </a>
+            <a href="./Dashboard.html#schedule" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>Thời khóa biểu</span>
             </a>
 
             <span class="nav-label">Học viên & Giảng viên</span>
-            <a href="./Index.html#students" class="nav-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            <a href="./Dashboard.html#students" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 <span>Học viên</span>
             </a>
-            <a href="./Index.html#instructors" class="nav-item">
+            <a href="./Dashboard.html#instructors" class="nav-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
                 <span>Giảng viên</span>
             </a>
 
-            <span class="nav-label">Nghiệp vụ đào tạo</span>
-            <a href="./Index.html#attendance" class="nav-item">
+            <span class="nav-label">Nghiệp vụ vận hành</span>
+            <a href="./Dashboard.html#attendance" class="nav-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                 <span>Điểm danh & Chuyên cần</span>
             </a>
-            <a href="./Index.html#scores" class="nav-item">
+            <a href="./Dashboard.html#scores" class="nav-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                 <span>Bài tập & Điểm số</span>
             </a>
-            <a href="./Index.html#tuition" class="nav-item">
+            <a href="./Dashboard.html#tuition" class="nav-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
                 <span>Học phí & Công nợ</span>
+            </a>
+            <a href="./Dashboard.html#reports" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                <span>Báo cáo & Thống kê</span>
             </a>
         </nav>
 
         <div class="sidebar-user">
-            <div class="user-avatar" id="avatar-letters" style="background: linear-gradient(135deg, #10b981, #047857); color: white; font-weight: 700;">LT</div>
+            <div class="user-avatar-initials" id="avatar-letters">AD</div>
             <div class="user-info">
-                <div class="user-name" id="display-user-name">Lý Phi Thăng</div>
-                <div class="user-role" id="display-user-role">Quản trị hệ thống (Admin)</div>
+                <div class="user-name" id="display-user-name">Quản trị viên Hệ thống</div>
+                <div class="user-role" id="display-user-role">Quản trị viên (Admin)</div>
             </div>
-            <a href="./Login.html" class="logout-btn" title="Đăng xuất">
+            <a href="./Login.html" class="logout-btn" title="Đăng xuất" onclick="localStorage.removeItem('tms_token'); localStorage.removeItem('tms_current_user'); localStorage.removeItem('tms_current_role');">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             </a>
         </div>
@@ -936,86 +1088,118 @@
         <!-- Top Header Bar -->
         <header class="top-header">
             <div class="header-breadcrumb">
-                <a href="./Index.html">Hệ thống</a>
+                <a href="./Dashboard.html">Hệ thống</a>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                <span class="current">Quản lý Tài khoản Người dùng</span>
+                <span class="current">Quản lý Tài khoản & Nhân sự</span>
             </div>
 
             <div class="header-actions">
                 <button class="action-icon-btn" id="theme-toggle" title="Đổi giao diện sáng/tối">
-                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                 </button>
-                <a href="./RoleManagement.html" class="btn btn-secondary" style="padding: 8px 14px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                    Phân quyền vai trò
+                <a href="./RoleManagement.html" class="btn btn-secondary">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <span>Phân quyền vai trò</span>
                 </a>
             </div>
         </header>
 
-        <!-- Page Header -->
-        <div class="page-header">
-            <div class="page-title">
-                <h1>
-                    <span>Quản lý Tài khoản Người dùng</span>
-                </h1>
-                <p>Tạo mới, chỉnh sửa thông tin, tìm kiếm và cấp quyền truy cập cho nhân sự mới trong ngày đầu nhận việc.</p>
+        <!-- Executive Header Banner -->
+        <div class="page-header-box">
+            <div class="page-header-left">
+                <div class="live-tag">
+                    <span class="pulse-dot"></span>
+                    <span>Đồng bộ máy chủ & Supabase • Thời gian thực</span>
+                </div>
+                <h1 class="page-header-title">Quản lý Tài khoản Người dùng</h1>
+                <p class="page-header-desc">Quản lý danh sách nhân sự, giảng viên và học viên. Cấp tài khoản mới, khởi tạo mật khẩu tạm an toàn và điều chỉnh trạng thái truy cập.</p>
             </div>
-            <button class="btn btn-primary" onclick="openCreateModal()">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                <span>+ Thêm nhân sự mới</span>
-            </button>
+            <div class="page-header-actions">
+                <button class="btn btn-secondary" onclick="exportUsersCSV()" title="Tải danh sách người dùng ra bảng tính Excel">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <span>Xuất file Excel (.csv)</span>
+                </button>
+                <button class="btn btn-primary" onclick="openCreateModal()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    <span>+ Thêm nhân sự mới</span>
+                </button>
+            </div>
         </div>
 
-        <!-- Metric Cards -->
-        <div class="metric-cards">
-            <div class="metric-card">
-                <div class="metric-icon green">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <!-- Executive Metrics Strip -->
+        <div class="metrics-strip">
+            <div class="metric-tile">
+                <div class="metric-tile-header">
+                    <span class="metric-tile-label">Tổng tài khoản</span>
+                    <div class="metric-tile-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
                 </div>
-                <div class="metric-info">
-                    <h3 id="stat-total">9</h3>
-                    <p>Tổng tài khoản</p>
-                </div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-icon blue">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-                </div>
-                <div class="metric-info">
-                    <h3 id="stat-instructors">2</h3>
-                    <p>Giảng viên & Trợ giảng</p>
+                <div class="metric-tile-value" id="stat-total">9</div>
+                <div class="metric-tile-sub">
+                    <span class="trend-pill">Đồng bộ</span>
+                    <span>9 tài khoản trong hệ thống</span>
                 </div>
             </div>
-            <div class="metric-card">
-                <div class="metric-icon purple">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+
+            <div class="metric-tile">
+                <div class="metric-tile-header">
+                    <span class="metric-tile-label">Khối Giảng dạy</span>
+                    <div class="metric-tile-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                    </div>
                 </div>
-                <div class="metric-info">
-                    <h3 id="stat-staff">4</h3>
-                    <p>Cán bộ quản lý & Vận hành</p>
+                <div class="metric-tile-value" id="stat-instructors">2</div>
+                <div class="metric-tile-sub">
+                    <span>Giảng viên & Trợ giảng</span>
                 </div>
             </div>
-            <div class="metric-card">
-                <div class="metric-icon amber">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+
+            <div class="metric-tile">
+                <div class="metric-tile-header">
+                    <span class="metric-tile-label">Khối Quản lý & Vận hành</span>
+                    <div class="metric-tile-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                    </div>
                 </div>
-                <div class="metric-info">
-                    <h3 id="stat-active">9</h3>
-                    <p>Đang hoạt động</p>
+                <div class="metric-tile-value" id="stat-staff">4</div>
+                <div class="metric-tile-sub">
+                    <span>Quản lý, Tuyển sinh, Kế toán</span>
+                </div>
+            </div>
+
+            <div class="metric-tile">
+                <div class="metric-tile-header">
+                    <span class="metric-tile-label">Đang hoạt động</span>
+                    <div class="metric-tile-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+                    </div>
+                </div>
+                <div class="metric-tile-value" id="stat-active" style="color: #059669;">9</div>
+                <div class="metric-tile-sub">
+                    <span class="trend-pill">100%</span>
+                    <span>Tài khoản hợp lệ</span>
                 </div>
             </div>
         </div>
 
         <!-- Table Container Card -->
         <div class="card-table-wrapper">
-            <!-- Toolbar: Search & Filters -->
+            <!-- Toolbar: Segmented Controls + Search & Filters -->
             <div class="table-toolbar">
-                <div class="search-box">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    <input type="text" id="search-input" placeholder="Tìm kiếm theo họ tên, email hoặc SĐT..." oninput="handleSearch(this.value)">
+                <div class="segmented-control" id="role-segmented-tabs">
+                    <button class="seg-btn active" onclick="setGroupFilter('all', this)">Tất cả</button>
+                    <button class="seg-btn" onclick="setGroupFilter('instructor_group', this)">Giảng dạy</button>
+                    <button class="seg-btn" onclick="setGroupFilter('staff_group', this)">Quản trị & Vận hành</button>
+                    <button class="seg-btn" onclick="setGroupFilter('student', this)">Học viên</button>
                 </div>
 
-                <div class="filter-group">
+                <div class="toolbar-right">
+                    <div class="search-box">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="search-input" placeholder="Tìm theo tên, email, SĐT hoặc ID..." oninput="handleSearch(this.value)">
+                    </div>
+
                     <select id="role-filter" class="filter-select" onchange="applyFilters()">
                         <option value="all">Tất cả vai trò</option>
                         <option value="administrator">Quản trị viên (Admin)</option>
@@ -1036,7 +1220,7 @@
                     </select>
 
                     <button class="btn btn-secondary" onclick="resetFilters()" title="Đặt lại bộ lọc">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
                         <span>Đặt lại</span>
                     </button>
                 </div>
@@ -1061,14 +1245,14 @@
                 </table>
             </div>
 
-            <!-- Pagination & Table Footer (KN-11: Mặc định 20 dòng / trang) -->
+            <!-- Pagination & Table Footer -->
             <div class="table-footer">
-                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
                     <span id="table-summary-text">Hiển thị 9 người dùng</span>
                     <div style="display: flex; align-items: center; gap: 6px;">
                         <label for="page-size-select" style="font-size: 0.75rem; color: var(--text-muted);">Hiển thị:</label>
                         <select id="page-size-select" class="filter-select" style="padding: 4px 8px; font-size: 0.75rem;" onchange="changePageSize(this.value)">
-                            <option value="20" selected>20 dòng / trang (Mặc định)</option>
+                            <option value="20" selected>20 dòng / trang</option>
                             <option value="50">50 dòng / trang</option>
                             <option value="100">100 dòng / trang</option>
                         </select>
@@ -1077,18 +1261,20 @@
 
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <div style="display: flex; align-items: center; gap: 6px;">
-                        <button class="btn btn-secondary" id="btn-prev-page" style="padding: 4px 10px; font-size: 0.75rem;" onclick="changePage(-1)" disabled>&larr; Trước</button>
+                        <button class="btn btn-secondary" id="btn-prev-page" style="padding: 5px 12px; font-size: 0.75rem;" onclick="changePage(-1)" disabled>&larr; Trước</button>
                         <span id="page-indicator" style="font-weight: 600; font-size: 0.75rem; min-width: 80px; text-align: center;">Trang 1 / 1</span>
-                        <button class="btn btn-secondary" id="btn-next-page" style="padding: 4px 10px; font-size: 0.75rem;" onclick="changePage(1)" disabled>Sau &rarr;</button>
+                        <button class="btn btn-secondary" id="btn-next-page" style="padding: 5px 12px; font-size: 0.75rem;" onclick="changePage(1)" disabled>Sau &rarr;</button>
                     </div>
-                    <span style="font-size: 0.75rem; color: #10b981; font-weight: 600;">● Tự động đồng bộ</span>
+                    <span style="font-size: 0.75rem; color: #10b981; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                        <span class="pulse-dot"></span> Tự động đồng bộ
+                    </span>
                 </div>
             </div>
         </div>
     </main>
 </div>
 
-<!-- MODAL: Tạo mới người dùng (KN-11 Core) -->
+<!-- MODAL: Tạo mới người dùng -->
 <div class="modal-overlay" id="create-modal">
     <div class="modal-card">
         <div class="modal-header">
@@ -1132,7 +1318,7 @@
                     <label>Mật khẩu khởi tạo</label>
                     <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 6px;">
                         <input type="checkbox" id="create-auto-pass" checked onchange="toggleCustomPass(this.checked)" style="width: auto;">
-                        <label for="create-auto-pass" style="font-weight: 500; cursor: pointer;">Tự sinh mật khẩu tạm an toàn (Khuyên dùng cho nhân sự mới)</label>
+                        <label for="create-auto-pass" style="font-weight: 500; cursor: pointer; font-size: 0.8125rem;">Tự sinh mật khẩu tạm an toàn (Khuyên dùng cho nhân sự mới)</label>
                     </div>
                     <input type="text" id="create-custom-pass" placeholder="Nhập mật khẩu tùy chỉnh (nếu không dùng mật khẩu tạm)" style="display: none;">
                 </div>
@@ -1151,9 +1337,9 @@
 <!-- MODAL: Thành công & Bàn giao thông tin tài khoản -->
 <div class="modal-overlay" id="credential-modal">
     <div class="modal-card">
-        <div class="modal-header" style="background: #f0fdf4;">
-            <h3 style="color: #15803d; display: flex; align-items: center; gap: 8px;">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        <div class="modal-header" style="background: var(--primary-soft); border-bottom-color: var(--primary-border);">
+            <h3 style="color: #065f46; display: flex; align-items: center; gap: 8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                 Cấp Tài Khoản Mới Thành Công!
             </h3>
             <button class="modal-close" onclick="closeModal('credential-modal')">
@@ -1161,45 +1347,41 @@
             </button>
         </div>
         <div class="modal-body">
-            <div style="display: flex; align-items: center; gap: 10px; background: #e0f2fe; color: #0284c7; padding: 12px 16px; border-radius: 8px; font-size: 0.8125rem; font-weight: 600; border: 1px solid #bae6fd;">
+            <div style="display: flex; align-items: center; gap: 10px; background: #eff6ff; color: #1e40af; padding: 12px 16px; border-radius: var(--radius-md); font-size: 0.8125rem; font-weight: 500; border: 1px solid #bfdbfe;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink: 0;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                <span>Đã gửi email kích hoạt tài khoản kèm mật khẩu tạm thời đến hòm thư của nhân sự mới!</span>
+                <span>Tài khoản đã sẵn sàng. Thông tin kích hoạt kèm mật khẩu tạm thời có thể bàn giao ngay:</span>
             </div>
-
-            <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 8px;">
-                Tài khoản đã sẵn sàng hoạt động. Bạn hãy sao chép thông tin này để bàn giao cho nhân sự trong ngày đầu nhận việc:
-            </p>
 
             <div class="credential-box">
                 <div class="credential-row">
                     <span class="credential-key">Họ và tên:</span>
-                    <strong id="cred-name" style="color: #0f172a;">-</strong>
+                    <strong id="cred-name" style="color: var(--text-heading);">-</strong>
                 </div>
                 <div class="credential-row">
                     <span class="credential-key">Tên đăng nhập / Email:</span>
                     <span class="credential-value" id="cred-email">-</span>
                 </div>
                 <div class="credential-row">
-                    <span class="credential-key">Mật khẩu tạm:</span>
-                    <span class="credential-value" id="cred-pass" style="color: #b91c1c; background: #fff5f5; border-color: #fecaca;">-</span>
+                    <span class="credential-key">Mật khẩu tạm thời:</span>
+                    <span class="credential-value" id="cred-pass" style="color: #b91c1c; background: #fef2f2; border-color: #fecaca;">-</span>
                 </div>
                 <div class="credential-row">
                     <span class="credential-key">Vai trò được cấp:</span>
-                    <span id="cred-role">-</span>
+                    <span id="cred-role" style="font-weight: 600; color: var(--primary);">-</span>
                 </div>
             </div>
         </div>
         <div class="modal-footer">
             <button class="btn btn-secondary" onclick="closeModal('credential-modal')">Đóng</button>
             <button class="btn btn-primary" onclick="copyCredentials()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 <span>Sao chép thông tin</span>
             </button>
         </div>
     </div>
 </div>
 
-<!-- MODAL: Chỉnh sửa người dùng (KN-11 Sửa thông tin) -->
+<!-- MODAL: Chỉnh sửa người dùng -->
 <div class="modal-overlay" id="edit-modal">
     <div class="modal-card">
         <div class="modal-header">
@@ -1213,7 +1395,7 @@
             <div class="modal-body">
                 <div class="form-group">
                     <label>Email tài khoản</label>
-                    <input type="email" id="edit-email" disabled style="background: var(--bg-body); color: var(--text-muted);">
+                    <input type="email" id="edit-email" disabled style="background: var(--bg-page); color: var(--text-muted); cursor: not-allowed;">
                     <span class="form-hint">Mã định danh email không thể thay đổi sau khi tạo.</span>
                 </div>
 
@@ -1268,21 +1450,20 @@
 <div class="toast-container" id="toast-container"></div>
 
 <script>
-    // Cấu hình API linh hoạt (hỗ trợ cả Localhost và Vercel/Production)
+    // Cấu hình API linh hoạt
     const API_BASE = (window.location.origin && window.location.origin.startsWith("http")) 
         ? `${window.location.origin}/api` 
         : "http://localhost:3000/api";
 
-    // Dữ liệu người dùng mẫu (Đồng bộ với authService.js để luôn hoạt động độc lập cả khi chạy file://)
     const roleLabels = {
-        "administrator": { name: "Quản trị viên", class: "badge-admin", color: "#7c3aed" },
-        "training_manager": { name: "Quản lý đào tạo", class: "badge-manager", color: "#0284c7" },
-        "instructor": { name: "Giảng viên", class: "badge-instructor", color: "#059669" },
-        "teaching_assistant": { name: "Trợ giảng", class: "badge-ta", color: "#d97706" },
-        "student": { name: "Học viên", class: "badge-student", color: "#16a34a" },
-        "admissions": { name: "Tuyển sinh", class: "badge-admissions", color: "#ea580c" },
-        "accountant": { name: "Kế toán", class: "badge-accountant", color: "#db2777" },
-        "visitor": { name: "Khách", class: "badge-visitor", color: "#64748b" }
+        "administrator": { name: "Quản trị viên", color: "#7c3aed", dot: "#8b5cf6" },
+        "training_manager": { name: "Quản lý đào tạo", color: "#0284c7", dot: "#0ea5e9" },
+        "instructor": { name: "Giảng viên", color: "#059669", dot: "#10b981" },
+        "teaching_assistant": { name: "Trợ giảng", color: "#d97706", dot: "#f59e0b" },
+        "student": { name: "Học viên", color: "#16a34a", dot: "#22c55e" },
+        "admissions": { name: "Tuyển sinh", color: "#ea580c", dot: "#f97316" },
+        "accountant": { name: "Kế toán", color: "#db2777", dot: "#ec4899" },
+        "visitor": { name: "Khách tham quan", color: "#64748b", dot: "#94a3b8" }
     };
 
     let usersData = [
@@ -1300,13 +1481,32 @@
     let currentSearch = "";
     let currentRoleFilter = "all";
     let currentStatusFilter = "all";
+    let currentGroupFilter = "all";
     let currentPage = 1;
-    let pageSize = 20; // KN-11: Danh sách phân trang, mặc định 20 dòng
+    let pageSize = 20;
 
     const SUPABASE_URL = "https://fljbbgqfgyyhvxhpflhg.supabase.co";
     const SUPABASE_KEY = "sb_publishable_1mU5Pm0dovYQnFJg-TerMg_11Dxbtbo";
 
-    // Đảm bảo luôn có phiên token Quản trị viên hợp lệ
+    // Theme Toggle Handler
+    const themeBtn = document.getElementById("theme-toggle");
+    if (themeBtn) {
+        if (localStorage.getItem("tms-theme") === "dark") {
+            document.documentElement.setAttribute("data-theme", "dark");
+        }
+        themeBtn.addEventListener("click", () => {
+            const current = document.documentElement.getAttribute("data-theme");
+            if (current === "dark") {
+                document.documentElement.removeAttribute("data-theme");
+                localStorage.setItem("tms-theme", "light");
+            } else {
+                document.documentElement.setAttribute("data-theme", "dark");
+                localStorage.setItem("tms-theme", "dark");
+            }
+        });
+    }
+
+    // Đảm bảo token Admin hợp lệ
     async function getValidAdminToken() {
         let token = localStorage.getItem("tms_token");
         if (token) return token;
@@ -1326,10 +1526,8 @@
         return token;
     }
 
-    // Khởi động trang
-    // Khởi động trang ngay lập tức (0ms latency, không giật lag)
+    // Khởi động trang ngay tức thì (0ms latency)
     document.addEventListener("DOMContentLoaded", () => {
-        // Nạp tức thì từ bộ nhớ cache cục bộ nếu có
         try {
             const cached = localStorage.getItem("tms_users_cache");
             if (cached) {
@@ -1340,15 +1538,12 @@
             }
         } catch {}
 
-        // Hiển thị giao diện ngay tức thì không cần đợi mạng (0ms render)
         renderTable();
         updateMetrics();
-
-        // Chạy ngầm tải mới nhất từ Supabase & Backend API
         loadUsersFromAPIOrLocal();
     });
 
-    // Tự động tải từ Supabase chạy ngầm song song (Non-blocking background refresh)
+    // Chạy ngầm tải mới nhất từ Supabase & Backend API
     async function loadUsersFromAPIOrLocal() {
         try {
             const supaRes = await fetch(`${SUPABASE_URL}/rest/v1/users?select=*&order=created_at.desc`, {
@@ -1376,7 +1571,16 @@
         }
     }
 
-    // Hiển thị danh sách bảng người dùng có phân trang (mặc định 20 dòng)
+    // Phân nhóm bộ lọc Tab
+    function setGroupFilter(group, btn) {
+        currentGroupFilter = group;
+        document.querySelectorAll("#role-segmented-tabs .seg-btn").forEach(b => b.classList.remove("active"));
+        if (btn) btn.classList.add("active");
+        currentPage = 1;
+        renderTable();
+    }
+
+    // Hiển thị danh sách bảng người dùng có phân trang
     function renderTable() {
         const tbody = document.getElementById("user-table-body");
         tbody.innerHTML = "";
@@ -1385,12 +1589,22 @@
             const matchesQuery = !currentSearch || 
                 (u.name && u.name.toLowerCase().includes(currentSearch)) ||
                 (u.email && u.email.toLowerCase().includes(currentSearch)) ||
+                (u.id && u.id.toLowerCase().includes(currentSearch)) ||
                 (u.phone && u.phone.includes(currentSearch));
 
             const matchesRole = currentRoleFilter === "all" || u.role === currentRoleFilter;
             const matchesStatus = currentStatusFilter === "all" || u.status === currentStatusFilter;
 
-            return matchesQuery && matchesRole && matchesStatus;
+            let matchesGroup = true;
+            if (currentGroupFilter === "instructor_group") {
+                matchesGroup = (u.role === "instructor" || u.role === "teaching_assistant");
+            } else if (currentGroupFilter === "staff_group") {
+                matchesGroup = ["administrator", "training_manager", "admissions", "accountant"].includes(u.role);
+            } else if (currentGroupFilter === "student") {
+                matchesGroup = (u.role === "student");
+            }
+
+            return matchesQuery && matchesRole && matchesStatus && matchesGroup;
         });
 
         const total = filtered.length;
@@ -1402,9 +1616,9 @@
             tbody.innerHTML = `
                 <tr>
                     <td colspan="6" style="text-align: center; padding: 48px; color: var(--text-muted);">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 8px; opacity: 0.5;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                        <p style="font-weight: 600;">Không tìm thấy người dùng phù hợp</p>
-                        <p style="font-size: 0.8125rem;">Hãy thử thay đổi từ khóa hoặc điều chỉnh bộ lọc.</p>
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 8px; opacity: 0.5;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <p style="font-weight: 600; color: var(--text-heading);">Không tìm thấy người dùng phù hợp</p>
+                        <p style="font-size: 0.8125rem; margin-top: 4px;">Hãy thử thay đổi từ khóa hoặc điều chỉnh bộ lọc vai trò.</p>
                     </td>
                 </tr>
             `;
@@ -1419,11 +1633,11 @@
         const pageItems = filtered.slice(startIndex, startIndex + pageSize);
 
         pageItems.forEach(u => {
-            const roleInfo = roleLabels[u.role] || { name: u.role, class: "badge-visitor", color: "#64748b" };
+            const roleInfo = roleLabels[u.role] || { name: u.role, color: "#64748b", dot: "#94a3b8" };
             const initials = getInitials(u.name);
             const dateStr = formatDate(u.createdAt);
             const statusClass = u.status === "locked" ? "locked" : "active";
-            const statusLabel = u.status === "locked" ? "Tạm khóa" : "Hoạt động";
+            const statusLabel = u.status === "locked" ? "Tạm khóa" : "Đang hoạt động";
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
@@ -1435,18 +1649,20 @@
                         <div class="user-cell-meta">
                             <div class="user-cell-name">
                                 <span>${escapeHtml(u.name)}</span>
+                                <span class="code-id-badge" onclick="copyText('${escapeHtml(u.id)}', 'ID người dùng')" title="Sao chép ID">${escapeHtml(u.id)}</span>
                             </div>
                             <div class="user-cell-email">${escapeHtml(u.email)}</div>
                         </div>
                     </div>
                 </td>
                 <td>
-                    <span class="badge-role ${roleInfo.class}">
-                        ● ${roleInfo.name}
+                    <span class="role-pill-saas">
+                        <span class="role-pill-dot" style="background: ${roleInfo.dot};"></span>
+                        <span>${roleInfo.name}</span>
                     </span>
                 </td>
                 <td>
-                    <span style="font-family: monospace; color: var(--text-muted);">${escapeHtml(u.phone || 'Chưa cập nhật')}</span>
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; color: var(--text-muted);">${escapeHtml(u.phone || 'Chưa cập nhật')}</span>
                 </td>
                 <td>
                     <span class="badge-status ${statusClass}">${statusLabel}</span>
@@ -1506,13 +1722,15 @@
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
             currentSearch = val.trim().toLowerCase();
+            currentPage = 1;
             renderTable();
-        }, 150);
+        }, 120);
     }
 
     function applyFilters() {
         currentRoleFilter = document.getElementById("role-filter").value;
         currentStatusFilter = document.getElementById("status-filter").value;
+        currentPage = 1;
         renderTable();
     }
 
@@ -1520,11 +1738,59 @@
         document.getElementById("search-input").value = "";
         document.getElementById("role-filter").value = "all";
         document.getElementById("status-filter").value = "all";
+        currentGroupFilter = "all";
+        document.querySelectorAll("#role-segmented-tabs .seg-btn").forEach(b => b.classList.remove("active"));
+        const defaultTab = document.querySelector("#role-segmented-tabs .seg-btn");
+        if (defaultTab) defaultTab.classList.add("active");
         currentSearch = "";
         currentRoleFilter = "all";
         currentStatusFilter = "all";
+        currentPage = 1;
         renderTable();
         showToast("Đã đặt lại bộ lọc danh sách", "success");
+    }
+
+    // Xuất file CSV người dùng UTF-8 BOM
+    function exportUsersCSV() {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString("vi-VN");
+        const filename = "Danh_Sach_Nguoi_Dung_TMS_" + now.toISOString().slice(0, 10).replace(/-/g, "") + ".csv";
+
+        let csv = "DANH SÁCH TÀI KHOẢN NGƯỜI DÙNG HỆ THỐNG ĐÀO TẠO TMS\n";
+        csv += "Ngày kết xuất," + dateStr + "\n";
+        csv += "Đơn vị quản lý,Trung tâm Đào tạo TMS\n\n";
+        csv += "Mã định danh (ID),Họ và Tên,Email đăng nhập,Số điện thoại,Vai trò hệ thống,Trạng thái hoạt động,Ngày tạo\n";
+
+        usersData.forEach(u => {
+            const roleName = roleLabels[u.role]?.name || u.role;
+            const statusName = u.status === "locked" ? "Tạm khóa" : "Hoạt động";
+            const dateFmt = formatDate(u.createdAt);
+            csv += `"${u.id}","${u.name}","${u.email}","${u.phone || ''}","${roleName}","${statusName}","${dateFmt}"\n`;
+        });
+
+        const bom = "\uFEFF";
+        const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        setTimeout(() => {
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }, 1000);
+        showToast("Đã xuất danh sách " + usersData.length + " tài khoản ra file Excel!", "success");
+    }
+    window.exportUsersCSV = exportUsersCSV;
+
+    // Sao chép nhanh
+    function copyText(text, label = "Dữ liệu") {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast(`Đã sao chép ${label} vào bộ nhớ tạm!`, "success");
+        }).catch(() => {
+            showToast("Vui lòng cho phép quyền truy cập bộ nhớ tạm", "error");
+        });
     }
 
     // Mở / Đóng Modal
@@ -1555,7 +1821,6 @@
         const isAuto = document.getElementById("create-auto-pass").checked;
         const customPass = document.getElementById("create-custom-pass").value.trim();
 
-        // Kiểm tra email trùng
         if (usersData.some(u => u.email.toLowerCase() === email)) {
             showToast("Email này đã được sử dụng trong hệ thống!", "error");
             return;
@@ -1574,14 +1839,13 @@
             createdAt: new Date().toISOString()
         };
 
-        // 1. CẬP NHẬT GIAO DIỆN TỨC THÌ (0ms Latency - Không chờ mạng)
+        // 1. Cập nhật giao diện tức thì (0ms Latency)
         usersData.unshift(createdUser);
         closeModal("create-modal");
         renderTable();
         updateMetrics();
         try { localStorage.setItem("tms_users_cache", JSON.stringify(usersData)); } catch {}
 
-        // Mở ngay popup thông tin bàn giao nhân sự mới
         document.getElementById("cred-name").textContent = createdUser.name;
         document.getElementById("cred-email").textContent = createdUser.email;
         document.getElementById("cred-pass").textContent = password;
@@ -1589,7 +1853,7 @@
         document.getElementById("credential-modal").classList.add("open");
         showToast(`Đã tạo tài khoản cho ${createdUser.name}!`, "success");
 
-        // 2. CHẠY NGẦM ĐỒNG BỘ SONG SONG (SUPABASE + BACKEND)
+        // 2. Chạy ngầm đồng bộ
         (async () => {
             const supaUserTask = fetch(`${SUPABASE_URL}/rest/v1/users`, {
                 method: "POST",
@@ -1645,7 +1909,7 @@
         })().catch(err => console.warn("Background sync warning:", err));
     }
 
-    // Chỉnh sửa người dùng (KN-11)
+    // Chỉnh sửa người dùng
     function openEditModal(id) {
         const user = usersData.find(u => u.id === id);
         if (!user) return;
@@ -1670,7 +1934,6 @@
         const status = document.getElementById("edit-status").value;
         const newPass = document.getElementById("edit-new-pass").value.trim();
 
-        // 1. CẬP NHẬT GIAO DIỆN TỨC THÌ (0ms Latency)
         const user = usersData.find(u => u.id === id);
         if (user) {
             user.name = name;
@@ -1685,7 +1948,6 @@
         try { localStorage.setItem("tms_users_cache", JSON.stringify(usersData)); } catch {}
         showToast("Đã cập nhật thông tin tài khoản thành công!", "success");
 
-        // 2. CHẠY NGẦM ĐỒNG BỘ SONG SONG
         (async () => {
             const supaUserPatch = fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(id)}`, {
                 method: "PATCH",
@@ -1748,14 +2010,12 @@
         const targetUser = usersData.find(u => u.id === id);
         const userEmail = targetUser ? targetUser.email : null;
 
-        // 1. CẬP NHẬT GIAO DIỆN TỨC THÌ (0ms Latency - Dòng biến mất ngay lập tức)
         usersData = usersData.filter(u => u.id !== id && (!userEmail || u.email.toLowerCase() !== userEmail.toLowerCase()));
         renderTable();
         updateMetrics();
         try { localStorage.setItem("tms_users_cache", JSON.stringify(usersData)); } catch {}
         showToast(`Đã xóa tài khoản '${name}'.`, "success");
 
-        // 2. CHẠY NGẦM ĐỒNG BỘ XÓA SONG SONG
         (async () => {
             const delSupaRoles = fetch(`${SUPABASE_URL}/rest/v1/user_roles?user_id=eq.${encodeURIComponent(id)}`, {
                 method: "DELETE",
@@ -1803,7 +2063,6 @@
         });
     }
 
-    // Helpers
     function getInitials(name) {
         if (!name) return "U";
         const parts = name.trim().split(" ");

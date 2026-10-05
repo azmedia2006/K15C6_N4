@@ -449,12 +449,12 @@
             color: var(--text-muted);
         }
 
-        /* Overview Page Hero Banner */
+        /* Executive Overview Control Center */
         .welcome-banner {
-            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(16, 185, 129, 0.04) 50%, rgba(37, 99, 235, 0.04) 100%);
+            background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
-            padding: 26px 30px;
+            padding: 24px 28px;
             color: var(--text-main);
             display: flex;
             align-items: center;
@@ -463,6 +463,25 @@
             margin-bottom: 24px;
             box-shadow: var(--shadow-card);
             position: relative;
+        }
+
+        .welcome-banner-left {
+            max-width: 680px;
+        }
+
+        .pulse-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
 
         [data-theme="dark"] .welcome-banner {
@@ -482,7 +501,7 @@
             padding: 3px 10px;
             border-radius: 99px;
             font-weight: 700;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .welcome-title {
@@ -633,24 +652,28 @@
         }
 
         .stat-icon {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: var(--radius-sm);
             display: grid;
             place-items: center;
             background: var(--bg-body);
             border: 1px solid var(--border);
+            color: var(--text-muted);
             transition: var(--transition);
         }
 
         .stat-card:hover .stat-icon {
-            transform: scale(1.05);
+            color: var(--primary);
+            border-color: var(--primary);
+            background: var(--primary-soft);
         }
 
-        .stat-icon.teal { color: #059669; background: var(--primary-soft); border-color: var(--primary-border); }
-        .stat-icon.blue { color: #2563eb; background: var(--blue-soft); border-color: var(--blue-border); }
-        .stat-icon.purple { color: #7c3aed; background: var(--purple-soft); border-color: var(--purple-border); }
-        .stat-icon.amber { color: #d97706; background: var(--amber-soft); border-color: var(--amber-border); }
+        .stat-icon.teal, .stat-icon.blue, .stat-icon.purple, .stat-icon.amber {
+            color: var(--text-muted);
+            background: var(--bg-body);
+            border-color: var(--border);
+        }
 
         .stat-value {
             font-size: 1.875rem;
@@ -1359,12 +1382,15 @@
 
             <!-- VIEW 1: DASHBOARD OVERVIEW -->
             <div id="view-dashboard" class="view-section active">
-                <!-- Overview Header -->
+                <!-- Executive Overview Header -->
                 <section class="welcome-banner">
-                    <div>
-                        <div class="page-eyebrow">CỔNG THÔNG TIN ĐÀO TẠO TMS • TỔNG QUAN VẬN HÀNH</div>
-                        <h1 class="welcome-title">Xin chào, <span id="welcome-name">Nguyễn Văn Anh</span></h1>
-                        <p class="welcome-sub" id="welcome-sub">Hôm nay hệ thống có 4 buổi học đang xếp lịch, 3 công việc cần phê duyệt và tiến độ hoàn thành các khóa đào tạo đạt 82%.</p>
+                    <div class="welcome-banner-left">
+                        <div class="page-eyebrow">
+                            <span class="pulse-dot"></span>
+                            <span>HỆ THỐNG VẬN HÀNH THỜI GIAN THỰC • NĂM HỌC 2026 - QUÝ 4</span>
+                        </div>
+                        <h1 class="welcome-title">Bảng Điều Khiển Quản Trị Hệ Thống</h1>
+                        <p class="welcome-sub" id="welcome-sub">Chào mừng <span id="welcome-name" style="font-weight: 700; color: var(--text-main);">Nguyễn Văn Anh</span>. Giám sát các chỉ số đào tạo, tiến độ lớp học và trạng thái vận hành theo thời gian thực.</p>
                     </div>
                     <div class="banner-buttons" id="banner-buttons">
                         <!-- Dynamic buttons per role injected via JS -->
@@ -2702,37 +2728,60 @@
                 name: "Quản trị viên Hệ thống",
                 roleName: "Quản trị cấp cao (Administrator)",
                 avatar: "AD",
-                welcomeSub: "Bạn đang có toàn quyền quản trị trung tâm, phân quyền vai trò bảo mật và quản lý tài nguyên dữ liệu.",
+                welcomeSub: "Giám sát 37 lớp học, phân quyền bảo mật 9 tài khoản nhân sự và điều phối hoạt động đào tạo Quý 4/2026.",
                 buttons: `
                     <a href="./UserManagement.html" class="btn-banner-light">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-                        Quản lý Người dùng
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                        <span>Quản lý Người dùng</span>
                     </a>
                     <a href="./RoleManagement.html" class="btn-banner-outline">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                        Phân quyền Vai trò
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <span>Phân quyền Vai trò</span>
                     </a>
-                    <button class="btn-banner-outline" onclick="exportSystemReport()">Xuất báo cáo</button>
+                    <button class="btn-banner-outline" onclick="exportSystemReport()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <span>Xuất báo cáo (.csv)</span>
+                    </button>
                 `,
                 stats: `
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Tài khoản nhân sự</span><div class="stat-icon teal"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div></div>
+                        <div class="stat-header">
+                            <span class="stat-label">Tài khoản nhân sự</span>
+                            <div class="stat-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </div>
+                        </div>
                         <div class="stat-value">9</div>
-                        <div class="stat-trend up"><span>9 tài khoản đang hoạt động</span></div>
+                        <div class="stat-trend up"><span class="pulse-dot"></span><span>9 tài khoản đang hoạt động</span></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Vai trò RBAC</span><div class="stat-icon purple"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div></div>
+                        <div class="stat-header">
+                            <span class="stat-label">Danh mục vai trò</span>
+                            <div class="stat-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            </div>
+                        </div>
                         <div class="stat-value">8</div>
-                        <div class="stat-trend neutral"><span>Phân quyền Nhiều - Nhiều (N-N)</span></div>
+                        <div class="stat-trend neutral"><span>Phân quyền Đa vai trò (N-N)</span></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Lớp học trung tâm</span><div class="stat-icon blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div></div>
+                        <div class="stat-header">
+                            <span class="stat-label">Lớp học trung tâm</span>
+                            <div class="stat-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                            </div>
+                        </div>
                         <div class="stat-value">37</div>
-                        <div class="stat-trend up"><span>+5 lớp tuần này</span></div>
+                        <div class="stat-trend up"><span>+5 lớp mới tuần này</span></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">An toàn hệ thống</span><div class="stat-icon amber"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div></div>
-                        <div class="stat-value">100%</div>
+                        <div class="stat-header">
+                            <span class="stat-label">An toàn & Kiểm toán</span>
+                            <div class="stat-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            </div>
+                        </div>
+                        <div class="stat-value" style="color: #059669;">100%</div>
                         <div class="stat-trend up"><span>Audit Log lưu đầy đủ</span></div>
                     </div>
                 `
