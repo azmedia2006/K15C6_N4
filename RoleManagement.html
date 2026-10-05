@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#0f172a">
-    <title>Hệ Thống Đào Tạo TMS | Quản Lý Phân Quyền & Kiểm Toán Hệ Thống</title>
+    <meta name="theme-color" content="#10b981">
+    <title>Hệ Thống Đào Tạo TMS | Phân Quyền Vai Trò Người Dùng </title>
     
     <!-- Client-Side Access Guard -->
     <script src="/authGuard.js" data-required="administrator"></script>
@@ -27,7 +27,6 @@
             --primary: #10b981;
             --primary-hover: #059669;
             --primary-soft: #ecfdf5;
-            --primary-border: #a7f3d0;
             --sidebar-bg: #0f172a;
             --sidebar-text: #94a3b8;
             --sidebar-hover: rgba(255, 255, 255, 0.08);
@@ -36,16 +35,15 @@
             --radius-md: 10px;
             --radius-lg: 14px;
             --shadow-subtle: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
-            --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05), 0 6px 16px -2px rgba(0, 0, 0, 0.03);
-            --shadow-hover: 0 10px 20px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
-            --shadow-modal: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+            --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         body {
@@ -237,18 +235,20 @@
 
         /* Main Workspace */
         main.main-content {
-            padding: 24px 36px 48px;
+            padding: 24px 32px 48px;
             min-width: 0;
             overflow-x: hidden;
         }
 
-        /* Top Breadcrumb & Actions Bar */
-        .top-nav-bar {
+        /* Top Header Bar */
+        .top-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 16px;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
         }
 
         .header-breadcrumb {
@@ -278,10 +278,10 @@
             cursor: pointer;
         }
 
-        .header-actions-right {
+        .header-account {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
         .user-chip {
@@ -289,7 +289,7 @@
             align-items: center;
             gap: 10px;
             background: #ffffff;
-            padding: 5px 12px 5px 6px;
+            padding: 6px 12px 6px 8px;
             border-radius: 999px;
             border: 1px solid var(--border-color);
             box-shadow: var(--shadow-subtle);
@@ -299,7 +299,7 @@
             width: 28px;
             height: 28px;
             border-radius: 50%;
-            background: #0f172a;
+            background: #10b981;
             color: #ffffff;
             font-size: 11px;
             font-weight: 700;
@@ -325,243 +325,157 @@
             color: var(--text-muted);
         }
 
-        /* Page Banner Header */
-        .page-intro-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 24px;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .page-intro-text h1 {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--text-heading);
-            letter-spacing: -0.02em;
-        }
-
-        .page-intro-text p {
-            font-size: 13.5px;
-            color: var(--text-muted);
-            margin-top: 4px;
-            max-width: 680px;
-        }
-
-        .page-quick-actions {
+        .header-actions {
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        /* Executive Stats Panel */
-        .executive-metrics {
+        /* Metric Cards */
+        .metric-cards {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 16px;
             margin-bottom: 24px;
         }
 
-        .exec-card {
+        .metric-card {
             background: var(--bg-surface);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
             padding: 18px 20px;
-            box-shadow: var(--shadow-card);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            transition: all 0.2s ease;
-        }
-
-        .exec-card:hover {
-            box-shadow: var(--shadow-hover);
-            border-color: #cbd5e1;
-        }
-
-        .exec-top {
+            box-shadow: var(--shadow-subtle);
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            gap: 16px;
         }
 
-        .exec-label {
-            font-size: 12.5px;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-        }
-
-        .exec-icon {
-            width: 34px;
-            height: 34px;
+        .metric-icon {
+            width: 44px;
+            height: 44px;
             border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #0f172a;
-            background: #f1f5f9;
+            flex-shrink: 0;
         }
 
-        .exec-value {
-            font-size: 24px;
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-size: 22px;
             font-weight: 700;
             color: var(--text-heading);
+            margin-top: 2px;
             letter-spacing: -0.02em;
-            line-height: 1.1;
         }
 
-        .exec-hint {
-            font-size: 11.5px;
-            color: var(--text-muted);
+        /* Nav Tabs */
+        .navigation-tabs {
             display: flex;
+            gap: 4px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .nav-tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 18px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: color 0.15s ease, border-color 0.15s ease;
+            display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
 
-        .exec-hint-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: #10b981;
-            display: inline-block;
+        .nav-tab-btn:hover {
+            color: var(--text-heading);
         }
 
-        /* Modern Segmented Navigation Tabs */
-        .segmented-tabs-wrapper {
-            margin-bottom: 20px;
+        .nav-tab-btn.active {
+            color: #059669;
+            font-weight: 600;
+            border-bottom-color: #059669;
+        }
+
+        /* Main Panel */
+        .content-panel {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-subtle);
+            padding: 24px;
+        }
+
+        .panel-topbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 20px;
             gap: 16px;
             flex-wrap: wrap;
         }
 
-        .segmented-control {
-            display: inline-flex;
-            background: #e2e8f0;
-            padding: 4px;
-            border-radius: 10px;
-            gap: 4px;
-        }
-
-        .seg-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            border-radius: 7px;
-            font-size: 13.5px;
-            font-weight: 500;
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-
-        .seg-btn:hover {
-            color: var(--text-heading);
-        }
-
-        .seg-btn.active {
-            background: #ffffff;
-            color: var(--text-heading);
+        .panel-heading h2 {
+            font-size: 17px;
             font-weight: 600;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-        }
-
-        .seg-badge {
-            background: #f1f5f9;
             color: var(--text-heading);
-            font-size: 11px;
-            font-weight: 700;
-            padding: 2px 7px;
-            border-radius: 99px;
         }
 
-        .seg-btn.active .seg-badge {
-            background: #0f172a;
-            color: #ffffff;
+        .panel-heading p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 2px;
         }
 
-        /* Content Panel Card */
-        .panel-card {
-            background: var(--bg-surface);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-card);
-            overflow: hidden;
-        }
-
-        .panel-toolbar {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            background: #ffffff;
-        }
-
-        .toolbar-search-wrap {
-            position: relative;
-            flex: 1;
-            min-width: 260px;
-            max-width: 400px;
-        }
-
-        .toolbar-search-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-light);
-            pointer-events: none;
-        }
-
-        .toolbar-search-input {
-            width: 100%;
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            padding: 8px 12px 8px 36px;
-            border-radius: var(--radius-md);
-            font-size: 13.5px;
-            color: var(--text-heading);
-            outline: none;
-            transition: all 0.2s ease;
-        }
-
-        .toolbar-search-input:focus {
-            background: #ffffff;
-            border-color: #0f172a;
-            box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
-        }
-
-        .toolbar-actions {
+        .filter-controls {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
-        .select-filter {
-            background: #f8fafc;
+        .search-field {
+            background: var(--bg-page);
             border: 1px solid var(--border-color);
             padding: 8px 14px;
-            border-radius: var(--radius-md);
-            font-size: 13px;
-            font-weight: 500;
+            border-radius: var(--radius-sm);
+            font-size: 13.5px;
+            color: var(--text-heading);
+            width: 250px;
+            outline: none;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .search-field:focus {
+            border-color: #059669;
+            box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.15);
+            background: #ffffff;
+        }
+
+        .select-field {
+            background: var(--bg-page);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 13.5px;
             color: var(--text-heading);
             outline: none;
             cursor: pointer;
-            transition: all 0.15s ease;
         }
 
-        .select-filter:focus {
-            border-color: #0f172a;
-            background: #ffffff;
+        .select-field:focus {
+            border-color: #059669;
         }
 
         /* Buttons */
@@ -569,14 +483,14 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 7px;
+            gap: 6px;
             font-size: 13px;
             font-weight: 600;
             padding: 8px 14px;
-            border-radius: var(--radius-md);
+            border-radius: var(--radius-sm);
             border: 1px solid transparent;
             cursor: pointer;
-            transition: all 0.15s ease;
+            transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
             white-space: nowrap;
         }
 
@@ -590,259 +504,132 @@
         }
 
         .btn-secondary {
-            background: #ffffff;
+            background: var(--bg-surface);
             border-color: var(--border-color);
             color: var(--text-body);
         }
 
         .btn-secondary:hover {
-            background: #f8fafc;
+            background: #f1f5f9;
             color: var(--text-heading);
-            border-color: #cbd5e1;
         }
 
         .btn-sm {
             padding: 6px 12px;
             font-size: 12.5px;
-            border-radius: var(--radius-sm);
         }
 
-        .btn-outline-danger {
-            color: #be123c;
-            border: 1px solid #fecdd3;
-            background: #fff1f2;
+        .badge-jira {
+            background: #e0e7ff;
+            color: #3730a3;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 4px;
+            letter-spacing: 0.02em;
         }
 
-        .btn-outline-danger:hover {
-            background: #ffe4e6;
-            border-color: #fda4af;
-        }
-
-        /* Enterprise Table Styling */
-        .table-responsive {
+        /* Table */
+        .table-wrapper {
             overflow-x: auto;
-            width: 100%;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
         }
 
-        .saas-table {
+        .data-table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
         }
 
-        .saas-table th {
+        .data-table th {
             background: #f8fafc;
-            padding: 12px 18px;
-            font-size: 11.5px;
-            font-weight: 700;
+            padding: 12px 16px;
+            font-size: 12px;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.04em;
             color: var(--text-muted);
             border-bottom: 1px solid var(--border-color);
         }
 
-        .saas-table td {
-            padding: 14px 18px;
+        .data-table td {
+            padding: 14px 16px;
             border-bottom: 1px solid var(--border-subtle);
             font-size: 13.5px;
             color: var(--text-body);
             vertical-align: middle;
         }
 
-        .saas-table tbody tr {
-            transition: background 0.15s ease;
-        }
-
-        .saas-table tbody tr:hover {
+        .data-table tbody tr:hover {
             background-color: #f8fafc;
         }
 
-        /* User Identity Column */
-        .user-identity-cell {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .user-table-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: #0f172a;
-            color: #ffffff;
-            font-size: 12px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            border: 2px solid #ffffff;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .user-table-info {
-            display: flex;
-            flex-direction: column;
-            line-height: 1.25;
-        }
-
-        .user-table-name {
-            font-size: 13.5px;
-            font-weight: 600;
-            color: var(--text-heading);
-        }
-
-        .user-table-email {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .id-badge-code {
+        .code-pill {
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            font-size: 11.5px;
+            font-size: 12px;
             background: #f1f5f9;
             color: var(--text-heading);
-            padding: 3px 8px;
-            border-radius: var(--radius-sm);
+            padding: 3px 6px;
+            border-radius: 4px;
             border: 1px solid #e2e8f0;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            transition: all 0.15s ease;
         }
 
-        .id-badge-code:hover {
-            background: #e2e8f0;
-            border-color: #cbd5e1;
-        }
-
-        /* Professional Role Badges with Status Dot */
-        .role-pills-wrap {
+        /* Role Badges */
+        .roles-container {
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
         }
 
-        .role-pill-saas {
+        .role-tag {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            font-size: 12px;
+            font-size: 11.5px;
             font-weight: 600;
-            padding: 3px 10px;
+            padding: 3px 8px;
             border-radius: 999px;
-            line-height: 1.25;
+            line-height: 1.2;
             white-space: nowrap;
-            border: 1px solid transparent;
         }
 
-        .role-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            display: inline-block;
-        }
+        .role-tag-administrator { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .role-tag-training_manager { background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+        .role-tag-instructor { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+        .role-tag-teaching_assistant { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+        .role-tag-student { background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb; }
+        .role-tag-admissions { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .role-tag-accountant { background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
+        .role-tag-visitor { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
 
-        .role-pill-administrator { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
-        .role-pill-administrator .role-dot { background: #dc2626; }
-
-        .role-pill-training_manager { background: #ede9fe; color: #6b21a8; border-color: #ddd6fe; }
-        .role-pill-training_manager .role-dot { background: #9333ea; }
-
-        .role-pill-instructor { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
-        .role-pill-instructor .role-dot { background: #059669; }
-
-        .role-pill-teaching_assistant { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
-        .role-pill-teaching_assistant .role-dot { background: #2563eb; }
-
-        .role-pill-student { background: #f1f5f9; color: #334155; border-color: #e2e8f0; }
-        .role-pill-student .role-dot { background: #64748b; }
-
-        .role-pill-admissions { background: #fff7ed; color: #9a3412; border-color: #ffedd5; }
-        .role-pill-admissions .role-dot { background: #ea580c; }
-
-        .role-pill-accountant { background: #fefce8; color: #854d0e; border-color: #fef08a; }
-        .role-pill-accountant .role-dot { background: #ca8a04; }
-
-        .role-pill-visitor { background: #f8fafc; color: #64748b; border-color: #e2e8f0; }
-        .role-pill-visitor .role-dot { background: #94a3b8; }
-
-        /* Status Tag */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #047857;
-            background: #ecfdf5;
-            border: 1px solid #a7f3d0;
-            padding: 3px 9px;
-            border-radius: 999px;
-        }
-
-        .status-dot-pulse {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: #10b981;
-        }
-
-        /* Action Buttons */
-        .action-manage-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            font-size: 12.5px;
-            font-weight: 600;
-            color: var(--text-heading);
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-sm);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-            transition: all 0.15s ease;
-        }
-
-        .action-manage-btn:hover {
-            border-color: #0f172a;
-            background: #0f172a;
-            color: #ffffff;
-        }
-
-        /* Pagination Footer */
-        .panel-pagination-footer {
-            padding: 14px 20px;
-            border-top: 1px solid var(--border-color);
-            background: #ffffff;
+        /* Pagination */
+        .pagination-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-top: 18px;
             font-size: 13px;
             color: var(--text-muted);
         }
 
-        .pagination-controls {
+        .pagination-nav {
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .page-counter-text {
+        .page-status {
             font-weight: 600;
             color: var(--text-heading);
-            padding: 4px 10px;
-            background: #f1f5f9;
-            border-radius: var(--radius-sm);
+            padding: 4px 8px;
         }
 
-        /* Modal Dialog */
+        /* Modal */
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(4px);
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(3px);
             display: none;
             align-items: center;
             justify-content: center;
@@ -854,17 +641,9 @@
             background: #ffffff;
             border-radius: var(--radius-lg);
             width: 100%;
-            max-width: 600px;
+            max-width: 580px;
             box-shadow: var(--shadow-modal);
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            animation: modalScale 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes modalScale {
-            from { transform: scale(0.96); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
         }
 
         .modal-header {
@@ -872,65 +651,42 @@
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center;
         }
 
         .modal-header h3 {
-            font-size: 17px;
-            font-weight: 700;
+            font-size: 16px;
+            font-weight: 600;
             color: var(--text-heading);
-            letter-spacing: -0.01em;
-        }
-
-        .modal-header p {
-            font-size: 12.5px;
-            color: var(--text-muted);
-            margin-top: 2px;
         }
 
         .modal-close-btn {
-            background: #f1f5f9;
+            background: none;
             border: none;
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-muted);
+            font-size: 18px;
+            color: var(--text-light);
             cursor: pointer;
-            transition: all 0.15s ease;
+            line-height: 1;
+            padding: 4px;
         }
 
         .modal-close-btn:hover {
-            background: #e2e8f0;
             color: var(--text-heading);
         }
 
         .modal-body {
             padding: 24px;
-            max-height: 65vh;
+            max-height: 70vh;
             overflow-y: auto;
-        }
-
-        .modal-user-summary-card {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 14px 16px;
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            margin-bottom: 24px;
         }
 
         .modal-section-title {
             font-size: 12px;
-            font-weight: 700;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.05em;
             color: var(--text-muted);
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
         .current-roles-wrapper {
@@ -941,22 +697,21 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 16px;
-            background: #ffffff;
+            padding: 10px 14px;
+            background: #f8fafc;
             border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
+            border-radius: var(--radius-sm);
             margin-bottom: 8px;
-            box-shadow: var(--shadow-subtle);
         }
 
         .role-info-meta {
             display: flex;
-            flex-direction: column;
-            gap: 4px;
+            align-items: center;
+            gap: 8px;
         }
 
         .role-date-text {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-muted);
         }
 
@@ -969,28 +724,27 @@
         .role-checkbox-card {
             display: flex;
             align-items: flex-start;
-            gap: 12px;
-            padding: 14px;
+            gap: 10px;
+            padding: 12px;
             border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
+            border-radius: var(--radius-sm);
             cursor: pointer;
             transition: all 0.15s ease;
-            background: #ffffff;
         }
 
         .role-checkbox-card:hover {
-            border-color: #0f172a;
             background: #f8fafc;
+            border-color: #cbd5e1;
         }
 
         .role-card-label {
-            font-size: 13.5px;
+            font-size: 13px;
             font-weight: 600;
             color: var(--text-heading);
         }
 
         .role-card-desc {
-            font-size: 11.5px;
+            font-size: 11px;
             color: var(--text-muted);
             margin-top: 2px;
             line-height: 1.35;
@@ -1005,7 +759,7 @@
             gap: 10px;
         }
 
-        /* Toast Notifications */
+        /* Toast */
         .toast-shelf {
             position: fixed;
             bottom: 24px;
@@ -1022,25 +776,24 @@
             font-size: 13px;
             font-weight: 500;
             padding: 12px 18px;
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-modal);
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-card);
             display: flex;
             align-items: center;
-            gap: 10px;
-            animation: toastSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: toastIn 0.2s ease-out;
         }
 
         .toast-notification.error {
             background: #be123c;
         }
 
-        @keyframes toastSlide {
-            from { opacity: 0; transform: translateY(12px); }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Responsive Media Queries */
-        @media (max-width: 960px) {
+        /* Responsive */
+        @media (max-width: 900px) {
             .app-layout { grid-template-columns: 1fr; }
             aside.sidebar {
                 position: fixed;
@@ -1059,23 +812,19 @@
             }
             .mobile-menu-btn { display: inline-flex; align-items: center; justify-content: center; }
             main.main-content { padding: 18px 16px 48px; }
-            .executive-metrics { grid-template-columns: repeat(2, 1fr); }
+            .metric-cards { grid-template-columns: repeat(2, 1fr); }
         }
 
-        @media (max-width: 640px) {
-            .executive-metrics { grid-template-columns: 1fr; }
-            .top-nav-bar { flex-direction: column; align-items: stretch; gap: 12px; }
-            .header-actions-right { justify-content: space-between; }
-            .page-intro-header { flex-direction: column; align-items: stretch; gap: 14px; }
-            .page-quick-actions { width: 100%; justify-content: flex-start; }
-            .segmented-control { width: 100%; }
-            .seg-btn { flex: 1; justify-content: center; }
-            .panel-toolbar { flex-direction: column; align-items: stretch; gap: 10px; }
-            .toolbar-search-wrap { max-width: 100%; }
-            .toolbar-actions { width: 100%; justify-content: space-between; }
+        @media (max-width: 600px) {
+            .metric-cards { grid-template-columns: 1fr; }
+            .top-header { flex-direction: column; align-items: stretch; gap: 14px; }
+            .header-account { justify-content: space-between; }
             .role-assign-grid { grid-template-columns: 1fr; }
-            .panel-pagination-footer { flex-direction: column; gap: 12px; align-items: stretch; text-align: center; }
-            .pagination-controls { justify-content: center; }
+            .filter-controls { width: 100%; }
+            .search-field { width: 100%; }
+            .select-field { width: 100%; }
+            .pagination-container { flex-direction: column; gap: 12px; align-items: stretch; text-align: center; }
+            .pagination-nav { justify-content: center; }
         }
     </style>
 </head>
@@ -1151,22 +900,21 @@
 
     <!-- Main Workspace -->
     <main class="main-content">
-        <!-- Top Navigation Bar -->
-        <div class="top-nav-bar">
+        <!-- Top Header Bar -->
+        <header class="top-header">
             <div style="display: flex; align-items: center; gap: 14px;">
                 <button class="mobile-menu-btn" onclick="toggleMobileSidebar(true)" aria-label="Mở menu" title="Mở danh mục menu">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                 </button>
                 <div class="header-breadcrumb">
-                    <a href="./Dashboard.html">Trang chủ</a>
+                    <a href="./Dashboard.html">Hệ thống</a>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                    <span>Quản trị hệ thống</span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-                    <span class="current">Phân quyền vai trò & Kiểm toán</span>
+                    <span class="current">Phân quyền vai trò người dùng</span>
+                    
                 </div>
             </div>
 
-            <div class="header-actions-right">
+            <div class="header-account">
                 <div class="user-chip">
                     <div class="user-avatar" id="admin-avatar">AD</div>
                     <div class="user-details">
@@ -1174,201 +922,147 @@
                         <span class="user-email" id="admin-email">admin@tms.edu.vn</span>
                     </div>
                 </div>
-                <button class="btn btn-secondary btn-sm" onclick="switchAccount()" title="Chuyển đổi tài khoản quản trị">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
-                    <span>Đổi tài khoản</span>
-                </button>
+                <div class="header-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="switchAccount()" title="Chuyển đổi tài khoản quản trị">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
+                        <span>Đổi tài khoản</span>
+                    </button>
+                    <a href="./Dashboard.html" class="btn btn-secondary btn-sm" title="Về trang tổng quan TMS">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                        <span>Về Tổng quan</span>
+                    </a>
+                </div>
             </div>
-        </div>
+        </header>
 
-        <!-- Page Intro Header -->
-        <div class="page-intro-header">
-            <div class="page-intro-text">
-                <h1>Quản Lý Phân Quyền & Kiểm Toán Hệ Thống</h1>
-                <p>Thiết lập quyền hạn truy cập đa vai trò cho từng tài khoản và theo dõi chi tiết toàn bộ lịch sử kiểm toán bảo mật theo thời gian thực.</p>
-            </div>
-            <div class="page-quick-actions">
-                <button class="btn btn-secondary" onclick="exportCurrentViewCSV()" title="Xuất dữ liệu ra file CSV">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    <span>Xuất báo cáo CSV</span>
-                </button>
-                <a href="./Dashboard.html" class="btn btn-primary" title="Về màn hình Dashboard chính">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                    <span>Về Tổng quan</span>
-                </a>
-            </div>
-        </div>
-
-        <!-- Executive Metrics -->
-        <div class="executive-metrics">
-            <div class="exec-card">
-                <div class="exec-top">
-                    <span class="exec-label">Tổng nhân sự</span>
-                    <div class="exec-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                    </div>
+        <!-- Metric Stat Cards -->
+        <div class="metric-cards">
+            <div class="metric-card">
+                <div class="metric-icon" style="background: rgba(16, 185, 129, 0.12); color: #059669;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 </div>
-                <div class="exec-value" id="stat-total-users">9</div>
-                <div class="exec-hint">
-                    <span class="exec-hint-dot"></span>
-                    <span>100% tài khoản đã định danh</span>
+                <div class="metric-info">
+                    <div class="metric-label">Tổng tài khoản</div>
+                    <div class="metric-value" id="stat-total-users">9</div>
                 </div>
             </div>
-
-            <div class="exec-card">
-                <div class="exec-top">
-                    <span class="exec-label">Danh mục vai trò</span>
-                    <div class="exec-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                    </div>
+            <div class="metric-card">
+                <div class="metric-icon" style="background: rgba(59, 130, 246, 0.12); color: #2563eb;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 </div>
-                <div class="exec-value">8</div>
-                <div class="exec-hint">
-                    <span class="exec-hint-dot"></span>
-                    <span>Mô hình phân quyền đa nhiệm (N-N)</span>
+                <div class="metric-info">
+                    <div class="metric-label">Danh mục vai trò</div>
+                    <div class="metric-value">8</div>
                 </div>
             </div>
-
-            <div class="exec-card">
-                <div class="exec-top">
-                    <span class="exec-label">Khối Giảng dạy & Đào tạo</span>
-                    <div class="exec-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-                    </div>
+            <div class="metric-card">
+                <div class="metric-icon" style="background: rgba(245, 158, 11, 0.12); color: #d97706;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                 </div>
-                <div class="exec-value" id="stat-faculty-count">3</div>
-                <div class="exec-hint">
-                    <span class="exec-hint-dot"></span>
-                    <span>Giảng viên, Trợ giảng & Quản lý</span>
+                <div class="metric-info">
+                    <div class="metric-label">Kiến trúc phân quyền</div>
+                    <div class="metric-value" style="font-size: 16px; margin-top: 4px;">Đa vai trò N-N</div>
                 </div>
             </div>
-
-            <div class="exec-card">
-                <div class="exec-top">
-                    <span class="exec-label">Giám sát an ninh</span>
-                    <div class="exec-icon">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    </div>
+            <div class="metric-card">
+                <div class="metric-icon" style="background: rgba(139, 92, 246, 0.12); color: #7c3aed;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 </div>
-                <div class="exec-value" style="font-size: 19px; margin-top: 3px;">Hoạt động</div>
-                <div class="exec-hint">
-                    <span class="exec-hint-dot"></span>
-                    <span>Ghi nhận tức thời mọi lượt phân quyền</span>
+                <div class="metric-info">
+                    <div class="metric-label">Nhật ký kiểm toán</div>
+                    <div class="metric-value" style="font-size: 16px; margin-top: 4px;">Audit Log </div>
                 </div>
             </div>
         </div>
 
-        <!-- Segmented Tab Navigation -->
-        <div class="segmented-tabs-wrapper">
-            <div class="segmented-control">
-                <button class="seg-btn active" id="tab-users" onclick="switchTab('users')">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                    <span>Danh sách phân quyền</span>
-                    <span class="seg-badge" id="badge-users-count">9</span>
-                </button>
-                <button class="seg-btn" id="tab-audit" onclick="switchTab('audit')">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                    <span>Nhật ký kiểm toán (Audit Trail)</span>
-                    <span class="seg-badge" id="badge-audit-count">5</span>
-                </button>
-            </div>
+        <!-- Navigation Tabs -->
+        <div class="navigation-tabs">
+            <button class="nav-tab-btn active" id="tab-users" onclick="switchTab('users')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span>Danh sách tài khoản & Phân quyền</span>
+            </button>
+            <button class="nav-tab-btn" id="tab-audit" onclick="switchTab('audit')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>Nhật ký phân quyền (Audit Log)</span>
+            </button>
         </div>
 
-        <!-- VIEW 1: Danh sách tài khoản & Phân quyền -->
-        <section id="view-users" class="panel-card">
-            <div class="panel-toolbar">
-                <div class="toolbar-search-wrap">
-                    <svg class="toolbar-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    <input type="text" id="search-input" class="toolbar-search-input" placeholder="Tìm theo họ tên, email hoặc mã tài khoản..." oninput="handleFilterChange()">
+        <!-- Tab 1: Danh sách tài khoản -->
+        <section id="view-users" class="content-panel">
+            <div class="panel-topbar">
+                <div class="panel-heading">
+                    <h2>Tài khoản và vai trò</h2>
+                    <p>Một tài khoản có thể đảm nhiệm nhiều vai trò đồng thời</p>
                 </div>
 
-                <div class="toolbar-actions">
-                    <select id="role-filter" class="select-filter" onchange="handleFilterChange()">
+                <div class="filter-controls">
+                    <input type="text" id="search-input" class="search-field" placeholder="Tìm theo tên, email, mã..." oninput="handleFilterChange()">
+                    <select id="role-filter" class="select-field" onchange="handleFilterChange()">
                         <option value="">Tất cả vai trò</option>
                     </select>
-
-                    <button class="btn btn-secondary btn-sm" onclick="exportUsersCSV()" title="Xuất danh sách phân quyền hiện tại sang file CSV">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        <span>Xuất CSV</span>
-                    </button>
-
-                    <button class="btn btn-secondary btn-sm" onclick="loadUsersList()" title="Tải lại danh sách tài khoản">
+                    <button class="btn btn-secondary btn-sm btn-refresh" onclick="loadUsersList()">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-                        <span>Làm mới</span>
+                        Làm mới
                     </button>
                 </div>
             </div>
 
-            <div class="table-responsive">
-                <table class="saas-table">
+            <div class="table-wrapper">
+                <table class="data-table">
                     <thead>
                         <tr>
-                            <th style="width: 280px;">Nhân sự / Người dùng</th>
-                            <th style="width: 140px;">Mã định danh</th>
-                            <th>Vai trò đang đảm nhiệm</th>
-                            <th style="width: 140px;">Trạng thái</th>
-                            <th style="width: 130px; text-align: right;">Hành động</th>
+                            <th style="width: 140px;">Mã người dùng</th>
+                            <th>Họ và tên</th>
+                            <th>Email</th>
+                            <th>Vai trò hiện tại</th>
+                            <th style="width: 130px; text-align: right;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody id="users-table-body">
-                        <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 36px;">Đang tải danh sách tài khoản...</td></tr>
+                        <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 32px;">Đang tải danh sách...</td></tr>
                     </tbody>
                 </table>
             </div>
 
-            <div class="panel-pagination-footer">
-                <div id="pagination-info">Đang hiển thị...</div>
-                <div class="pagination-controls">
+            <div class="pagination-container">
+                <div id="pagination-info">Đang cập nhật...</div>
+                <div class="pagination-nav">
                     <button class="btn btn-secondary btn-sm" id="btn-prev-page" onclick="changePage(-1)">Trước</button>
-                    <span class="page-counter-text" id="page-indicator">1 / 1</span>
+                    <span class="page-status" id="page-indicator">1 / 1</span>
                     <button class="btn btn-secondary btn-sm" id="btn-next-page" onclick="changePage(1)">Sau</button>
                 </div>
             </div>
         </section>
 
-        <!-- VIEW 2: Nhật ký kiểm toán -->
-        <section id="view-audit" class="panel-card" style="display: none;">
-            <div class="panel-toolbar">
-                <div class="toolbar-search-wrap">
-                    <svg class="toolbar-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    <input type="text" id="audit-search-input" class="toolbar-search-input" placeholder="Lọc nhật ký theo người dùng, lý do hoặc IP..." oninput="handleAuditSearch()">
+        <!-- Tab 2: Nhật ký thao tác -->
+        <section id="view-audit" class="content-panel" style="display: none;">
+            <div class="panel-topbar">
+                <div class="panel-heading">
+                    <h2>Nhật ký phân quyền</h2>
+                    <p>Lịch sử các thao tác gán và thu hồi vai trò trên hệ thống </p>
                 </div>
-
-                <div class="toolbar-actions">
-                    <select id="audit-action-filter" class="select-filter" onchange="handleAuditSearch()">
-                        <option value="">Tất cả hành động</option>
-                        <option value="ASSIGN_ROLE">Cấp thêm vai trò</option>
-                        <option value="REVOKE_ROLE">Thu hồi vai trò</option>
-                    </select>
-
-                    <button class="btn btn-secondary btn-sm" onclick="exportAuditLogsCSV()" title="Xuất toàn bộ nhật ký kiểm toán sang CSV">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        <span>Xuất CSV</span>
-                    </button>
-
-                    <button class="btn btn-secondary btn-sm" onclick="loadAuditLogs()" title="Cập nhật nhật ký mới nhất">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-                        <span>Cập nhật</span>
-                    </button>
-                </div>
+                <button class="btn btn-secondary btn-sm btn-refresh" onclick="loadAuditLogs()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                    Làm mới nhật ký
+                </button>
             </div>
 
-            <div class="table-responsive">
-                <table class="saas-table">
+            <div class="table-wrapper">
+                <table class="data-table">
                     <thead>
                         <tr>
-                            <th style="width: 170px;">Thời gian</th>
-                            <th style="width: 140px;">Quản trị viên</th>
-                            <th style="width: 150px;">Tài khoản thụ hưởng</th>
-                            <th style="width: 130px;">Hành động</th>
-                            <th style="width: 180px;">Vai trò thay đổi</th>
-                            <th style="width: 120px;">Địa chỉ IP</th>
-                            <th style="width: 130px;">Kết quả</th>
-                            <th>Chi tiết & Ghi chú</th>
+                            <th style="width: 160px;">Thời gian</th>
+                            <th>Người thực hiện</th>
+                            <th>Tài khoản nhận</th>
+                            <th>Thao tác</th>
+                            <th>Vai trò</th>
+                            <th>Địa chỉ IP</th>
+                            <th>Trạng thái</th>
+                            <th>Ghi chú</th>
                         </tr>
                     </thead>
                     <tbody id="audit-table-body">
-                        <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 36px;">Đang tải nhật ký kiểm toán...</td></tr>
+                        <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 32px;">Đang tải nhật ký...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -1376,60 +1070,49 @@
     </main>
 </div>
 
-<!-- Modal: Thiết lập phân quyền -->
+<!-- Modal Quản lý vai trò -->
 <div class="modal-overlay" id="role-modal">
     <div class="modal-card">
         <div class="modal-header">
             <div>
-                <h3 id="modal-user-title">Thiết lập quyền hạn tài khoản</h3>
-                <p id="modal-user-subtitle">Cập nhật và phân quyền truy cập đa nhiệm cho nhân sự</p>
+                <h3 id="modal-user-title">Phân quyền tài khoản</h3>
+                <p id="modal-user-subtitle" style="font-size: 12px; color: var(--text-muted); margin-top: 2px;"></p>
             </div>
-            <button class="modal-close-btn" onclick="closeRoleModal()" aria-label="Đóng cửa sổ">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <button class="modal-close-btn" onclick="closeRoleModal()" aria-label="Đóng">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
         </div>
 
         <div class="modal-body">
-            <div class="modal-user-summary-card">
-                <div class="user-table-avatar" id="modal-user-avatar">US</div>
-                <div class="user-table-info">
-                    <div class="user-table-name" id="modal-summary-name">Đang nạp...</div>
-                    <div class="user-table-email" id="modal-summary-email">-</div>
-                </div>
-            </div>
-
             <div class="current-roles-wrapper">
                 <div class="modal-section-title">Vai trò đang áp dụng</div>
                 <div id="modal-current-roles-list"></div>
             </div>
 
             <div>
-                <div class="modal-section-title">Cấp thêm vai trò mới</div>
+                <div class="modal-section-title">Gán thêm vai trò mới</div>
                 <div class="role-assign-grid" id="modal-available-roles-grid"></div>
             </div>
         </div>
 
         <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeRoleModal()">Hủy bỏ</button>
-            <button class="btn btn-primary" id="btn-save-assign" onclick="submitAssignRoles()">Cập nhật phân quyền</button>
+            <button class="btn btn-secondary" onclick="closeRoleModal()">Đóng</button>
+            <button class="btn btn-primary" id="btn-save-assign" onclick="submitAssignRoles()">Lưu vai trò</button>
         </div>
     </div>
 </div>
 
-<!-- Modal: Xác nhận thu hồi vai trò -->
+<!-- Modal Xác nhận thu hồi -->
 <div class="modal-overlay" id="confirm-modal">
     <div class="modal-card" style="max-width: 440px;">
         <div class="modal-header">
-            <div>
-                <h3>Xác nhận thu hồi vai trò</h3>
-                <p>Hành động này sẽ cập nhật ngay lập tức quyền hạn của người dùng</p>
-            </div>
-            <button class="modal-close-btn" onclick="closeConfirmModal()" aria-label="Đóng cửa sổ">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <h3>Xác nhận thu hồi vai trò</h3>
+            <button class="modal-close-btn" onclick="closeConfirmModal()" aria-label="Đóng">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
         </div>
         <div class="modal-body">
-            <p id="confirm-modal-text" style="font-size: 13.5px; color: var(--text-body); line-height: 1.6;"></p>
+            <p id="confirm-modal-text" style="font-size: 13.5px; color: var(--text-body);"></p>
         </div>
         <div class="modal-footer">
             <button class="btn btn-secondary" onclick="closeConfirmModal()">Hủy bỏ</button>
@@ -1447,14 +1130,14 @@
         : "http://localhost:3000/api";
 
     const ROLE_DICTIONARY = {
-        "administrator": { id: "administrator", code: "administrator", name: "Quản trị hệ thống", description: "Toàn quyền quản trị tài khoản, phân quyền và cài đặt hệ thống" },
-        "training_manager": { id: "training_manager", code: "training_manager", name: "Quản lý đào tạo", description: "Quản lý chương trình môn học, lớp học và tiến độ đào tạo" },
+        "administrator": { id: "administrator", code: "administrator", name: "Quản trị hệ thống", description: "Toàn quyền quản trị hệ thống, tài khoản và phân quyền" },
+        "training_manager": { id: "training_manager", code: "training_manager", name: "Quản lý đào tạo", description: "Quản lý chương trình, môn học, lớp học và tiến độ đào tạo" },
         "instructor": { id: "instructor", code: "instructor", name: "Giảng viên", description: "Quản lý lớp học phụ trách, điểm danh và chấm bài tập" },
-        "teaching_assistant": { id: "teaching_assistant", code: "teaching_assistant", name: "Trợ giảng", description: "Hỗ trợ giảng viên hướng dẫn học viên và điểm danh chuyên cần" },
-        "student": { id: "student", code: "student", name: "Học viên", description: "Học tập, nộp bài tập và xem kết quả đào tạo cá nhân" },
-        "admissions": { id: "admissions", code: "admissions", name: "Tư vấn tuyển sinh", description: "Tiếp nhận học viên mới, tư vấn khóa học và hoàn tất ghi danh" },
-        "accountant": { id: "accountant", code: "accountant", name: "Kế toán đào tạo", description: "Quản lý học phí, phát hành biên lai thu và đối soát công nợ" },
-        "visitor": { id: "visitor", code: "visitor", name: "Khách tham quan", description: "Xem thông tin khóa học công khai và biểu phí tham khảo" }
+        "teaching_assistant": { id: "teaching_assistant", code: "teaching_assistant", name: "Trợ giảng", description: "Hỗ trợ giảng viên hướng dẫn học viên và điểm danh" },
+        "student": { id: "student", code: "student", name: "Học viên", description: "Học tập, nộp bài tập và xem kết quả học tập" },
+        "admissions": { id: "admissions", code: "admissions", name: "Tư vấn tuyển sinh", description: "Tiếp nhận lead, tư vấn khóa học và ghi danh" },
+        "accountant": { id: "accountant", code: "accountant", name: "Kế toán đào tạo", description: "Quản lý học phí, biên lai thu và đối soát công nợ" },
+        "visitor": { id: "visitor", code: "visitor", name: "Khách truy cập", description: "Xem thông tin khóa học công khai và biểu phí tham khảo" }
     };
 
     const DEFAULT_SEED_LOGS = [
@@ -1467,7 +1150,7 @@
             roleId: "teaching_assistant",
             ip: "127.0.0.1",
             status: "SUCCESS",
-            reason: "Phân quyền Trợ giảng phụ trách lớp học K15C6"
+            reason: "Phân quyền Trợ giảng phụ trách lớp K15C6"
         },
         {
             id: "log_seed_004",
@@ -1478,7 +1161,7 @@
             roleId: "administrator",
             ip: "127.0.0.1",
             status: "FORBIDDEN",
-            reason: "Chặn tự thu hồi vai trò Quản trị viên của chính mình nhằm bảo đảm an toàn hệ thống"
+            reason: "Không thể tự thu hồi vai trò Quản trị viên của chính mình (KN-56)"
         },
         {
             id: "log_seed_003",
@@ -1489,7 +1172,7 @@
             roleId: "training_manager",
             ip: "127.0.0.1",
             status: "SUCCESS",
-            reason: "Gán kiêm nhiệm Quản lý đào tạo cho Giảng viên trưởng bộ môn"
+            reason: "Gán kiêm nhiệm Quản lý đào tạo theo KN-58"
         },
         {
             id: "log_seed_002",
@@ -1500,7 +1183,7 @@
             roleId: "instructor",
             ip: "127.0.0.1",
             status: "SUCCESS",
-            reason: "Cấp quyền Giảng viên bộ môn Công nghệ phần mềm"
+            reason: "Phân quyền Giảng viên bộ môn Công nghệ phần mềm"
         },
         {
             id: "log_seed_001",
@@ -1511,7 +1194,7 @@
             roleId: "training_manager",
             ip: "127.0.0.1",
             status: "SUCCESS",
-            reason: "Khởi tạo phân quyền Quản lý đào tạo khối Chuyên ngành"
+            reason: "Khởi tạo phân quyền quản trị đào tạo theo Sprint 1"
         }
     ];
 
@@ -1535,16 +1218,7 @@
             if (!Array.isArray(logs)) logs = [];
             logs.unshift(newEntry);
             localStorage.setItem("tms_audit_logs", JSON.stringify(logs.slice(0, 100)));
-            const auditBadge = document.getElementById("badge-audit-count");
-            if (auditBadge) auditBadge.textContent = logs.length;
         } catch {}
-    }
-
-    function copyToClipboard(text, label) {
-        if (!navigator.clipboard) return;
-        navigator.clipboard.writeText(text).then(() => {
-            showToast(`Đã sao chép ${label || 'mã'}: ${text}`);
-        }).catch(() => {});
     }
 
     function normalizeRole(roleInput) {
@@ -1564,13 +1238,6 @@
             assignedAt: roleInput.assignedAt,
             assignedBy: roleInput.assignedBy
         };
-    }
-
-    function getInitials(name, fallback = "US") {
-        if (!name) return fallback;
-        const parts = String(name).trim().split(/\s+/).filter(Boolean);
-        if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     }
 
     function normalizeAdmin(user) {
@@ -1605,7 +1272,6 @@
 
     let allRoles = Object.values(ROLE_DICTIONARY);
     let usersList = [];
-    let cachedAuditLogs = [];
     let activeEditingUser = null;
     let pendingRevokeTarget = null;
     let currentPage = 1;
@@ -1663,7 +1329,7 @@
     }
 
     async function switchAccount() {
-        const email = prompt("Nhập email tài khoản muốn chuyển đổi quyền quản trị:", "admin@tms.edu.vn");
+        const email = prompt("Nhập email tài khoản muốn chuyển đổi:", "admin@tms.edu.vn");
         if (!email) return;
         try {
             const res = await fetch(`${API_BASE}/auth/login`, {
@@ -1677,7 +1343,7 @@
                 currentAdmin = normalizeAdmin(data.user);
                 localStorage.setItem("tms_token", authToken);
                 localStorage.setItem("tms_user", JSON.stringify(currentAdmin));
-                showToast(`Đã chuyển phiên đăng nhập sang: ${currentAdmin.name}`);
+                showToast(`Đã chuyển sang tài khoản: ${currentAdmin.name}`);
                 initApp();
             } else {
                 showToast(data.message, "error");
@@ -1701,9 +1367,12 @@
         if (sideNameEl) sideNameEl.textContent = currentAdmin.name;
         if (sideRoleEl) sideRoleEl.textContent = "Quản trị hệ thống (Admin)";
 
-        const initials = getInitials(currentAdmin.name, "AD");
-        if (avatarEl) avatarEl.textContent = initials;
-        if (sideAvatarEl) sideAvatarEl.textContent = initials;
+        const nameWords = (currentAdmin.name || "Admin").trim().split(/\s+/).filter(Boolean);
+        const initials = nameWords.length > 1
+            ? (nameWords[0][0] + nameWords[nameWords.length - 1][0]).toUpperCase()
+            : (currentAdmin.name || "AD").slice(0, 2).toUpperCase();
+        if (avatarEl) avatarEl.textContent = initials || "AD";
+        if (sideAvatarEl) sideAvatarEl.textContent = initials || "AD";
 
         await loadRolesDirectory();
         await loadUsersList();
@@ -1745,7 +1414,7 @@
         const search = searchInput ? searchInput.value.trim() : "";
         const roleId = roleFilter ? roleFilter.value : "";
         if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 36px;">Đang tải danh sách người dùng...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 32px;">Đang tải dữ liệu...</td></tr>`;
         }
 
         try {
@@ -1804,8 +1473,6 @@
         if (statEl) statEl.textContent = count;
         const sideBadge = document.getElementById("sidebar-total-badge");
         if (sideBadge) sideBadge.textContent = count;
-        const userCountBadge = document.getElementById("badge-users-count");
-        if (userCountBadge) userCountBadge.textContent = count;
     }
 
     function renderUsersTable(list) {
@@ -1813,7 +1480,7 @@
         if (!tbody) return;
 
         if (list.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px;">Không tìm thấy tài khoản nào khớp với bộ lọc.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 32px;">Không tìm thấy người dùng nào phù hợp.</td></tr>`;
             return;
         }
 
@@ -1823,42 +1490,21 @@
             const safeName = u.name || u.fullName || u.email || "Chưa đặt tên";
             const safeEmail = u.email || "-";
             const safeId = u.id || "-";
-            const initials = getInitials(safeName, "US");
 
             const rolesHtml = userRoles.map(r => 
-                `<span class="role-pill-saas role-pill-${r.code}"><span class="role-dot"></span>${r.name}</span>`
+                `<span class="role-tag role-tag-${r.code}">${r.name}</span>`
             ).join("");
 
             return `
-                <tr>
-                    <td>
-                        <div class="user-identity-cell">
-                            <div class="user-table-avatar">${initials}</div>
-                            <div class="user-table-info">
-                                <span class="user-table-name">${safeName}</span>
-                                <span class="user-table-email">${safeEmail}</span>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="id-badge-code" title="Nhấn để sao chép mã" onclick="copyToClipboard('${safeId}', 'mã người dùng')">
-                            ${safeId}
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                        </span>
-                    </td>
-                    <td>
-                        <div class="role-pills-wrap">${rolesHtml}</div>
-                    </td>
-                    <td>
-                        <span class="status-badge">
-                            <span class="status-dot-pulse"></span>
-                            <span>Hoạt động</span>
-                        </span>
-                    </td>
-                    <td style="text-align: right;">
-                        <button class="action-manage-btn" onclick="openRoleModal('${safeId}')" title="Cập nhật vai trò tài khoản">
+                <tr class="user-row-card">
+                    <td data-label="Mã người dùng"><span class="code-pill">${safeId}</span></td>
+                    <td data-label="Họ và tên"><strong>${safeName}</strong></td>
+                    <td data-label="Email">${safeEmail}</td>
+                    <td data-label="Vai trò hiện tại"><div class="roles-container">${rolesHtml}</div></td>
+                    <td data-label="Thao tác" class="action-cell" style="text-align: right;">
+                        <button class="btn btn-secondary btn-sm" onclick="openRoleModal('${safeId}')">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                            <span>Phân quyền</span>
+                            Phân quyền
                         </button>
                     </td>
                 </tr>
@@ -1877,7 +1523,7 @@
         const prevBtn = document.getElementById("btn-prev-page");
         const nextBtn = document.getElementById("btn-next-page");
 
-        if (infoEl) infoEl.textContent = `Hiển thị ${usersList.length} trên tổng số ${total} tài khoản`;
+        if (infoEl) infoEl.textContent = `Hiển thị ${usersList.length} trên ${total} người dùng`;
         if (indEl) indEl.textContent = `${page} / ${maxPages}`;
         if (prevBtn) prevBtn.disabled = page <= 1;
         if (nextBtn) nextBtn.disabled = page >= maxPages;
@@ -1916,20 +1562,13 @@
         const safeName = activeEditingUser.name || activeEditingUser.fullName || activeEditingUser.email || "Người dùng";
         const safeEmail = activeEditingUser.email || "-";
         const safeId = activeEditingUser.id || "-";
-        const initials = getInitials(safeName, "US");
 
         const titleEl = document.getElementById("modal-user-title");
         const subEl = document.getElementById("modal-user-subtitle");
-        const sumName = document.getElementById("modal-summary-name");
-        const sumEmail = document.getElementById("modal-summary-email");
-        const sumAvatar = document.getElementById("modal-user-avatar");
         const modal = document.getElementById("role-modal");
 
         if (titleEl) titleEl.textContent = `Phân quyền: ${safeName}`;
-        if (subEl) subEl.textContent = `Mã định danh: ${safeId} • Email: ${safeEmail}`;
-        if (sumName) sumName.textContent = safeName;
-        if (sumEmail) sumEmail.textContent = safeEmail;
-        if (sumAvatar) sumAvatar.textContent = initials;
+        if (subEl) subEl.textContent = `Mã: ${safeId} • Email: ${safeEmail}`;
 
         renderModalRoles();
         if (modal) modal.style.display = "flex";
@@ -1959,25 +1598,18 @@
                     const cannotRevoke = isLast || isSelfAdmin;
 
                     let tooltip = "Thu hồi vai trò này";
-                    let reasonNote = r.description || '';
-                    if (isLast) {
-                        tooltip = "Không thể thu hồi: Người dùng phải có ít nhất 1 vai trò hợp lệ";
-                        reasonNote = "Vai trò duy nhất bắt buộc";
-                    }
-                    if (isSelfAdmin) {
-                        tooltip = "Không thể thu hồi: Quản trị viên không thể tự xóa quyền Admin của mình";
-                        reasonNote = "Quyền quản trị tài khoản hiện tại";
-                    }
+                    if (isLast) tooltip = "Không thể thu hồi vai trò duy nhất của người dùng";
+                    if (isSelfAdmin) tooltip = "Không thể tự thu hồi vai trò Quản trị viên của chính mình";
 
                     return `
                         <div class="current-role-item">
                             <div class="role-info-meta">
-                                <span class="role-pill-saas role-pill-${r.code}"><span class="role-dot"></span>${r.name}</span>
-                                <span class="role-date-text">${reasonNote}</span>
+                                <span class="role-tag role-tag-${r.code}">${r.name}</span>
+                                <span class="role-date-text">${r.description || ''}</span>
                             </div>
                             <button 
-                                class="btn btn-sm btn-outline-danger" 
-                                style="${cannotRevoke ? 'opacity: 0.4; cursor: not-allowed; border-color: #cbd5e1; color: #94a3b8; background: #f8fafc;' : ''}"
+                                class="btn btn-secondary btn-sm" 
+                                style="color: #be123c; border-color: #fecdd3; padding: 4px 8px; ${cannotRevoke ? 'opacity: 0.5; cursor: not-allowed;' : ''}"
                                 title="${tooltip}"
                                 ${cannotRevoke ? 'disabled' : ''}
                                 onclick="confirmRevokeRole('${activeEditingUser.id}', '${r.code}', '${r.name}')"
@@ -1996,13 +1628,13 @@
 
         if (availableGrid) {
             if (availableRoles.length === 0) {
-                availableGrid.innerHTML = `<p style="grid-column: span 2; color: var(--text-muted); font-size: 13px; padding: 12px; background: #f8fafc; border-radius: 8px;">Tài khoản này đã sở hữu đầy đủ tất cả các vai trò trong hệ thống.</p>`;
+                availableGrid.innerHTML = `<p style="grid-column: span 2; color: var(--text-muted); font-size: 13px;">Người dùng đã có tất cả vai trò.</p>`;
                 if (btnSave) btnSave.disabled = true;
             } else {
                 if (btnSave) btnSave.disabled = false;
                 availableGrid.innerHTML = availableRoles.map(r => `
                     <label class="role-checkbox-card">
-                        <input type="checkbox" name="assignRoleCheckbox" value="${r.code}" style="margin-top: 3px; accent-color: #0f172a; width: 16px; height: 16px;">
+                        <input type="checkbox" name="assignRoleCheckbox" value="${r.code}" style="margin-top: 2px;">
                         <div>
                             <div class="role-card-label">${r.name}</div>
                             <div class="role-card-desc">${r.description || ''}</div>
@@ -2019,7 +1651,7 @@
         const selectedRoleIds = Array.from(selectedCheckboxes).map(cb => cb.value);
 
         if (selectedRoleIds.length === 0) {
-            showToast("Vui lòng chọn ít nhất một vai trò cần cấp", "error");
+            showToast("Vui lòng chọn ít nhất một vai trò cần gán", "error");
             return;
         }
 
@@ -2036,12 +1668,12 @@
 
             const data = await res.json();
             if (res.ok && data.success) {
-                showToast(data.message || "Cập nhật phân quyền thành công");
+                showToast(data.message || "Cập nhật vai trò thành công");
                 activeEditingUser.roles = (data.roles || []).map(normalizeRole);
                 renderModalRoles();
                 updateUserInLocalTable(activeEditingUser.id, activeEditingUser.roles);
 
-                // Ghi nhận ngay vào nhật ký kiểm toán (Client + LocalStorage)
+                // Ghi nhận ngay vào nhật ký kiểm toán phía Client 
                 for (const rId of selectedRoleIds) {
                     const roleObj = normalizeRole(rId);
                     recordClientAuditLog({
@@ -2053,14 +1685,14 @@
                         roleId: rId,
                         ip: "127.0.0.1",
                         status: "SUCCESS",
-                        reason: `Quản trị viên cấp thêm vai trò ${roleObj.name}`
+                        reason: `Admin gán thêm vai trò ${roleObj.name}`
                     });
                 }
             } else {
-                showToast(data.message || "Không thể cấp vai trò", "error");
+                showToast(data.message || "Không thể gán vai trò", "error");
             }
         } catch {
-            showToast("Lỗi kết nối khi lưu phân quyền", "error");
+            showToast("Lỗi kết nối khi lưu vai trò", "error");
         }
     }
 
@@ -2068,7 +1700,7 @@
         pendingRevokeTarget = { userId, roleId, roleName };
         const textEl = document.getElementById("confirm-modal-text");
         if (textEl) {
-            textEl.innerHTML = `Bạn có chắc chắn muốn thu hồi vai trò <strong>${roleName}</strong> khỏi tài khoản người dùng này không?<br><span style="color: var(--text-muted); font-size: 12.5px;">Người dùng sẽ mất toàn bộ quyền hạn tương ứng ngay lập tức.</span>`;
+            textEl.innerHTML = `Bạn có chắc chắn muốn thu hồi vai trò <strong>${roleName}</strong> khỏi tài khoản này không?`;
         }
         const modal = document.getElementById("confirm-modal");
         if (modal) modal.style.display = "flex";
@@ -2099,7 +1731,7 @@
                 renderModalRoles();
                 updateUserInLocalTable(userId, activeEditingUser.roles);
 
-                // Ghi nhận ngay vào nhật ký kiểm toán (Client + LocalStorage)
+                // Ghi nhận ngay vào nhật ký kiểm toán phía Client 
                 recordClientAuditLog({
                     id: `log_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
                     timestamp: new Date().toISOString(),
@@ -2109,7 +1741,7 @@
                     roleId: roleId,
                     ip: "127.0.0.1",
                     status: "SUCCESS",
-                    reason: `Quản trị viên thu hồi vai trò ${roleName}`
+                    reason: `Admin thu hồi vai trò ${roleName}`
                 });
             } else {
                 showToast(data.message || "Không thể thu hồi vai trò", "error");
@@ -2130,7 +1762,7 @@
     async function loadAuditLogs() {
         const tbody = document.getElementById("audit-table-body");
         if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 36px;">Đang nạp nhật ký kiểm toán hệ thống...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 32px;">Đang tải nhật ký thao tác...</td></tr>`;
         }
 
         let logs = [];
@@ -2158,9 +1790,10 @@
                 }
             }
         } catch (err) {
-            console.warn("Không kết nối được API audit-logs, chuyển sang bộ nhớ đệm:", err);
+            console.warn("Không kết nối được API audit-logs, sử dụng bộ nhớ đệm:", err);
         }
 
+        // Tải từ bộ nhớ đệm localStorage nếu server trả về rỗng
         if (!logs || logs.length === 0) {
             try {
                 const cached = JSON.parse(localStorage.getItem("tms_audit_logs") || "[]");
@@ -2170,6 +1803,7 @@
             } catch {}
         }
 
+        // Nếu vẫn rỗng, dùng dữ liệu mẫu chuẩn KN-63
         if (!logs || logs.length === 0) {
             logs = DEFAULT_SEED_LOGS;
             try {
@@ -2177,31 +1811,7 @@
             } catch {}
         }
 
-        cachedAuditLogs = logs;
-        const auditBadge = document.getElementById("badge-audit-count");
-        if (auditBadge) auditBadge.textContent = logs.length;
-
-        handleAuditSearch();
-    }
-
-    function handleAuditSearch() {
-        const searchInput = document.getElementById("audit-search-input");
-        const actionFilter = document.getElementById("audit-action-filter");
-        const kw = searchInput ? searchInput.value.trim().toLowerCase() : "";
-        const act = actionFilter ? actionFilter.value : "";
-
-        let filtered = cachedAuditLogs.filter(l => {
-            const matchKw = !kw ||
-                (l.adminId && l.adminId.toLowerCase().includes(kw)) ||
-                (l.targetUserId && l.targetUserId.toLowerCase().includes(kw)) ||
-                (l.reason && l.reason.toLowerCase().includes(kw)) ||
-                (l.roleId && l.roleId.toLowerCase().includes(kw)) ||
-                (l.ip && l.ip.includes(kw));
-            const matchAct = !act || l.action === act;
-            return matchKw && matchAct;
-        });
-
-        renderAuditLogsTable(filtered);
+        renderAuditLogsTable(logs);
     }
 
     function renderAuditLogsTable(logs) {
@@ -2209,7 +1819,7 @@
         if (!tbody) return;
 
         if (!logs || logs.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 36px;">Không có bản ghi nhật ký kiểm toán nào phù hợp.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 32px;">Chưa có bản ghi nhật ký nào.</td></tr>`;
             return;
         }
 
@@ -2217,82 +1827,28 @@
             const isSuccess = l.status === "SUCCESS";
             const statusTag = isSuccess
                 ? `<span style="display: inline-flex; align-items: center; gap: 4px; color: #047857; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 2px 8px; border-radius: 999px; font-weight: 600; font-size: 11.5px;">✓ Thành công</span>`
-                : `<span style="display: inline-flex; align-items: center; gap: 4px; color: #be123c; background: #fff1f2; border: 1px solid #fecdd3; padding: 2px 8px; border-radius: 999px; font-weight: 600; font-size: 11.5px;">✕ Bị từ chối (${l.status || '403'})</span>`;
+                : `<span style="display: inline-flex; align-items: center; gap: 4px; color: #be123c; background: #fff1f2; border: 1px solid #fecdd3; padding: 2px 8px; border-radius: 999px; font-weight: 600; font-size: 11.5px;">✕ Từ chối (${l.status || 'ERROR'})</span>`;
 
             const actionTag = l.action === "ASSIGN_ROLE"
-                ? `<span style="display: inline-flex; align-items: center; gap: 4px; color: #0369a1; background: #f0f9ff; border: 1px solid #bae6fd; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 12px;">+ Cấp quyền</span>`
+                ? `<span style="display: inline-flex; align-items: center; gap: 4px; color: #0369a1; background: #f0f9ff; border: 1px solid #bae6fd; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 12px;">+ Gán vai trò</span>`
                 : `<span style="display: inline-flex; align-items: center; gap: 4px; color: #b91c1c; background: #fef2f2; border: 1px solid #fecaca; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 12px;">- Thu hồi</span>`;
 
             const roleInfo = normalizeRole(l.roleId);
             const timeStr = l.timestamp ? new Date(l.timestamp).toLocaleString('vi-VN', { hour12: false }) : "-";
 
             return `
-                <tr>
-                    <td style="white-space: nowrap; color: var(--text-muted); font-size: 12px; font-weight: 500;">${timeStr}</td>
-                    <td><span class="id-badge-code">${l.adminId || 'usr_admin'}</span></td>
-                    <td><span class="id-badge-code">${l.targetUserId || '-'}</span></td>
-                    <td>${actionTag}</td>
-                    <td><span class="role-pill-saas role-pill-${roleInfo.code}"><span class="role-dot"></span>${roleInfo.name}</span></td>
-                    <td><span style="color: var(--text-muted); font-size: 12px; font-family: monospace;">${l.ip || '127.0.0.1'}</span></td>
-                    <td>${statusTag}</td>
-                    <td style="font-size: 12.5px; color: ${isSuccess ? 'var(--text-body)' : '#be123c'};">${l.reason || '-'}</td>
+                <tr class="audit-row-card">
+                    <td data-label="Thời gian" style="white-space: nowrap; color: var(--text-muted); font-size: 12px; font-weight: 500;">${timeStr}</td>
+                    <td data-label="Người thực hiện"><span class="code-pill">${l.adminId || 'usr_admin'}</span></td>
+                    <td data-label="Tài khoản nhận"><span class="code-pill">${l.targetUserId || '-'}</span></td>
+                    <td data-label="Thao tác">${actionTag}</td>
+                    <td data-label="Vai trò"><span class="role-tag role-tag-${roleInfo.code}">${roleInfo.name}</span></td>
+                    <td data-label="Địa chỉ IP"><span style="color: var(--text-muted); font-size: 12px; font-family: monospace;">${l.ip || '127.0.0.1'}</span></td>
+                    <td data-label="Trạng thái">${statusTag}</td>
+                    <td data-label="Ghi chú" style="font-size: 12px; color: ${isSuccess ? 'var(--text-body)' : '#be123c'};">${l.reason || '-'}</td>
                 </tr>
             `;
         }).join("");
-    }
-
-    // Xuất CSV chuyên nghiệp với UTF-8 BOM
-    function exportCurrentViewCSV() {
-        const viewUsers = document.getElementById("view-users");
-        if (viewUsers && viewUsers.style.display !== "none") {
-            exportUsersCSV();
-        } else {
-            exportAuditLogsCSV();
-        }
-    }
-
-    function exportUsersCSV() {
-        if (!usersList || usersList.length === 0) {
-            showToast("Không có dữ liệu người dùng để xuất", "error");
-            return;
-        }
-        let csvContent = "\uFEFFMã người dùng,Họ và tên,Email,Vai trò đảm nhiệm,Trạng thái\n";
-        usersList.forEach(u => {
-            const rawRoles = Array.isArray(u.roles) ? u.roles : (u.role ? [u.role] : []);
-            const roleNames = rawRoles.map(r => normalizeRole(r).name).join("; ");
-            const safeName = (u.name || "").replace(/"/g, '""');
-            const safeEmail = (u.email || "").replace(/"/g, '""');
-            csvContent += `"${u.id}","${safeName}","${safeEmail}","${roleNames}","Hoạt động"\n`;
-        });
-        downloadBlob(csvContent, "TMS_Danh_Sach_Phan_Quyen.csv", "text/csv;charset=utf-8;");
-    }
-
-    function exportAuditLogsCSV() {
-        const logs = cachedAuditLogs && cachedAuditLogs.length > 0 ? cachedAuditLogs : DEFAULT_SEED_LOGS;
-        let csvContent = "\uFEFFThời gian,Quản trị viên,Tài khoản thụ hưởng,Hành động,Vai trò,Địa chỉ IP,Kết quả,Chi tiết ghi chú\n";
-        logs.forEach(l => {
-            const roleName = normalizeRole(l.roleId).name;
-            const timeStr = l.timestamp ? new Date(l.timestamp).toLocaleString('vi-VN', { hour12: false }) : "";
-            const safeReason = (l.reason || "").replace(/"/g, '""');
-            const actionText = l.action === "ASSIGN_ROLE" ? "Cấp quyền" : "Thu hồi";
-            csvContent += `"${timeStr}","${l.adminId}","${l.targetUserId}","${actionText}","${roleName}","${l.ip}","${l.status}","${safeReason}"\n`;
-        });
-        downloadBlob(csvContent, "TMS_Nhat_Ky_Kiem_Toan.csv", "text/csv;charset=utf-8;");
-    }
-
-    function downloadBlob(content, filename, mimeType) {
-        const blob = new Blob([content], { type: mimeType });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        setTimeout(() => {
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-        }, 1000);
-        showToast(`Đã xuất file ${filename} thành công!`);
     }
 
     window.addEventListener("DOMContentLoaded", async () => {
