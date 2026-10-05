@@ -1,20 +1,23 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#10b981">
     <title>Đăng nhập | TMS</title>
-    
+
     <!-- Using Inter font for a very clean, professional enterprise look -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
+
     <style>
         :root {
-            --primary: #10b981; /* Vibrant green */
-            --primary-hover: #059669; /* Darker green */
+            --primary: #10b981;
+            /* Vibrant green */
+            --primary-hover: #059669;
+            /* Darker green */
             --primary-light: rgba(16, 185, 129, 0.15);
             --text-main: #111827;
             --text-muted: #6b7280;
@@ -351,7 +354,9 @@
         }
 
         @keyframes btnSpin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         .register-link {
@@ -436,13 +441,25 @@
 
         /* Animations */
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Responsive Layout */
@@ -450,11 +467,13 @@
             .split-layout {
                 flex-direction: column;
             }
+
             .left-panel {
                 min-height: 40vh;
                 padding: 3rem 2rem;
                 justify-content: center;
             }
+
             .left-content {
                 text-align: center;
                 margin: 0 auto;
@@ -464,6 +483,7 @@
                 padding: 3rem 1.5rem;
                 align-items: flex-start;
             }
+
             .form-container {
                 max-width: 100%;
             }
@@ -476,6 +496,7 @@
         }
     </style>
 </head>
+
 <body>
     <main class="split-layout">
         <!-- Left Panel: Brand & Introduction -->
@@ -485,11 +506,12 @@
                     <span class="brand-icon">T</span>
                     ĐÀO TẠO TMS
                 </a>
-                
+
                 <span class="eyebrow">Một không gian học tập</span>
                 <h1>Mọi việc học,<br>trong tầm tay.</h1>
-                <p>Đăng nhập để tiếp tục công việc và xem thông tin đào tạo được phân quyền riêng cho bạn trên hệ thống hiện đại của chúng tôi.</p>
-                
+                <p>Đăng nhập để tiếp tục công việc và xem thông tin đào tạo được phân quyền riêng cho bạn trên hệ thống
+                    hiện đại của chúng tôi.</p>
+
 
             </div>
         </section>
@@ -497,7 +519,7 @@
         <!-- Right Panel: Login / Recovery Forms -->
         <section class="right-panel">
             <div class="form-container">
-                
+
                 <!-- LOGIN VIEW -->
                 <div id="login-view">
                     <div class="form-header">
@@ -509,20 +531,29 @@
                         <div class="input-group">
                             <label for="email">Tài khoản <span class="required">*</span></label>
                             <!-- Note: Placeholder is needed for :not(:placeholder-shown) CSS trick to work properly -->
-                            <input id="email" name="email" type="email" autocomplete="username" placeholder="Mã sinh viên hoặc email" required>
+                            <input id="email" name="email" type="email" autocomplete="username"
+                                placeholder="Mã sinh viên hoặc email" required>
                         </div>
-                        
+
                         <div class="input-group">
                             <label for="password">Mật khẩu <span class="required">*</span></label>
                             <div class="input-wrapper">
-                                <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu của bạn" required>
-                                <button type="button" class="password-toggle" id="toggle-password" aria-label="Hiện mật khẩu" title="Hiện mật khẩu">
-                                    <svg class="eye-icon eye-show" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <input id="password" name="password" type="password" autocomplete="current-password"
+                                    placeholder="Nhập mật khẩu của bạn" required>
+                                <button type="button" class="password-toggle" id="toggle-password"
+                                    aria-label="Hiện mật khẩu" title="Hiện mật khẩu">
+                                    <svg class="eye-icon eye-show" viewBox="0 0 24 24" width="20" height="20"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
                                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                         <circle cx="12" cy="12" r="3"></circle>
                                     </svg>
-                                    <svg class="eye-icon eye-hide" style="display:none;" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <svg class="eye-icon eye-hide" style="display:none;" viewBox="0 0 24 24" width="20"
+                                        height="20" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path
+                                            d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                                        </path>
                                         <line x1="1" y1="1" x2="23" y2="23"></line>
                                     </svg>
                                 </button>
@@ -538,7 +569,7 @@
                         </div>
 
                         <button class="btn-primary" id="login-submit" type="submit">Đăng nhập</button>
-                        
+
                         <div class="register-link">
                             Chưa có tài khoản? <a href="#register" id="show-register">Đăng ký ngay</a>
                         </div>
@@ -552,11 +583,29 @@
 
                     <div class="social-login">
                         <button type="button" class="btn-social">
-                            <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                            <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                                    fill="#4285F4" />
+                                <path
+                                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                    fill="#34A853" />
+                                <path
+                                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                                    fill="#FBBC05" />
+                                <path
+                                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                    fill="#EA4335" />
+                            </svg>
                             Google
                         </button>
                         <button type="button" class="btn-social">
-                            <svg viewBox="0 0 21 21" width="20" height="20" xmlns="http://www.w3.org/2000/svg"><path d="M10 0H0v10h10V0z" fill="#f25022"/><path d="M21 0H11v10h10V0z" fill="#7fba00"/><path d="M10 11H0v10h10V11z" fill="#00a4ef"/><path d="M21 11H11v10h10V11z" fill="#ffb900"/></svg>
+                            <svg viewBox="0 0 21 21" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 0H0v10h10V0z" fill="#f25022" />
+                                <path d="M21 0H11v10h10V0z" fill="#7fba00" />
+                                <path d="M10 11H0v10h10V11z" fill="#00a4ef" />
+                                <path d="M21 11H11v10h10V11z" fill="#ffb900" />
+                            </svg>
                             Microsoft
                         </button>
                     </div>
@@ -565,7 +614,10 @@
                 <!-- REGISTER VIEW -->
                 <div id="register-view" hidden>
                     <button class="back-link" id="back-to-login-from-reg" type="button">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 12H5M12 19l-7-7 7-7" />
+                        </svg>
                         Quay lại đăng nhập
                     </button>
 
@@ -577,12 +629,14 @@
                     <form id="register-form" novalidate>
                         <div class="input-group">
                             <label for="reg-name">Họ và tên <span class="required">*</span></label>
-                            <input id="reg-name" name="name" type="text" autocomplete="name" placeholder="Ví dụ: Nguyễn Văn A" required>
+                            <input id="reg-name" name="name" type="text" autocomplete="name"
+                                placeholder="Ví dụ: Nguyễn Văn A" required>
                         </div>
 
                         <div class="input-group">
                             <label for="reg-email">Email hoặc Mã SV <span class="required">*</span></label>
-                            <input id="reg-email" name="email" type="email" autocomplete="username" placeholder="name@example.com hoặc mã sinh viên" required>
+                            <input id="reg-email" name="email" type="email" autocomplete="username"
+                                placeholder="name@example.com hoặc mã sinh viên" required>
                         </div>
 
                         <div class="input-group">
@@ -593,14 +647,22 @@
                         <div class="input-group">
                             <label for="reg-password">Mật khẩu <span class="required">*</span></label>
                             <div class="input-wrapper">
-                                <input id="reg-password" name="password" type="password" autocomplete="new-password" placeholder="Tối thiểu 6 ký tự" required minlength="6">
-                                <button type="button" class="password-toggle" id="toggle-reg-password" aria-label="Hiện mật khẩu" title="Hiện mật khẩu">
-                                    <svg class="eye-icon eye-show" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <input id="reg-password" name="password" type="password" autocomplete="new-password"
+                                    placeholder="Tối thiểu 6 ký tự" required minlength="6">
+                                <button type="button" class="password-toggle" id="toggle-reg-password"
+                                    aria-label="Hiện mật khẩu" title="Hiện mật khẩu">
+                                    <svg class="eye-icon eye-show" viewBox="0 0 24 24" width="20" height="20"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
                                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                         <circle cx="12" cy="12" r="3"></circle>
                                     </svg>
-                                    <svg class="eye-icon eye-hide" style="display:none;" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <svg class="eye-icon eye-hide" style="display:none;" viewBox="0 0 24 24" width="20"
+                                        height="20" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path
+                                            d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                                        </path>
                                         <line x1="1" y1="1" x2="23" y2="23"></line>
                                     </svg>
                                 </button>
@@ -610,14 +672,22 @@
                         <div class="input-group">
                             <label for="reg-confirm-password">Xác nhận mật khẩu <span class="required">*</span></label>
                             <div class="input-wrapper">
-                                <input id="reg-confirm-password" name="confirmPassword" type="password" autocomplete="new-password" placeholder="Nhập lại mật khẩu" required minlength="6">
-                                <button type="button" class="password-toggle" id="toggle-reg-confirm" aria-label="Hiện mật khẩu" title="Hiện mật khẩu">
-                                    <svg class="eye-icon eye-show" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <input id="reg-confirm-password" name="confirmPassword" type="password"
+                                    autocomplete="new-password" placeholder="Nhập lại mật khẩu" required minlength="6">
+                                <button type="button" class="password-toggle" id="toggle-reg-confirm"
+                                    aria-label="Hiện mật khẩu" title="Hiện mật khẩu">
+                                    <svg class="eye-icon eye-show" viewBox="0 0 24 24" width="20" height="20"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
                                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                         <circle cx="12" cy="12" r="3"></circle>
                                     </svg>
-                                    <svg class="eye-icon eye-hide" style="display:none;" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <svg class="eye-icon eye-hide" style="display:none;" viewBox="0 0 24 24" width="20"
+                                        height="20" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path
+                                            d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
+                                        </path>
                                         <line x1="1" y1="1" x2="23" y2="23"></line>
                                     </svg>
                                 </button>
@@ -644,10 +714,13 @@
                 <!-- RECOVERY VIEW -->
                 <div id="recovery-view" hidden>
                     <button class="back-link" id="back-to-login" type="button">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 12H5M12 19l-7-7 7-7" />
+                        </svg>
                         Quay lại đăng nhập
                     </button>
-                    
+
                     <div class="form-header">
                         <h2>Khôi phục mật khẩu</h2>
                         <p>Nhập email liên kết với tài khoản. Chúng tôi sẽ gửi hướng dẫn khôi phục cho bạn.</p>
@@ -656,14 +729,15 @@
                     <form id="recovery-form" novalidate>
                         <div class="input-group">
                             <label for="recovery-email">Email <span class="required">*</span></label>
-                            <input id="recovery-email" name="email" type="email" autocomplete="email" placeholder="Nhập email của bạn" required>
+                            <input id="recovery-email" name="email" type="email" autocomplete="email"
+                                placeholder="Nhập email của bạn" required>
                         </div>
-                        
+
                         <button class="btn-primary" id="recovery-submit" type="submit">Gửi hướng dẫn</button>
                         <p class="message" id="recovery-message" role="status" aria-live="polite"></p>
                     </form>
                 </div>
-                
+
             </div>
         </section>
     </main>
@@ -928,7 +1002,7 @@
             if (remaining > 0) {
                 loginSubmit.disabled = true;
                 loginSubmit.textContent = "Đăng nhập"; // Luôn dọn sạch spinner
-                
+
                 loginMessage.textContent = `Tài khoản tạm khóa do đăng nhập sai 5 lần liên tiếp. Vui lòng thử lại sau ${formatRemaining(remaining)}.`;
                 loginMessage.classList.remove("success");
 
@@ -1009,7 +1083,7 @@
             try {
                 const API_BASE_URL = window.location.origin && window.location.origin.startsWith("http") ? window.location.origin : "http://localhost:3000";
 
-                 const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+                const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json", "Accept": "application/json" },
                     credentials: "same-origin",
@@ -1088,4 +1162,5 @@
         });
     </script>
 </body>
+
 </html>
