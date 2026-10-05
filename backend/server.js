@@ -222,8 +222,8 @@ app.post("/api/auth/register", (req, res) => {
         } catch (e) {
             // ignore
         }
-        supabaseService.syncUserToAuth(result.user, password).catch(() => {});
-        supabaseService.saveToStorage("users.json", users).catch(() => {});
+        supabaseService.syncSingleUser(result.user, password, users).catch(() => {});
+        supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs()).catch(() => {});
 
         return res.status(201).json({
             success: true,
@@ -298,9 +298,8 @@ app.post(
                 }
             }
 
-            // Đồng bộ sang Supabase Database & Auth (Background Promise)
-            supabaseService.syncUserToAuth(result.user, result.temporaryPassword).catch(() => {});
-            supabaseService.saveToStorage("users.json", users).catch(() => {});
+            // Đồng bộ sang tất cả các tầng Supabase (PostgreSQL tables, Auth, Storage)
+            supabaseService.syncSingleUser(result.user, result.temporaryPassword, users).catch(() => {});
             supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs()).catch(() => {});
 
             return res.status(201).json({
@@ -359,8 +358,7 @@ app.put(
             }
 
             // Đồng bộ cập nhật sang Supabase
-            supabaseService.syncUserToAuth(updated, req.body ? req.body.password : null).catch(() => {});
-            supabaseService.saveToStorage("users.json", users).catch(() => {});
+            supabaseService.syncSingleUser(updated, req.body ? req.body.password : null, users).catch(() => {});
             supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs()).catch(() => {});
 
             return res.status(200).json({
@@ -388,11 +386,8 @@ app.delete(
             const result = deleteUser(req.params.id, req.user ? req.user.id : null);
             removeAllUserRoles(req.params.id);
 
-            // Đồng bộ xóa sang Supabase
-            if (userToDelete) {
-                supabaseService.deleteUserFromAuth(userToDelete.email).catch(() => {});
-            }
-            supabaseService.saveToStorage("users.json", users).catch(() => {});
+            // Đồng bộ xóa sang Supabase (PostgreSQL tables, Auth, Storage)
+            supabaseService.deleteSingleUser(req.params.id, userToDelete ? userToDelete.email : null, users).catch(() => {});
             supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs()).catch(() => {});
 
             return res.status(200).json(result);
@@ -697,6 +692,24 @@ app.get("/frontend/Login.html", (req, res) => {
 app.get("/frontend/:page", (req, res) => {
     res.redirect(301, `/${req.params.page}`);
 });
+
+// Tự động tải và đồng bộ các tài khoản người dùng từ Supabase vào bộ nhớ
+async function hydrateUsersFromSupabase() {
+    try {
+        const remoteUsers = await supabaseService.loadFromStorage("users.json");
+        if (Array.isArray(remoteUsers) && remoteUsers.length > 0) {
+            remoteUsers.forEach(ru => {
+                const idx = users.findIndex(u => u.id === ru.id || u.email.toLowerCase() === ru.email.toLowerCase());
+                if (idx === -1) {
+                    users.push(ru);
+                } else {
+                    users[idx] = { ...users[idx], ...ru };
+                }
+            });
+        }
+    } catch {}
+}
+hydrateUsersFromSupabase().catch(() => {});
 
 // Khởi chạy server và đồng bộ dữ liệu ban đầu
 if (require.main === module) {

@@ -232,7 +232,7 @@ async function tryPostgrestUpsert(tableName, records) {
 }
 
 /**
- * Đồng bộ toàn bộ dữ liệu người dùng lên Supabase
+ * Đồng bộ toàn bộ dữ liệu người dùng lên Supabase (PostgreSQL tables + Auth + Storage)
  */
 async function syncUsersDatabase(usersList) {
     if (!Array.isArray(usersList)) return;
@@ -245,18 +245,88 @@ async function syncUsersDatabase(usersList) {
         usersList.map(u => syncUserToAuth(u))
     ).catch(() => {});
 
-    // 3. Thử lưu vào bảng public.users nếu có
+    // 3. Lưu vào bảng public.users trong PostgreSQL
     const mappedUsers = usersList.map(u => ({
         id: u.id,
         email: u.email,
         name: u.name,
-        role: u.role,
+        role: u.role || "student",
         phone: u.phone || "",
         status: u.status || "active",
         created_at: u.createdAt || new Date().toISOString(),
         updated_at: u.updatedAt || new Date().toISOString()
     }));
     await tryPostgrestUpsert("users", mappedUsers);
+
+    // 4. Lưu quan hệ vai trò vào bảng public.user_roles trong PostgreSQL
+    const mappedRoles = usersList.filter(u => u.role).map(u => ({
+        user_id: u.id,
+        role_id: u.role,
+        assigned_by: "system_sync",
+        assigned_at: u.createdAt || new Date().toISOString()
+    }));
+    await tryPostgrestUpsert("user_roles", mappedRoles);
+}
+
+/**
+ * Đồng bộ ngay lập tức 1 người dùng mới tạo hoặc cập nhật lên Supabase
+ */
+async function syncSingleUser(user, plainPassword = null, allUsers = null) {
+    if (!user || !user.email) return;
+    try {
+        // 1. Lưu vào bảng PostgreSQL public.users
+        const mappedUser = {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role || "student",
+            phone: user.phone || "",
+            status: user.status || "active",
+            created_at: user.createdAt || new Date().toISOString(),
+            updated_at: user.updatedAt || new Date().toISOString()
+        };
+        await tryPostgrestUpsert("users", mappedUser);
+
+        // 2. Lưu vào bảng PostgreSQL public.user_roles
+        if (user.role) {
+            await tryPostgrestUpsert("user_roles", {
+                user_id: user.id,
+                role_id: user.role,
+                assigned_by: "system",
+                assigned_at: new Date().toISOString()
+            });
+        }
+
+        // 3. Đồng bộ sang Supabase Auth
+        await syncUserToAuth(user, plainPassword);
+
+        // 4. Cập nhật snapshot users.json trên Storage
+        if (Array.isArray(allUsers)) {
+            await saveToStorage("users.json", allUsers);
+        }
+    } catch (err) {
+        console.warn(`[Supabase] syncSingleUser error for ${user.email}:`, err.message);
+    }
+}
+
+/**
+ * Xóa người dùng trên mọi tầng Supabase (PostgreSQL tables, Auth, Storage)
+ */
+async function deleteSingleUser(userId, email, allUsers = null) {
+    try {
+        if (userId) {
+            await supabaseRequest(`/rest/v1/user_roles?user_id=eq.${encodeURIComponent(userId)}`, { method: "DELETE" });
+            await supabaseRequest(`/rest/v1/users?id=eq.${encodeURIComponent(userId)}`, { method: "DELETE" });
+        }
+        if (email) {
+            await deleteUserFromAuth(email);
+        }
+        if (Array.isArray(allUsers)) {
+            await saveToStorage("users.json", allUsers);
+        }
+    } catch (err) {
+        console.warn(`[Supabase] deleteSingleUser error:`, err.message);
+    }
 }
 
 /**
@@ -370,6 +440,8 @@ module.exports = {
     loadFromStorage,
     syncUserToAuth,
     deleteUserFromAuth,
+    syncSingleUser,
+    deleteSingleUser,
     syncUsersDatabase,
     syncRolesDatabase,
     syncBusinessDatabase,
