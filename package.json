@@ -9,7 +9,8 @@
     "test": "cd backend && npm test",
     "test:auth": "cd backend && npm run test:auth",
     "test:user": "cd backend && npm run test:user",
-    "test:role": "cd backend && npm run test:role"
+    "test:role": "cd backend && npm run test:role",
+    "test:kn8": "cd backend && npm run test:kn8"
   },
   "dependencies": {
     "cors": "^2.8.6",

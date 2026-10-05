@@ -76,13 +76,14 @@ function authenticateToken(req, res, next) {
     next();
 }
 
-// Middleware kiểm tra quyền truy cập (Role-Based Access Control)
+// KN-8 & KN-14: Middleware kiểm tra quyền truy cập (Role-Based Access Control)
+// Mọi chức năng đều kiểm quyền ở tầng server, mặc định là từ chối (403)
 function requireRole(...allowedRoles) {
     return (req, res, next) => {
         if (!req.user || !Array.isArray(req.user.roles)) {
             return res.status(401).json({
                 success: false,
-                message: "Chưa xác thực người dùng."
+                message: "Chưa xác thực người dùng. Vui lòng đăng nhập lại."
             });
         }
 
@@ -92,9 +93,20 @@ function requireRole(...allowedRoles) {
         );
 
         if (!hasPermission) {
+            // KN-8: Truy cập thiếu quyền hiển thị thông báo tiếng Việt rõ ràng thay vì lỗi kỹ thuật
+            let roleMsg = "Bạn không có quyền thực hiện thao tác này.";
+            if (allowedRoles.includes("accountant") && !allowedRoles.includes("instructor")) {
+                roleMsg = "Từ chối truy cập: Bạn không có quyền quản lý hoặc sửa học phí. Chức năng này chỉ dành cho Kế toán và Quản trị viên.";
+            } else if (allowedRoles.includes("instructor") && !allowedRoles.includes("accountant")) {
+                roleMsg = "Từ chối truy cập: Bạn không có quyền nhập hoặc sửa điểm số. Chức năng này chỉ dành cho Giảng viên và Quản trị viên.";
+            } else if (allowedRoles.includes("administrator")) {
+                roleMsg = "Từ chối truy cập: Thao tác này yêu cầu quyền Quản trị hệ thống (Administrator).";
+            }
+
             return res.status(403).json({
                 success: false,
-                message: "Bạn không có quyền thực hiện thao tác này."
+                message: roleMsg,
+                requiredRoles: allowedRoles
             });
         }
 
@@ -466,6 +478,102 @@ app.get(
         return res.status(200).json({
             success: true,
             auditLogs: getAuditLogs()
+        });
+    }
+);
+
+// ==========================================
+// KN-8: PHÂN QUYỀN VAI TRÒ HỌC PHÍ & ĐIỂM SỐ
+// Đảm bảo: Giảng viên không sửa được học phí và Kế toán không sửa được điểm
+// ==========================================
+
+const mockScores = {
+    "scr_001": { id: "scr_001", studentId: "usr_student", courseId: "crs_react", score: 8.5, updatedBy: "usr_teacher" }
+};
+
+const mockTuition = {
+    "tui_001": { id: "tui_001", studentId: "usr_student", amount: 4500000, status: "paid", updatedBy: "usr_accountant" }
+};
+
+// 1. Nghiệp vụ Điểm số: Giảng viên và Admin được cập nhật; Kế toán & Học viên bị từ chối
+app.put(
+    "/api/scores/:scoreId",
+    authenticateToken,
+    requireRole("instructor", "administrator"),
+    (req, res) => {
+        const { scoreId } = req.params;
+        const { score } = req.body || {};
+        if (score === undefined || isNaN(score) || score < 0 || score > 10) {
+            return res.status(400).json({
+                success: false,
+                message: "Điểm số không hợp lệ (Phải là số từ 0 đến 10)."
+            });
+        }
+        mockScores[scoreId] = {
+            id: scoreId,
+            score: Number(score),
+            updatedBy: req.user.id,
+            updatedAt: new Date().toISOString()
+        };
+        return res.status(200).json({
+            success: true,
+            message: "Cập nhật điểm số thành công.",
+            data: mockScores[scoreId]
+        });
+    }
+);
+
+app.get(
+    "/api/scores/:scoreId",
+    authenticateToken,
+    requireRole("instructor", "student", "training_manager", "administrator"),
+    (req, res) => {
+        const { scoreId } = req.params;
+        return res.status(200).json({
+            success: true,
+            data: mockScores[scoreId] || { id: scoreId, score: 8.5 }
+        });
+    }
+);
+
+// 2. Nghiệp vụ Học phí: Kế toán và Admin được cập nhật; Giảng viên & Học viên bị từ chối
+app.put(
+    "/api/tuition/:tuitionId",
+    authenticateToken,
+    requireRole("accountant", "administrator"),
+    (req, res) => {
+        const { tuitionId } = req.params;
+        const { amount, status } = req.body || {};
+        if (amount !== undefined && (isNaN(amount) || amount < 0)) {
+            return res.status(400).json({
+                success: false,
+                message: "Số tiền học phí không hợp lệ."
+            });
+        }
+        mockTuition[tuitionId] = {
+            id: tuitionId,
+            amount: amount !== undefined ? Number(amount) : 4500000,
+            status: status || "paid",
+            updatedBy: req.user.id,
+            updatedAt: new Date().toISOString()
+        };
+        return res.status(200).json({
+            success: true,
+            message: "Cập nhật học phí thành công.",
+            data: mockTuition[tuitionId]
+        });
+    }
+);
+
+app.get(
+    "/api/tuition/:tuitionId",
+    authenticateToken,
+    requireRole("accountant", "student", "administrator"),
+    (req, res) => {
+        const { tuitionId } = req.params;
+        return res.status(200).json({
+            success: true,
+            data: mockTuition[tuitionId] || { id: tuitionId, amount: 4500000, status: "paid" }
         });
     }
 );
