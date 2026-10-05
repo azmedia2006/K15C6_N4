@@ -410,20 +410,29 @@
         }
 
         .message {
-            min-height: 1.25rem;
             margin-top: 1rem;
-            color: var(--error);
+            color: #b91c1c;
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: var(--radius-md);
+            padding: 10px 14px;
             font-size: 0.875rem;
             text-align: center;
-            font-weight: 500;
+            font-weight: 600;
+            line-height: 1.4;
+            transition: all 0.2s ease;
         }
 
         .message.success {
-            color: var(--success);
+            color: #047857;
+            background-color: #ecfdf5;
+            border-color: #a7f3d0;
         }
 
         .message:empty {
             display: none;
+            padding: 0;
+            border: none;
         }
 
         .back-link {
