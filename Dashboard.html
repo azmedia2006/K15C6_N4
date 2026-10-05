@@ -1126,6 +1126,37 @@
             .top-header { flex-direction: column; align-items: stretch; }
             .header-search { max-width: 100%; }
         }
+    
+        /* Print Styles for Clean Report Export */
+        @media print {
+            aside.sidebar,
+            .top-header,
+            .banner-buttons,
+            #sidebar-backdrop,
+            .modal-overlay,
+            .toast-container,
+            .mobile-menu-btn,
+            .role-switcher-wrap {
+                display: none !important;
+            }
+            .app-layout {
+                display: block !important;
+            }
+            main.main-content {
+                padding: 0 !important;
+            }
+            .welcome-banner {
+                border: 1px solid #94a3b8 !important;
+                box-shadow: none !important;
+                page-break-after: avoid;
+            }
+            .ui-card {
+                border: 1px solid #cbd5e1 !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+                margin-bottom: 24px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1617,7 +1648,7 @@
                         <h2>Thời khóa biểu toàn hệ thống (Tuần này)</h2>
                         <div style="display:flex; gap:8px;">
                             <button class="btn btn-secondary" onclick="showToast('Đang xem tuần hiện tại')">Tuần này</button>
-                            <button class="btn btn-primary" onclick="showToast('Xuất lịch học dạng iCal / Excel thành công!')">Xuất lịch</button>
+                            <button class="btn btn-primary" onclick="exportScheduleReport()">Xuất lịch</button>
                         </div>
                     </div>
                     <div class="table-responsive">
@@ -1870,22 +1901,98 @@
             <div id="view-reports" class="view-section">
                 <div class="ui-card">
                     <div class="card-head">
-                        <h2>Báo cáo & Thống kê Hoạt động Đào tạo</h2>
-                        <button class="btn btn-primary" onclick="showToast('Đã xuất báo cáo tổng hợp quý sang file Excel thành công!')">Xuất Excel</button>
+                        <div>
+                            <h2>Báo cáo & Thống kê Hoạt động Đào tạo</h2>
+                            <p style="color:var(--text-muted); font-size:13px; margin-top:2px;">Báo cáo tổng hợp chu kỳ Quý 4 - 2026 theo thời gian thực</p>
+                        </div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                            <button class="btn btn-secondary" onclick="exportPDFReport()" title="In hoặc lưu dạng PDF">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:text-bottom; margin-right:4px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                                In / Lưu PDF
+                            </button>
+                            <button class="btn btn-primary" onclick="exportExcelReport()" title="Tải file bảng tính Excel (.csv)">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:text-bottom; margin-right:4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                Xuất Excel (.csv)
+                            </button>
+                        </div>
                     </div>
-                    <div class="stats-grid" style="margin-bottom:20px;">
+                    <div class="stats-grid" style="margin-bottom:24px;">
                         <div class="stat-card">
                             <span class="stat-label">Tỷ lệ tốt nghiệp</span>
                             <div class="stat-value">94.2%</div>
-                            <span class="stat-trend up">Đạt chuẩn đầu ra</span>
+                            <span class="stat-trend up">Đạt chuẩn đầu ra (+1.4%)</span>
                         </div>
                         <div class="stat-card">
                             <span class="stat-label">Độ hài lòng GV</span>
                             <div class="stat-value">4.85 / 5</div>
-                            <span class="stat-trend up">Khảo sát 450 HV</span>
+                            <span class="stat-trend up">Khảo sát 450 học viên</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Học viên hoàn thành</span>
+                            <div class="stat-value">1,185</div>
+                            <span class="stat-trend up">95.0% sĩ số khóa</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">Doanh thu quý</span>
+                            <div class="stat-value">2.45 Tỷ</div>
+                            <span class="stat-trend up">+12.4% so với quý 3</span>
                         </div>
                     </div>
-                    <p style="color:var(--text-muted); font-size:14px;">Báo cáo tổng hợp chu kỳ Quý 4 - 2026. Dữ liệu được tính toán theo thời gian thực.</p>
+
+                    <!-- Detailed Report Table -->
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Mã Khóa</th>
+                                    <th>Tên chương trình</th>
+                                    <th>Số lớp</th>
+                                    <th>Học viên</th>
+                                    <th>Tỷ lệ đạt</th>
+                                    <th>Đánh giá GV</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>KH-PMP</strong></td>
+                                    <td>Quản trị dự án PMP Quốc tế</td>
+                                    <td>4 lớp</td>
+                                    <td>45</td>
+                                    <td><strong style="color:var(--primary);">95.5%</strong></td>
+                                    <td>4.85 / 5.0</td>
+                                    <td><span class="badge badge-success">Xuất sắc</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>KH-DATA</strong></td>
+                                    <td>Phân tích dữ liệu & BI Dashboard</td>
+                                    <td>6 lớp</td>
+                                    <td>52</td>
+                                    <td><strong style="color:var(--primary);">96.2%</strong></td>
+                                    <td>4.90 / 5.0</td>
+                                    <td><span class="badge badge-success">Xuất sắc</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>KH-DEV</strong></td>
+                                    <td>Lập trình Fullstack Web Enterprise</td>
+                                    <td>8 lớp</td>
+                                    <td>68</td>
+                                    <td><strong style="color:var(--primary);">91.2%</strong></td>
+                                    <td>4.80 / 5.0</td>
+                                    <td><span class="badge badge-success">Đạt chuẩn</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>KH-SOFT</strong></td>
+                                    <td>Kỹ năng thuyết trình & Đàm phán</td>
+                                    <td>3 lớp</td>
+                                    <td>30</td>
+                                    <td><strong style="color:var(--primary);">93.3%</strong></td>
+                                    <td>4.80 / 5.0</td>
+                                    <td><span class="badge badge-success">Đạt chuẩn</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </main>
@@ -1933,6 +2040,142 @@
             }
         }
         window.toggleMobileSidebar = toggleMobileSidebar;
+
+        
+        // =====================================================================
+        // CHỨC NĂNG XUẤT BÁO CÁO THỰC TẾ (FILE DOWNLOAD & PRINT PDF)
+        // =====================================================================
+        function downloadCSV(filename, csvContent) {
+            // Thêm ký tự UTF-8 BOM (﻿) để Excel hiển thị đúng 100% tiếng Việt có dấu
+            const bom = "\uFEFF";
+            const blob = new Blob([bom + csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", filename);
+            link.style.visibility = "hidden";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+        window.downloadCSV = downloadCSV;
+
+        function exportSystemReport() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString("vi-VN");
+            const timeStr = now.toLocaleTimeString("vi-VN");
+            const fileDate = now.toISOString().slice(0, 10).replace(/-/g, "");
+
+            let csv = "HỆ THỐNG QUẢN LÝ ĐÀO TẠO TMS - BÁO CÁO TỔNG QUAN VẬN HÀNH\n";
+            csv += "Thời gian xuất báo cáo," + timeStr + " " + dateStr + "\n";
+            csv += "Đơn vị,Trung tâm Đào tạo Công nghệ & Quản trị TMS\n";
+            csv += "Người lập báo cáo," + ((currentUser && (currentUser.name || currentUser.email)) || "Quản trị viên Hệ thống") + "\n";
+            csv += "Chu kỳ đánh giá,Năm học 2026 - Quý 4\n\n";
+
+            csv += "1. CHỈ SỐ VẬN HÀNH TỔNG THỂ (KPI)\n";
+            csv += "Mã chỉ số,Tên chỉ số vận hành,Giá trị hiện tại,Mục tiêu quý,Đánh giá\n";
+            csv += "KPI-01,Tổng số khóa học đang triển khai,12 khóa,10 khóa,Vượt chỉ tiêu (+20%)\n";
+            csv += "KPI-02,Lớp học đang mở trong quý,37 lớp,35 lớp,Đạt chuẩn\n";
+            csv += "KPI-03,Tổng số học viên đang theo học,1248 học viên,1200 học viên,Vượt chỉ tiêu (+4%)\n";
+            csv += "KPI-04,Đội ngũ giảng viên giảng dạy,28 giảng viên,25 giảng viên,100% phủ kín lịch\n";
+            csv += "KPI-05,Tiến độ hoàn thành chương trình,82.4%,80.0%,Đạt tiến độ\n";
+            csv += "KPI-06,Tỷ lệ tốt nghiệp chuẩn đầu ra,94.2%,90.0%,Xuất sắc\n";
+            csv += "KPI-07,Đánh giá mức độ hài lòng giảng viên,4.85 / 5.0,4.5 / 5.0,Rất tốt\n";
+            csv += "KPI-08,Tỷ lệ an toàn và lưu vết Audit Log,100%,100%,Bảo mật tuyệt đối\n\n";
+
+            csv += "2. CHI TIẾT CÁC KHÓA ĐÀO TẠO ĐANG TRIỂN KHAI\n";
+            csv += "Mã khóa,Tên chương trình đào tạo,Thời lượng,Giảng viên phụ trách,Số lớp mở,Tổng học viên,Học phí (VNĐ),Tiến độ hoàn thành\n";
+            csv += "KH-PMP,Quản trị dự án PMP Quốc tế,12 Buổi (36h),ThS. Trần Minh,4,45,4500000,72%\n";
+            csv += "KH-DATA,Phân tích dữ liệu & BI Dashboard,16 Buổi (48h),Lê Hoa,6,52,5200000,91%\n";
+            csv += "KH-DEV,Lập trình Fullstack Web Enterprise,24 Buổi (72h),Phạm Quân,8,68,6800000,48%\n";
+            csv += "KH-SOFT,Kỹ năng thuyết trình & Đàm phán,8 Buổi (24h),Lê Hoa,3,30,2800000,65%\n";
+            csv += "KH-AI,Ứng dụng AI & Tự động hóa quy trình,10 Buổi (30h),Đỗ Hải,5,55,5500000,85%\n\n";
+
+            csv += "3. TỔNG HỢP TÀI CHÍNH & HỌC PHÍ\n";
+            csv += "Khoản mục,Số tiền (VNĐ),Tỷ lệ\n";
+            csv += "Tổng học phí dự kiến,2450000000,100%\n";
+            csv += "Đã thực thu trong quý,2180000000,88.9%\n";
+            csv += "Công nợ còn lại đến hạn,270000000,11.1%\n";
+
+            downloadCSV("Bao_Cao_Tong_Quan_TMS_" + fileDate + ".csv", csv);
+            showToast("Đã tải xuống file 'Bao_Cao_Tong_Quan_TMS_" + fileDate + ".csv' thành công!");
+        }
+        window.exportSystemReport = exportSystemReport;
+
+        function exportExcelReport() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString("vi-VN");
+            const fileDate = now.toISOString().slice(0, 10).replace(/-/g, "");
+
+            let csv = "BÁO CÁO THỐNG KÊ HOẠT ĐỘNG ĐÀO TẠO THEO CHU KỲ QUÝ\n";
+            csv += "Ngày kết xuất," + dateStr + "\n";
+            csv += "Hệ thống,Cổng thông tin đào tạo TMS\n\n";
+
+            csv += "Chỉ số,Kết quả Quý 3,Kết quả Quý 4,So sánh tăng trưởng,Đánh giá\n";
+            csv += "Tổng học viên ghi danh,1120,1248,+11.4%,Tăng trưởng tốt\n";
+            csv += "Số lớp học hoàn thành,32,37,+15.6%,Đạt chỉ tiêu\n";
+            csv += "Tỷ lệ học viên tốt nghiệp,92.8%,94.2%,+1.4%,Chất lượng nâng cao\n";
+            csv += "Tỷ lệ chuyên cần bình quân,89.5%,91.2%,+1.7%,Ý thức học tập cao\n";
+            csv += "Điểm hài lòng giảng viên,4.78,4.85,+0.07,Rất tích cực\n";
+            csv += "Doanh thu đào tạo (VNĐ),2180000000,2450000000,+12.4%,Đạt kế hoạch năm\n\n";
+
+            csv += "DANH SÁCH KHÓA HỌC XẾP THEO HIỆU QUẢ ĐÀO TẠO\n";
+            csv += "STT,Mã khóa học,Tên khóa học,Số lượng học viên,Tỷ lệ tốt nghiệp,Đánh giá giảng viên\n";
+            csv += "1,KH-DATA,Phân tích dữ liệu & BI Dashboard,52,96.2%,4.9 / 5.0\n";
+            csv += "2,KH-PMP,Quản trị dự án PMP Quốc tế,45,95.5%,4.85 / 5.0\n";
+            csv += "3,KH-AI,Ứng dụng AI doanh nghiệp,55,94.5%,4.9 / 5.0\n";
+            csv += "4,KH-DEV,Lập trình Web Enterprise,68,91.2%,4.8 / 5.0\n";
+            csv += "5,KH-SOFT,Kỹ năng thuyết trình & Đàm phán,30,93.3%,4.8 / 5.0\n";
+
+            downloadCSV("Bao_Cao_Thong_Ke_Quy_TMS_" + fileDate + ".csv", csv);
+            showToast("Đã tải xuống file 'Bao_Cao_Thong_Ke_Quy_TMS_" + fileDate + ".csv' thành công!");
+        }
+        window.exportExcelReport = exportExcelReport;
+
+        function exportScheduleReport() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString("vi-VN");
+            const fileDate = now.toISOString().slice(0, 10).replace(/-/g, "");
+
+            let csv = "THỜI KHÓA BIỂU TOÀN TRUNG TÂM TMS - TUẦN HIỆN TẠI\n";
+            csv += "Ngày xuất," + dateStr + "\n\n";
+            csv += "Ca học,Thứ 2,Thứ 3,Thứ 4,Thứ 5,Thứ 6,Thứ 7\n";
+            csv += "Sáng (08:00 - 11:30),PMP K15 (Phòng A2 - GV Trần Minh),Trống phòng,Data BI K15 (Phòng B1 - GV Lê Hoa),Trống phòng,PMP K15 (Phòng A2 - GV Trần Minh),Thực hành Lab (GV Phạm Quân)\n";
+            csv += "Chiều (13:30 - 17:00),Web Dev K16 (Lab C1 - GV Phạm Quân),Tiếng Anh K15 (Online Zoom - GV Thu Hà),Web Dev K16 (Lab C1 - GV Phạm Quân),Kỹ năng mềm (Hội trường 1 - GV Lê Hoa),Thực hành Lab (Trợ giảng Thu Hà),Trống phòng\n";
+            csv += "Tối (18:00 - 21:00),AI K15 (Lab B1 - GV Đỗ Hải),Trống phòng,AI K15 (Lab B1 - GV Đỗ Hải),Trống phòng,Ôn tập chuyên đề,Trống phòng\n";
+
+            downloadCSV("Thoi_Khoa_Bieu_TMS_" + fileDate + ".csv", csv);
+            showToast("Đã tải xuống file 'Thoi_Khoa_Bieu_TMS_" + fileDate + ".csv' thành công!");
+        }
+        window.exportScheduleReport = exportScheduleReport;
+
+        function exportDebtReport() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString("vi-VN");
+            const fileDate = now.toISOString().slice(0, 10).replace(/-/g, "");
+
+            let csv = "BÁO CÁO CÔNG NỢ & THEO DÕI HỌC PHÍ HỌC VIÊN TMS\n";
+            csv += "Ngày kết xuất," + dateStr + "\n\n";
+            csv += "Mã SV,Họ và Tên,Lớp học,Tổng học phí (VNĐ),Đã thanh toán (VNĐ),Còn nợ (VNĐ),Hạn thanh toán,Trạng thái\n";
+            csv += "SV001,Lê Minh Tuấn,K15-PM01,4500000,4500000,0,Đã nộp,Đã hoàn thành\n";
+            csv += "SV002,Hoàng Thùy Linh,K15-PM01,4500000,4500000,0,Đã nộp,Đã hoàn thành\n";
+            csv += "SV003,Trần Đình Trọng,K15-PM01,4500000,2000000,2500000,Hôm nay,Quá hạn đợt 2\n";
+            csv += "SV004,Nguyễn Văn An,K15-DA02,5200000,3000000,2200000,15/10/2026,Chờ nộp đợt 2\n";
+            csv += "SV005,Phạm Thị Mai,K16-WEB01,6800000,6800000,0,Đã nộp,Đã hoàn thành\n";
+
+            downloadCSV("Bao_Cao_Cong_No_Hoc_Phi_" + fileDate + ".csv", csv);
+            showToast("Đã tải xuống file 'Bao_Cao_Cong_No_Hoc_Phi_" + fileDate + ".csv' thành công!");
+        }
+        window.exportDebtReport = exportDebtReport;
+
+        function exportPDFReport() {
+            showToast("Đang chuẩn bị trang in / lưu PDF...", "info");
+            setTimeout(() => {
+                window.print();
+            }, 300);
+        }
+        window.exportPDFReport = exportPDFReport;
 
         // Dark / Light Theme Toggle
         const themeToggleBtn = document.getElementById("theme-toggle");
@@ -2260,7 +2503,7 @@
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                         Phân quyền Vai trò
                     </a>
-                    <button class="btn-banner-outline" onclick="showToast('Xuất báo cáo hệ thống PDF thành công!')">Xuất báo cáo</button>
+                    <button class="btn-banner-outline" onclick="exportSystemReport()">Xuất báo cáo</button>
                 `,
                 stats: `
                     <div class="stat-card">
@@ -2366,7 +2609,7 @@
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
                         Lập biên lai thu tiền
                     </button>
-                    <button class="btn-banner-outline" onclick="showToast('Đang kết xuất báo cáo công nợ...')">Báo cáo công nợ lớp</button>
+                    <button class="btn-banner-outline" onclick="exportDebtReport()">Báo cáo công nợ lớp</button>
                 `,
                 stats: `
                     <div class="stat-card">
