@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>TMS - Phân quyền người dùng</title>
+    <title>Hệ Thống Đào Tạo TMS | Phân Quyền Vai Trò Người Dùng (KN-12)</title>
     <script src="/authGuard.js" data-required="administrator"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -374,6 +374,19 @@
         .role-tag-admissions { background: #fdf2f8; color: #be185d; border-color: #fbcfe8; }
         .role-tag-accountant { background: #f0fdfa; color: #0f766e; border-color: #99f6e4; }
         .role-tag-visitor { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
+
+        .badge-jira {
+            display: inline-flex;
+            align-items: center;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 7px;
+            background: #f1f5f9;
+            color: #475569;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            letter-spacing: 0.02em;
+        }
 
         /* Pagination */
         .pagination-container {
@@ -932,7 +945,10 @@
         <div class="header-brand">
             <span class="brand-badge">TMS</span>
             <div class="header-title">
-                <h1>Phân quyền người dùng</h1>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <h1>Phân quyền người dùng</h1>
+                    <span class="badge-jira">KN-12 • Sprint 1</span>
+                </div>
                 <p>Quản lý danh sách tài khoản và phân quyền vai trò trên hệ thống</p>
             </div>
         </div>
@@ -1473,9 +1489,9 @@
 
                     let actionHtml = "";
                     if (isSelfAdmin) {
-                        actionHtml = `<span style="font-size: 11px; color: var(--text-muted);">Quản trị viên chính</span>`;
+                        actionHtml = `<button class="btn-destructive-subtle" disabled title="Không thể tự thu hồi vai trò Quản trị viên của chính mình (KN-56)">Không thể tự thu hồi</button>`;
                     } else if (isOnlyRole) {
-                        actionHtml = `<span style="font-size: 11px; color: var(--text-muted);">Vai trò tối thiểu</span>`;
+                        actionHtml = `<button class="btn-destructive-subtle" disabled title="Mỗi người dùng phải giữ ít nhất một vai trò hợp lệ trong hệ thống (KN-59)">Vai trò tối thiểu</button>`;
                     } else {
                         actionHtml = `<button class="btn-destructive-subtle" onclick="confirmRevokeRole('${activeEditingUser.id}', '${roleCode}', '${r.name}')">Thu hồi</button>`;
                     }
