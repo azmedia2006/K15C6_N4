@@ -223,7 +223,6 @@ app.post("/api/auth/register", async (req, res) => {
             // ignore
         }
         await supabaseService.syncSingleUser(result.user, password, users);
-        await supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs());
 
         return res.status(201).json({
             success: true,
@@ -300,7 +299,6 @@ app.post(
 
             // Đồng bộ sang tất cả các tầng Supabase (PostgreSQL tables, Auth, Storage)
             await supabaseService.syncSingleUser(result.user, result.temporaryPassword, users);
-            await supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs());
 
             return res.status(201).json({
                 success: true,
@@ -359,7 +357,6 @@ app.put(
 
             // Đồng bộ cập nhật sang Supabase
             await supabaseService.syncSingleUser(updated, req.body ? req.body.password : null, users);
-            await supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs());
 
             return res.status(200).json({
                 success: true,
@@ -400,7 +397,6 @@ app.delete(
 
             // Đồng bộ xóa sang Supabase (PostgreSQL tables, Auth, Storage)
             await supabaseService.deleteSingleUser(targetId, userToDelete ? userToDelete.email : null, users);
-            await supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs());
 
             return res.status(200).json(result);
         } catch (err) {

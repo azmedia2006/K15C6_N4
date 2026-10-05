@@ -1317,13 +1317,29 @@
     }
 
     // Khởi động trang
+    // Khởi động trang ngay lập tức (0ms latency, không giật lag)
     document.addEventListener("DOMContentLoaded", () => {
+        // Nạp tức thì từ bộ nhớ cache cục bộ nếu có
+        try {
+            const cached = localStorage.getItem("tms_users_cache");
+            if (cached) {
+                const parsed = JSON.parse(cached);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    usersData = parsed;
+                }
+            }
+        } catch {}
+
+        // Hiển thị giao diện ngay tức thì không cần đợi mạng (0ms render)
+        renderTable();
+        updateMetrics();
+
+        // Chạy ngầm tải mới nhất từ Supabase & Backend API
         loadUsersFromAPIOrLocal();
     });
 
-    // Tự động tải từ Supabase & Backend API
+    // Tự động tải từ Supabase chạy ngầm song song (Non-blocking background refresh)
     async function loadUsersFromAPIOrLocal() {
-        // 1. Tải trực tiếp từ Supabase Table public.users
         try {
             const supaRes = await fetch(`${SUPABASE_URL}/rest/v1/users?select=*&order=created_at.desc`, {
                 headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
@@ -1340,36 +1356,14 @@
                         status: su.status || "active",
                         createdAt: su.created_at
                     }));
+                    renderTable();
+                    updateMetrics();
+                    try { localStorage.setItem("tms_users_cache", JSON.stringify(usersData)); } catch {}
                 }
             }
         } catch (e) {
             console.warn("Supabase fetch notice:", e.message);
         }
-
-        // 2. Thử cập nhật thêm từ Backend API nếu có
-        try {
-            const token = await getValidAdminToken();
-            if (token) {
-                const res = await fetch(`${API_BASE}/admin/users?limit=100`, {
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.success && Array.isArray(data.users)) {
-                        data.users.forEach(u => {
-                            if (!usersData.some(x => x.id === u.id || x.email.toLowerCase() === u.email.toLowerCase())) {
-                                usersData.push(u);
-                            }
-                        });
-                    }
-                }
-            }
-        } catch (err) {
-            console.log("API notice:", err.message);
-        }
-
-        renderTable();
-        updateMetrics();
     }
 
     // Hiển thị danh sách bảng người dùng có phân trang (mặc định 20 dòng)
@@ -1541,7 +1535,7 @@
         if (!isAuto) customInput.focus();
     }
 
-    // Xử lý Tạo mới người dùng (KN-11)
+    // Xử lý Tạo mới người dùng (KN-11) - Tối ưu 0ms phản hồi tức thì
     async function handleCreateUser(e) {
         e.preventDefault();
         const name = document.getElementById("create-name").value.trim();
@@ -1558,45 +1552,36 @@
         }
 
         const password = (!isAuto && customPass) ? customPass : ("TMS@" + Math.random().toString(36).substring(2, 8));
+        const newUserId = "usr_" + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
 
-        // 1. Gửi lên backend API
-        const token = await getValidAdminToken();
-        let createdUser = null;
-        let finalPassword = password;
+        const createdUser = {
+            id: newUserId,
+            name,
+            email,
+            role,
+            phone: phone || "Chưa cập nhật",
+            status: "active",
+            createdAt: new Date().toISOString()
+        };
 
-        try {
-            const res = await fetch(`${API_BASE}/admin/users`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": token ? `Bearer ${token}` : ""
-                },
-                body: JSON.stringify({ name, email, role, phone, password: (!isAuto ? customPass : "") })
-            });
-            if (res.ok) {
-                const data = await res.json();
-                createdUser = data.user;
-                finalPassword = data.temporaryPassword || password;
-            }
-        } catch (err) {
-            console.log("API offline, lưu local:", err.message);
-        }
+        // 1. CẬP NHẬT GIAO DIỆN TỨC THÌ (0ms Latency - Không chờ mạng)
+        usersData.unshift(createdUser);
+        closeModal("create-modal");
+        renderTable();
+        updateMetrics();
+        try { localStorage.setItem("tms_users_cache", JSON.stringify(usersData)); } catch {}
 
-        if (!createdUser) {
-            createdUser = {
-                id: "usr_" + Date.now().toString(36) + Math.random().toString(36).substring(2, 6),
-                name,
-                email,
-                role,
-                phone: phone || "Chưa cập nhật",
-                status: "active",
-                createdAt: new Date().toISOString()
-            };
-        }
+        // Mở ngay popup thông tin bàn giao nhân sự mới
+        document.getElementById("cred-name").textContent = createdUser.name;
+        document.getElementById("cred-email").textContent = createdUser.email;
+        document.getElementById("cred-pass").textContent = password;
+        document.getElementById("cred-role").textContent = roleLabels[createdUser.role]?.name || createdUser.role;
+        document.getElementById("credential-modal").classList.add("open");
+        showToast(`Đã tạo tài khoản cho ${createdUser.name}!`, "success");
 
-        // 2. Đồng bộ TRỰC TIẾP sang Supabase PostgreSQL public.users & public.user_roles từ Client
-        try {
-            await fetch(`${SUPABASE_URL}/rest/v1/users`, {
+        // 2. CHẠY NGẦM ĐỒNG BỘ SONG SONG (SUPABASE + BACKEND)
+        (async () => {
+            const supaUserTask = fetch(`${SUPABASE_URL}/rest/v1/users`, {
                 method: "POST",
                 headers: {
                     "apikey": SUPABASE_KEY,
@@ -1610,13 +1595,13 @@
                     name: createdUser.name,
                     role: createdUser.role,
                     phone: createdUser.phone || "",
-                    status: createdUser.status || "active",
-                    created_at: createdUser.createdAt || new Date().toISOString(),
+                    status: "active",
+                    created_at: createdUser.createdAt,
                     updated_at: new Date().toISOString()
                 })
             });
 
-            await fetch(`${SUPABASE_URL}/rest/v1/user_roles`, {
+            const supaRoleTask = fetch(`${SUPABASE_URL}/rest/v1/user_roles`, {
                 method: "POST",
                 headers: {
                     "apikey": SUPABASE_KEY,
@@ -1631,23 +1616,23 @@
                     assigned_at: new Date().toISOString()
                 })
             });
-        } catch (e) {
-            console.warn("Direct Supabase sync notice:", e.message);
-        }
 
-        usersData.unshift(createdUser);
-        closeModal("create-modal");
-        renderTable();
-        updateMetrics();
+            const backendTask = (async () => {
+                const token = await getValidAdminToken();
+                if (token) {
+                    return fetch(`${API_BASE}/admin/users`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ id: createdUser.id, name, email, role, phone, password: (!isAuto ? customPass : password) })
+                    });
+                }
+            })();
 
-        // Mở popup thông tin bàn giao nhân sự mới
-        document.getElementById("cred-name").textContent = createdUser.name;
-        document.getElementById("cred-email").textContent = createdUser.email;
-        document.getElementById("cred-pass").textContent = finalPassword;
-        document.getElementById("cred-role").textContent = roleLabels[createdUser.role]?.name || createdUser.role;
-        document.getElementById("credential-modal").classList.add("open");
-
-        showToast(`Đã tạo tài khoản cho ${createdUser.name}!`, "success");
+            await Promise.allSettled([supaUserTask, supaRoleTask, backendTask]);
+        })().catch(err => console.warn("Background sync warning:", err));
     }
 
     // Chỉnh sửa người dùng (KN-11)
@@ -1675,6 +1660,7 @@
         const status = document.getElementById("edit-status").value;
         const newPass = document.getElementById("edit-new-pass").value.trim();
 
+        // 1. CẬP NHẬT GIAO DIỆN TỨC THÌ (0ms Latency)
         const user = usersData.find(u => u.id === id);
         if (user) {
             user.name = name;
@@ -1683,26 +1669,15 @@
             user.status = status;
         }
 
-        // Gọi API nếu có token
-        const token = await getValidAdminToken();
-        if (token) {
-            try {
-                await fetch(`${API_BASE}/admin/users/${id}`, {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ name, role, phone, status, password: newPass })
-                });
-            } catch (err) {
-                console.log("Cập nhật offline:", err.message);
-            }
-        }
+        closeModal("edit-modal");
+        renderTable();
+        updateMetrics();
+        try { localStorage.setItem("tms_users_cache", JSON.stringify(usersData)); } catch {}
+        showToast("Đã cập nhật thông tin tài khoản thành công!", "success");
 
-        // Đồng bộ trực tiếp Supabase
-        try {
-            await fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(id)}`, {
+        // 2. CHẠY NGẦM ĐỒNG BỘ SONG SONG
+        (async () => {
+            const supaUserPatch = fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(id)}`, {
                 method: "PATCH",
                 headers: {
                     "apikey": SUPABASE_KEY,
@@ -1717,15 +1692,39 @@
                     updated_at: new Date().toISOString()
                 })
             });
-        } catch {}
 
-        closeModal("edit-modal");
-        renderTable();
-        updateMetrics();
-        showToast("Đã cập nhật thông tin tài khoản thành công!", "success");
+            const supaRolePatch = fetch(`${SUPABASE_URL}/rest/v1/user_roles?user_id=eq.${encodeURIComponent(id)}`, {
+                method: "PATCH",
+                headers: {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": `Bearer ${SUPABASE_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    role_id: role,
+                    assigned_at: new Date().toISOString()
+                })
+            });
+
+            const backendPatch = (async () => {
+                const token = await getValidAdminToken();
+                if (token) {
+                    return fetch(`${API_BASE}/admin/users/${id}`, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ name, role, phone, status, password: newPass })
+                    });
+                }
+            })();
+
+            await Promise.allSettled([supaUserPatch, supaRolePatch, backendPatch]);
+        })().catch(err => console.warn("Background update error:", err));
     }
 
-    // Xóa người dùng (KN-11)
+    // Xóa người dùng (KN-11) - Tối ưu 0ms biến mất ngay lập tức
     async function handleDeleteUser(id, name) {
         if (id === "usr_admin") {
             showToast("Không thể xóa tài khoản Quản trị viên hệ thống!", "error");
@@ -1739,43 +1738,42 @@
         const targetUser = usersData.find(u => u.id === id);
         const userEmail = targetUser ? targetUser.email : null;
 
-        // 1. Xóa trực tiếp Supabase (PostgreSQL tables: public.users & public.user_roles)
-        try {
-            await fetch(`${SUPABASE_URL}/rest/v1/user_roles?user_id=eq.${encodeURIComponent(id)}`, {
-                method: "DELETE",
-                headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
-            });
-            await fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(id)}`, {
-                method: "DELETE",
-                headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
-            });
-            if (userEmail) {
-                await fetch(`${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(userEmail)}`, {
-                    method: "DELETE",
-                    headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
-                });
-            }
-        } catch (supaErr) {
-            console.warn("Lỗi xóa Supabase:", supaErr.message);
-        }
-
-        // 2. Gửi request lên Backend API
-        const token = await getValidAdminToken();
-        if (token) {
-            try {
-                await fetch(`${API_BASE}/admin/users/${id}`, {
-                    method: "DELETE",
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-            } catch (err) {
-                console.log("Xóa offline:", err.message);
-            }
-        }
-
+        // 1. CẬP NHẬT GIAO DIỆN TỨC THÌ (0ms Latency - Dòng biến mất ngay lập tức)
         usersData = usersData.filter(u => u.id !== id && (!userEmail || u.email.toLowerCase() !== userEmail.toLowerCase()));
         renderTable();
         updateMetrics();
-        showToast(`Đã xóa tài khoản '${name}' thành công và đồng bộ Supabase!`, "success");
+        try { localStorage.setItem("tms_users_cache", JSON.stringify(usersData)); } catch {}
+        showToast(`Đã xóa tài khoản '${name}'.`, "success");
+
+        // 2. CHẠY NGẦM ĐỒNG BỘ XÓA SONG SONG
+        (async () => {
+            const delSupaRoles = fetch(`${SUPABASE_URL}/rest/v1/user_roles?user_id=eq.${encodeURIComponent(id)}`, {
+                method: "DELETE",
+                headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+            });
+
+            const delSupaUser = fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(id)}`, {
+                method: "DELETE",
+                headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+            });
+
+            const delSupaEmail = userEmail ? fetch(`${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(userEmail)}`, {
+                method: "DELETE",
+                headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+            }) : Promise.resolve();
+
+            const delBackend = (async () => {
+                const token = await getValidAdminToken();
+                if (token) {
+                    return fetch(`${API_BASE}/admin/users/${id}`, {
+                        method: "DELETE",
+                        headers: { "Authorization": `Bearer ${token}` }
+                    });
+                }
+            })();
+
+            await Promise.allSettled([delSupaRoles, delSupaUser, delSupaEmail, delBackend]);
+        })().catch(err => console.warn("Background delete notice:", err));
     }
 
     // Sao chép thông tin bàn giao
