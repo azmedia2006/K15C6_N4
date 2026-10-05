@@ -530,16 +530,25 @@ app.delete(
 );
 
 // KN-63: API xem nhật ký thao tác (Audit Logs)
+const handleGetAuditLogs = (req, res) => {
+    return res.status(200).json({
+        success: true,
+        auditLogs: getAuditLogs()
+    });
+};
+
 app.get(
     "/api/admin/audit-logs",
     authenticateToken,
     requireRole("administrator"),
-    (req, res) => {
-        return res.status(200).json({
-            success: true,
-            auditLogs: getAuditLogs()
-        });
-    }
+    handleGetAuditLogs
+);
+
+app.get(
+    "/admin/audit-logs",
+    authenticateToken,
+    requireRole("administrator"),
+    handleGetAuditLogs
 );
 
 // ==========================================

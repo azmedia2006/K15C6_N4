@@ -40,7 +40,66 @@ function getUserRolesVersion(userId) {
 function initRoleData() {
     userRoles = [];
     userRoleIndex.clear();
-    auditLogs = [];
+    // KN-63: Khởi tạo dữ liệu nhật ký thao tác chuẩn hệ thống TMS
+    const baseTime = Date.now();
+    auditLogs = [
+        {
+            id: "log_init_001",
+            timestamp: new Date(baseTime - 1000 * 60 * 360).toISOString(),
+            adminId: "usr_admin",
+            targetUserId: "usr_manager",
+            action: "ASSIGN_ROLE",
+            roleId: "training_manager",
+            ip: "127.0.0.1",
+            status: "SUCCESS",
+            reason: "Khởi tạo phân quyền quản trị đào tạo theo Sprint 1"
+        },
+        {
+            id: "log_init_002",
+            timestamp: new Date(baseTime - 1000 * 60 * 240).toISOString(),
+            adminId: "usr_admin",
+            targetUserId: "usr_teacher",
+            action: "ASSIGN_ROLE",
+            roleId: "instructor",
+            ip: "127.0.0.1",
+            status: "SUCCESS",
+            reason: "Phân quyền Giảng viên bộ môn Công nghệ phần mềm"
+        },
+        {
+            id: "log_init_003",
+            timestamp: new Date(baseTime - 1000 * 60 * 120).toISOString(),
+            adminId: "usr_admin",
+            targetUserId: "usr_teacher",
+            action: "ASSIGN_ROLE",
+            roleId: "training_manager",
+            ip: "127.0.0.1",
+            status: "SUCCESS",
+            reason: "Gán kiêm nhiệm Quản lý đào tạo theo KN-58"
+        },
+        {
+            id: "log_init_004",
+            timestamp: new Date(baseTime - 1000 * 60 * 45).toISOString(),
+            adminId: "usr_admin",
+            targetUserId: "usr_admin",
+            action: "REVOKE_ROLE",
+            roleId: "administrator",
+            ip: "127.0.0.1",
+            status: "FORBIDDEN",
+            reason: "Không thể tự thu hồi vai trò Quản trị viên của chính mình (KN-56)"
+        },
+        {
+            id: "log_init_005",
+            timestamp: new Date(baseTime - 1000 * 60 * 15).toISOString(),
+            adminId: "usr_admin",
+            targetUserId: "usr_ta",
+            action: "ASSIGN_ROLE",
+            roleId: "teaching_assistant",
+            ip: "127.0.0.1",
+            status: "SUCCESS",
+            reason: "Phân quyền Trợ giảng phụ trách lớp K15C6"
+        }
+    ];
+
     userRolesVersion.clear();
 
     const timestamp = new Date().toISOString();
