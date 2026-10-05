@@ -32,7 +32,9 @@ const {
     createUser,
     updateUser,
     deleteUser,
-    getUserById
+    getUserById,
+    lockUser,
+    unlockUser
 } = require("./userService");
 
 const app = express();
@@ -132,6 +134,7 @@ app.post("/api/auth/login", (req, res) => {
 
     const normalizedEmail = String(email).trim().toLowerCase();
 
+
     // KN-34 & KN-36: Kiểm tra trạng thái khóa tài khoản
     const lockout = getLockoutStatus(normalizedEmail);
 
@@ -145,6 +148,24 @@ app.post("/api/auth/login", (req, res) => {
     }
 
     const user = findUserByEmail(normalizedEmail);
+
+    // KN-13: Chặn tài khoản bị quản trị viên khóa
+if (user && (user.status || "active") === "locked") {
+    return res.status(423).json({
+        success: false,
+        code: "ACCOUNT_LOCKED",
+        message: "Tài khoản đã bị khóa bởi Quản trị viên. Vui lòng liên hệ quản trị viên."
+    });
+}
+
+// Tài khoản chưa kích hoạt / ngừng hoạt động
+if (user && (user.status || "active") === "inactive") {
+    return res.status(403).json({
+        success: false,
+        code: "ACCOUNT_INACTIVE",
+        message: "Tài khoản hiện không hoạt động."
+    });
+}
 
     // KN-37 & KN-35: Xác thực và bảo vệ mật khẩu an toàn
     let isPasswordValid = false;
