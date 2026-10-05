@@ -3,6 +3,11 @@
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.js" },
     { "source": "/", "destination": "/frontend/Login.html" },
-    { "source": "/(.*)", "destination": "/frontend/$1" }
+    { "source": "/frontend/(.*)", "destination": "/frontend/$1" },
+    { "source": "/Login.html", "destination": "/frontend/Login.html" },
+    { "source": "/Index.html", "destination": "/frontend/Index.html" },
+    { "source": "/UserManagement.html", "destination": "/frontend/UserManagement.html" },
+    { "source": "/RoleManagement.html", "destination": "/frontend/RoleManagement.html" },
+    { "source": "/(.*)", "destination": "/$1" }
   ]
 }
