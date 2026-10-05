@@ -1,8 +1,21 @@
-"scripts": {
-  "start": "node server.js",
-  "migrate": "node migrations/migrate_roles_n_n.js",
-  "test": "node test/auth.test.js && node test/user_management.test.js && node test/role_management.test.js",
-  "test:auth": "node test/auth.test.js",
-  "test:user": "node test/user_management.test.js",
-  "test:role": "node test/role_management.test.js"
+{
+  "name": "be",
+  "version": "1.0.0",
+  "description": "Training Management System - Backend API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "migrate": "node migrations/migrate_roles_n_n.js",
+    "test": "node test/auth.test.js && node test/user_management.test.js && node test/role_management.test.js",
+    "test:auth": "node test/auth.test.js",
+    "test:user": "node test/user_management.test.js",
+    "test:role": "node test/role_management.test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1"
+  }
 }

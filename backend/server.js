@@ -1,3 +1,4 @@
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const {
@@ -17,8 +18,18 @@ const {
     assignRoleToUser,
     revokeRoleFromUser,
     getUsersWithRolesList,
-    getAuditLogs
+    getAuditLogs,
+    removeAllUserRoles,
+    syncUserRole
 } = require("./roleService");
+
+const {
+    VALID_ROLES,
+    createUser,
+    updateUser,
+    deleteUser,
+    getUserById
+} = require("./userService");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -77,7 +88,7 @@ function requireRole(...allowedRoles) {
 
         const userRoleCodes = req.user.roles.map(r => r.code || r.id);
         const hasPermission = allowedRoles.some(role =>
-            userRoleCodes.includes(role)
+            userRoleCodes.includes(role) || req.user.role === role
         );
 
         if (!hasPermission) {
@@ -186,10 +197,10 @@ app.get("/api/auth/me", authenticateToken, (req, res) => {
 });
 
 // ==========================================
-// CÁC ENDPOINT QUẢN TRỊ VAI TRÒ (ADMIN ONLY)
+// CÁC ENDPOINT QUẢN TRỊ VAI TRÒ & NGƯỜI DÙNG (ADMIN ONLY)
 // ==========================================
 
-// Lấy danh mục tất cả 8 vai trò của hệ thống TMS
+// Lấy danh mục tất cả vai trò của hệ thống TMS
 app.get(
     "/api/admin/roles",
     authenticateToken,
@@ -197,31 +208,67 @@ app.get(
     (req, res) => {
         return res.status(200).json({
             success: true,
-            roles: getAllRoles()
+            roles: VALID_ROLES,
+            roleDetails: getAllRoles()
         });
     }
 );
 
-// KN-62: Lấy danh sách người dùng kèm vai trò
+// KN-62 & KN-11: Lấy danh sách người dùng kèm vai trò
 // Hỗ trợ phân trang, lọc theo vai trò, tìm kiếm
 app.get(
     "/api/admin/users",
     authenticateToken,
     requireRole("administrator"),
     (req, res) => {
-        const { page, limit, roleId, search } = req.query;
+        const { page, limit, roleId, role, search, query, status } = req.query;
 
         const result = getUsersWithRolesList({
             page,
             limit,
             roleId,
-            search
+            role,
+            search,
+            query,
+            status
         });
 
         return res.status(200).json({
             success: true,
             ...result
         });
+    }
+);
+
+// KN-11: API Tạo mới tài khoản người dùng
+app.post(
+    "/api/admin/users",
+    authenticateToken,
+    requireRole("administrator"),
+    (req, res) => {
+        try {
+            const result = createUser(req.body || {});
+            if (result.user && result.user.role) {
+                try {
+                    syncUserRole(result.user.id, result.user.role);
+                } catch (e) {
+                    // ignore
+                }
+            }
+            return res.status(201).json({
+                success: true,
+                message: `Tạo tài khoản người dùng '${result.user.name}' thành công. Đã gửi email kích hoạt kèm mật khẩu tạm.`,
+                user: result.user,
+                temporaryPassword: result.temporaryPassword,
+                emailSent: result.emailSent,
+                activationEmail: result.activationEmail
+            });
+        } catch (err) {
+            return res.status(err.status || err.statusCode || 500).json({
+                success: false,
+                message: err.message || "Đã xảy ra lỗi khi tạo người dùng."
+            });
+        }
     }
 );
 
@@ -247,6 +294,54 @@ app.get(
     }
 );
 
+// KN-11: API Cập nhật / sửa thông tin tài khoản người dùng
+app.put(
+    "/api/admin/users/:id",
+    authenticateToken,
+    requireRole("administrator"),
+    (req, res) => {
+        try {
+            const updated = updateUser(req.params.id, req.body || {});
+            if (req.body && req.body.role) {
+                try {
+                    syncUserRole(req.params.id, req.body.role);
+                } catch (e) {
+                    // ignore
+                }
+            }
+            return res.status(200).json({
+                success: true,
+                message: `Cập nhật thông tin tài khoản '${updated.name}' thành công.`,
+                user: updated
+            });
+        } catch (err) {
+            return res.status(err.status || err.statusCode || 500).json({
+                success: false,
+                message: err.message || "Đã xảy ra lỗi khi cập nhật tài khoản."
+            });
+        }
+    }
+);
+
+// KN-11: API Xóa tài khoản người dùng
+app.delete(
+    "/api/admin/users/:id",
+    authenticateToken,
+    requireRole("administrator"),
+    (req, res) => {
+        try {
+            const result = deleteUser(req.params.id, req.user ? req.user.id : null);
+            removeAllUserRoles(req.params.id);
+            return res.status(200).json(result);
+        } catch (err) {
+            return res.status(err.status || err.statusCode || 500).json({
+                success: false,
+                message: err.message || "Đã xảy ra lỗi khi xóa người dùng."
+            });
+        }
+    }
+);
+
 // KN-58: Xây dựng API gán vai trò cho người dùng
 // POST /api/admin/users/:userId/roles
 // hoặc /admin/users/:userId/roles
@@ -258,29 +353,25 @@ const handleAssignRole = (req, res) => {
         req.ip ||
         req.connection.remoteAddress ||
         "127.0.0.1";
+    const assignedBy = req.user ? req.user.id : "system_admin";
 
-    const assignedBy = req.user.id;
+    const targetRoles = Array.isArray(roleIds)
+        ? roleIds
+        : roleId
+        ? [roleId]
+        : [];
 
-    // Cho phép truyền roleId đơn hoặc mảng roleIds
-    const targetRoleIds =
-        roleIds && Array.isArray(roleIds)
-            ? roleIds
-            : roleId
-                ? [roleId]
-                : [];
-
-    if (targetRoleIds.length === 0) {
+    if (targetRoles.length === 0) {
         return res.status(400).json({
             success: false,
             message:
-                "Vui lòng cung cấp vai trò cần gán (roleId hoặc roleIds)."
+                "Vui lòng cung cấp mã vai trò (roleId hoặc roleIds) cần gán."
         });
     }
 
     try {
         let lastResult = null;
-
-        for (const rId of targetRoleIds) {
+        for (const rId of targetRoles) {
             lastResult = assignRoleToUser({
                 userId,
                 roleId: rId,
@@ -291,19 +382,15 @@ const handleAssignRole = (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: lastResult
-                ? lastResult.message
-                : "Gán vai trò thành công.",
-            roles: lastResult
-                ? lastResult.roles
-                : []
+            message: "Gán vai trò thành công.",
+            ...lastResult
         });
     } catch (err) {
         return res.status(err.statusCode || 500).json({
             success: false,
             message:
                 err.message ||
-                "Lỗi khi gán vai trò."
+                "Lỗi khi gán vai trò cho người dùng."
         });
     }
 };
@@ -327,26 +414,24 @@ app.post(
 // hoặc /admin/users/:userId/roles/:roleId
 const handleRevokeRole = (req, res) => {
     const { userId, roleId } = req.params;
-
     const ip =
         req.ip ||
         req.connection.remoteAddress ||
         "127.0.0.1";
-
-    const revokedBy = req.user.id;
+    const revokedBy = req.user ? req.user.id : "system_admin";
 
     try {
         const result = revokeRoleFromUser({
             userId,
             roleId,
+            targetRoleId: roleId,
             revokedBy,
             ip
         });
 
         return res.status(200).json({
             success: true,
-            message: result.message,
-            roles: result.roles
+            ...result
         });
     } catch (err) {
         return res.status(err.statusCode || 500).json({
@@ -393,11 +478,19 @@ app.get("/api/health", (req, res) => {
     });
 });
 
+// Phục vụ giao diện Frontend tĩnh
+const frontendDir = path.join(__dirname, "../frontend");
+app.use(express.static(frontendDir));
+app.use("/frontend", express.static(frontendDir));
+app.get("/", (req, res) => {
+    res.redirect("/Login.html");
+});
+
 // Chỉ listen khi chạy trực tiếp file server.js
 if (require.main === module) {
     app.listen(PORT, () => {
         console.log(
-            `TMS Auth Server running at http://localhost:${PORT}`
+            `TMS Server running at http://localhost:${PORT}`
         );
     });
 }

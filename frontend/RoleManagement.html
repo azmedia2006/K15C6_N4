@@ -342,8 +342,10 @@
 <div class="toast-container" id="toast-container"></div>
 
 <script>
-    // Cấu hình kết nối API
-    const API_BASE = "http://localhost:3000/api";
+    // Cấu hình kết nối API linh hoạt (hỗ trợ cả Localhost và Vercel/Production)
+    const API_BASE = (window.location.origin && window.location.origin.startsWith("http")) 
+        ? `${window.location.origin}/api` 
+        : "http://localhost:3000/api";
     let authToken = localStorage.getItem("tms_token") || "";
     let currentAdmin = JSON.parse(localStorage.getItem("tms_user") || "null") || {
         id: "usr_admin",

@@ -1258,6 +1258,11 @@
 <div class="toast-container" id="toast-container"></div>
 
 <script>
+    // Cấu hình API linh hoạt (hỗ trợ cả Localhost và Vercel/Production)
+    const API_BASE = (window.location.origin && window.location.origin.startsWith("http")) 
+        ? `${window.location.origin}/api` 
+        : "http://localhost:3000/api";
+
     // Dữ liệu người dùng mẫu (Đồng bộ với authService.js để luôn hoạt động độc lập cả khi chạy file://)
     const roleLabels = {
         "administrator": { name: "Quản trị viên", class: "badge-admin", color: "#7c3aed" },
@@ -1298,7 +1303,7 @@
         const token = localStorage.getItem("tms_token");
         if (token) {
             try {
-                const res = await fetch("http://localhost:3000/api/admin/users?limit=100", {
+                const res = await fetch(`${API_BASE}/admin/users?limit=100`, {
                     headers: { "Authorization": `Bearer ${token}` }
                 });
                 if (res.ok) {
@@ -1509,7 +1514,7 @@
 
         if (token) {
             try {
-                const res = await fetch("http://localhost:3000/api/admin/users", {
+                const res = await fetch(`${API_BASE}/admin/users`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -1591,7 +1596,7 @@
         const token = localStorage.getItem("tms_token");
         if (token) {
             try {
-                await fetch(`http://localhost:3000/api/admin/users/${id}`, {
+                await fetch(`${API_BASE}/admin/users/${id}`, {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
@@ -1624,7 +1629,7 @@
         const token = localStorage.getItem("tms_token");
         if (token) {
             try {
-                await fetch(`http://localhost:3000/api/admin/users/${id}`, {
+                await fetch(`${API_BASE}/admin/users/${id}`, {
                     method: "DELETE",
                     headers: { "Authorization": `Bearer ${token}` }
                 });
@@ -1646,7 +1651,8 @@
         const pass = document.getElementById("cred-pass").textContent;
         const role = document.getElementById("cred-role").textContent;
 
-        const text = `--- THÔNG TIN TÀI KHOẢN HỆ THỐNG ĐÀO TẠO TMS ---\nNhân sự: ${name}\nVai trò: ${role}\nTên đăng nhập: ${email}\nMật khẩu khởi tạo: ${pass}\nĐịa chỉ đăng nhập: http://localhost:3000/frontend/Login.html\n(Vui lòng đổi mật khẩu sau lần đăng nhập đầu tiên)`;
+        const originUrl = (window.location.origin && window.location.origin.startsWith("http")) ? window.location.origin : "http://localhost:3000";
+        const text = `--- THÔNG TIN TÀI KHOẢN HỆ THỐNG ĐÀO TẠO TMS ---\nNhân sự: ${name}\nVai trò: ${role}\nTên đăng nhập: ${email}\nMật khẩu khởi tạo: ${pass}\nĐịa chỉ đăng nhập: ${originUrl}/Login.html\n(Vui lòng đổi mật khẩu sau lần đăng nhập đầu tiên)`;
 
         navigator.clipboard.writeText(text).then(() => {
             showToast("Đã sao chép thông tin bàn giao vào Clipboard!", "success");

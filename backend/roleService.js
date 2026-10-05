@@ -235,7 +235,8 @@ function assignRoleToUser({ userId, roleId, assignedBy, ip }) {
 }
 
 // KN-59 & KN-56: Xây dựng hàm thu hồi vai trò của người dùng (tầng Service)
-function revokeRoleFromUser({ userId, roleId, revokedBy, ip }) {
+function revokeRoleFromUser({ userId, roleId, targetRoleId: inputTargetRoleId, revokedBy, ip }) {
+    const rawRoleId = roleId || inputTargetRoleId;
     // 1. Kiểm tra người dùng có tồn tại không
     const user = users.find(u => u.id === userId);
     if (!user) {
@@ -243,7 +244,7 @@ function revokeRoleFromUser({ userId, roleId, revokedBy, ip }) {
             adminId: revokedBy,
             targetUserId: userId,
             action: "REVOKE_ROLE",
-            roleId,
+            roleId: rawRoleId,
             ip,
             status: "BAD_REQUEST",
             reason: "Người dùng không tồn tại trong hệ thống."
@@ -254,8 +255,8 @@ function revokeRoleFromUser({ userId, roleId, revokedBy, ip }) {
     }
 
     // 2. Chuẩn hóa vai trò
-    const role = findRoleById(roleId);
-    const targetRoleId = role ? role.id : roleId;
+    const role = findRoleById(rawRoleId);
+    const targetRoleId = role ? role.id : rawRoleId;
 
     // 3. KN-56: Kiểm tra không cho tự thu hồi vai trò quản trị của chính mình
     if (userId === revokedBy && targetRoleId === "administrator") {
@@ -355,11 +356,12 @@ function revokeRoleFromUser({ userId, roleId, revokedBy, ip }) {
 }
 
 // KN-62: Lấy danh sách người dùng kèm vai trò (Tránh N+1 query, hỗ trợ phân trang & lọc)
-function getUsersWithRolesList({ page = 1, limit = 10, roleId = "", search = "" }) {
+function getUsersWithRolesList({ page = 1, limit = 20, roleId = "", role = "", search = "", query = "", status = "" } = {}) {
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
-    const limitNum = Math.max(1, Math.min(100, parseInt(limit, 10) || 10));
-    const normalizedSearch = String(search || "").trim().toLowerCase();
-    const normalizedRole = String(roleId || "").trim().toLowerCase();
+    const limitNum = Math.max(1, Math.min(100, parseInt(limit, 10) || 20));
+    const normalizedSearch = String(search || query || "").trim().toLowerCase();
+    const normalizedRole = String(roleId || role || "").trim().toLowerCase();
+    const normalizedStatus = String(status || "").trim().toLowerCase();
 
     // Gom nhóm danh sách vai trò theo userId trước (tối ưu O(N), tránh N+1 query)
     const rolesByUserMap = new Map();
@@ -380,27 +382,48 @@ function getUsersWithRolesList({ page = 1, limit = 10, roleId = "", search = "" 
     // Lọc theo điều kiện tìm kiếm và vai trò
     let filteredUsers = users.map(u => {
         const uRoles = rolesByUserMap.get(u.id) || [];
+        let displayRoles = uRoles;
+        if (displayRoles.length === 0 && u.role) {
+            const roleInfo = findRoleById(u.role);
+            displayRoles = [{
+                id: u.role,
+                code: roleInfo ? roleInfo.code : u.role,
+                name: roleInfo ? roleInfo.name : u.role,
+                assignedBy: "system",
+                assignedAt: u.createdAt || new Date().toISOString()
+            }];
+        }
         return {
             id: u.id,
             email: u.email,
             name: u.name,
-            role: uRoles.length > 0 ? uRoles[0].code : (u.role || null),
-            roles: uRoles
+            role: displayRoles.length > 0 ? displayRoles[0].code : (u.role || null),
+            roles: displayRoles,
+            phone: u.phone || "",
+            status: u.status || "active",
+            createdAt: u.createdAt,
+            updatedAt: u.updatedAt
         };
     });
 
     if (normalizedSearch) {
         filteredUsers = filteredUsers.filter(u =>
-            u.name.toLowerCase().includes(normalizedSearch) ||
-            u.email.toLowerCase().includes(normalizedSearch) ||
-            u.id.toLowerCase().includes(normalizedSearch)
+            (u.name && u.name.toLowerCase().includes(normalizedSearch)) ||
+            (u.email && u.email.toLowerCase().includes(normalizedSearch)) ||
+            (u.id && u.id.toLowerCase().includes(normalizedSearch)) ||
+            (u.phone && u.phone.includes(normalizedSearch))
         );
     }
 
-    if (normalizedRole) {
+    if (normalizedRole && normalizedRole !== "all") {
         filteredUsers = filteredUsers.filter(u =>
+            (u.role && u.role.toLowerCase() === normalizedRole) ||
             u.roles.some(r => r.id.toLowerCase() === normalizedRole || r.code.toLowerCase() === normalizedRole)
         );
+    }
+
+    if (normalizedStatus && normalizedStatus !== "all") {
+        filteredUsers = filteredUsers.filter(u => u.status && u.status.toLowerCase() === normalizedStatus);
     }
 
     const total = filteredUsers.length;
@@ -410,6 +433,10 @@ function getUsersWithRolesList({ page = 1, limit = 10, roleId = "", search = "" 
 
     return {
         users: paginatedUsers,
+        total: total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: totalPages,
         pagination: {
             page: pageNum,
             limit: limitNum,
@@ -417,6 +444,28 @@ function getUsersWithRolesList({ page = 1, limit = 10, roleId = "", search = "" 
             totalPages: totalPages
         }
     };
+}
+
+function removeAllUserRoles(userId) {
+    userRoles = userRoles.filter(ur => {
+        if (ur.userId === userId) {
+            userRoleIndex.delete(`${ur.userId}:${ur.roleId}`);
+            return false;
+        }
+        return true;
+    });
+}
+
+function syncUserRole(userId, roleId) {
+    removeAllUserRoles(userId);
+    userRoleIndex.add(`${userId}:${roleId}`);
+    userRoles.push({
+        userId,
+        roleId,
+        assignedBy: "admin_update",
+        assignedAt: new Date().toISOString()
+    });
+    bumpUserRolesVersion(userId);
 }
 
 module.exports = {
@@ -434,5 +483,7 @@ module.exports = {
     countActiveAdmins,
     initRoleData,
     bumpUserRolesVersion,
-    getUserRolesVersion
+    getUserRolesVersion,
+    removeAllUserRoles,
+    syncUserRole
 };

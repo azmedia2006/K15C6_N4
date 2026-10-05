@@ -970,23 +970,28 @@
             }
         }
 
-        function handleSuccessfulLogin(role, userData = null) {
+        function handleSuccessfulLogin(role, userData = null, token = null) {
             localStorage.setItem("tms_login_fail_count", "0");
             localStorage.removeItem("tms_login_lockout_until");
             const cleanRole = String(role || "").trim().toLowerCase().replace(/^role_/, "").replace(/[\s-]+/g, "_");
             if (!cleanRole) {
                 showMessage(
-                loginMessage,
-                "Không xác định được vai trò người dùng. Vui lòng liên hệ quản trị viên."
-            );
-    return;
-}
+                    loginMessage,
+                    "Không xác định được vai trò người dùng. Vui lòng liên hệ quản trị viên."
+                );
+                return;
+            }
             const userObj = userData || {
                 email: document.querySelector("#email").value.trim(),
                 role: cleanRole
             };
             localStorage.setItem("tms_current_user", JSON.stringify(userObj));
             localStorage.setItem("tms_current_role", cleanRole);
+            localStorage.setItem("tms_user", JSON.stringify(userObj));
+            if (token) {
+                localStorage.setItem("tms_token", token);
+                localStorage.setItem("token", token);
+            }
             const destination = roleHome[cleanRole] || `./Index.html?role=${cleanRole}`;
             showMessage(loginMessage, "Đăng nhập thành công! Đang chuyển hướng...", true);
             setTimeout(() => {
@@ -1002,7 +1007,7 @@
 
             setBusy(loginSubmit, true, "Đang đăng nhập…", "Đăng nhập");
             try {
-                const API_BASE_URL = "http://localhost:3001";
+                const API_BASE_URL = window.location.origin && window.location.origin.startsWith("http") ? window.location.origin : "http://localhost:3000";
 
                  const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
                     method: "POST",
@@ -1028,14 +1033,7 @@
                 }
 
                 const role = String(result.role || "").trim().toLowerCase().replace(/^role_/, "").replace(/[\s-]+/g, "_");
-                handleSuccessfulLogin(role, result.user);
-                if (!cleanRole) {
-    showMessage(
-        loginMessage,
-        "Không xác định được vai trò người dùng. Vui lòng liên hệ quản trị viên."
-    );
-    return;
-}
+                handleSuccessfulLogin(role, result.user, result.token);
             } catch {
                 // Chế độ demo / offline client-side mô phỏng đầy đủ tiêu chí của user story KN-14
                 const inputEmail = document.querySelector("#email").value.trim().toLowerCase();
