@@ -531,7 +531,7 @@
                         <div class="input-group">
                             <label for="email">Tài khoản <span class="required">*</span></label>
                             <!-- Note: Placeholder is needed for :not(:placeholder-shown) CSS trick to work properly -->
-                            <input id="email" name="email" type="email" autocomplete="username"
+                            <input id="email" name="email" type="text" autocomplete="username"
                                 placeholder="Mã sinh viên hoặc email" required>
                         </div>
 
@@ -635,7 +635,7 @@
 
                         <div class="input-group">
                             <label for="reg-email">Email hoặc Mã SV <span class="required">*</span></label>
-                            <input id="reg-email" name="email" type="email" autocomplete="username"
+                            <input id="reg-email" name="email" type="text" autocomplete="username"
                                 placeholder="name@example.com hoặc mã sinh viên" required>
                         </div>
 
@@ -1039,8 +1039,8 @@
                 localStorage.setItem("tms_login_lockout_until", String(lockoutUntil));
                 checkAndApplyLockout();
             } else {
-                // Tiêu chí bảo mật: Không tiết lộ email có tồn tại hay không
-                showMessage(loginMessage, `Email hoặc mật khẩu không đúng (Lần thử ${failCount}/5)`);
+                // Tiêu chí bảo mật: Không tiết lộ tài khoản có tồn tại hay không
+                showMessage(loginMessage, `Tài khoản hoặc mật khẩu không đúng (Lần thử ${failCount}/5)`);
             }
         }
 
