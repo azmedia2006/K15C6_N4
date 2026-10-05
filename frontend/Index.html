@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
+    <script>
+    const authToken = localStorage.getItem("tms_token");
+
+    if (!authToken) {
+        window.location.replace("./Login.html");
+    }
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#10b981">
@@ -2555,12 +2562,58 @@
         };
         const allowedRoles = new Set(Object.keys(allRolesMap));
 
-        let currentUser = null;
-        try {
-            currentUser = JSON.parse(localStorage.getItem("tms_current_user") || localStorage.getItem("tms_user"));
-        } catch (e) {
-            currentUser = null;
-        }
+       // Luôn xác minh user thật với Backend.
+// Không tin role/user được lưu trong localStorage.
+const token = localStorage.getItem("tms_token");
+
+function forceLogin() {
+    localStorage.removeItem("tms_token");
+    localStorage.removeItem("tms_current_user");
+    localStorage.removeItem("tms_current_role");
+    localStorage.removeItem("tms_user");
+
+    window.location.replace("./Login.html");
+
+    // Dừng script hiện tại để không render dashboard tiếp.
+    throw new Error("AUTH_REQUIRED");
+}
+
+if (!token) {
+    forceLogin();
+}
+
+let currentUser = null;
+
+try {
+    const xhr = new XMLHttpRequest();
+
+    xhr.open("GET", "/api/auth/me", false);
+    xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    xhr.send();
+
+    const authData = JSON.parse(xhr.responseText || "{}");
+
+    if (!authData.success || !authData.user) {
+        forceLogin();
+    }
+
+    // User này đến từ backend đã xác minh token.
+    currentUser = authData.user;
+
+    // Ghi đè mọi dữ liệu giả mạo trong localStorage.
+    localStorage.setItem(
+        "tms_current_user",
+        JSON.stringify(currentUser)
+    );
+
+} catch (error) {
+    if (error.message === "AUTH_REQUIRED") {
+        throw error;
+    }
+
+    console.error("Không thể xác minh phiên đăng nhập:", error);
+    forceLogin();
+}
 
         // Xác định vai trò gốc thực tế của tài khoản (Authentication)
         const userPrimaryRole = normalizeRole((currentUser && currentUser.role) || "visitor");
@@ -2699,7 +2752,7 @@
             ]
         };
 
-        const allowedMenus = rolePermissions[role] || rolePermissions.administrator;
+        const allowedMenus = rolePermissions[role] || rolePermissions.visitor;
         document.querySelectorAll("#sidebar-nav .nav-item[data-menu]").forEach(menu => {
             const menuKey = menu.getAttribute("data-menu");
             if (!allowedMenus.includes(menuKey)) {
