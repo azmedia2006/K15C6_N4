@@ -1,58 +1,68 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#10b981">
-    <title>Đăng nhập | TMS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <title>Đăng nhập | Hệ Thống Đào Tạo TMS</title>
 
-    <!-- Using Inter font for a very clean, professional enterprise look -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --primary: #10b981;
-            /* Vibrant green */
-            --primary-hover: #059669;
-            /* Darker green */
-            --primary-light: rgba(16, 185, 129, 0.15);
-            --text-main: #111827;
-            --text-muted: #6b7280;
-            --border: #e5e7eb;
-            --bg-white: #ffffff;
-            --bg-gray: #f9fafb;
+            --bg-page: #f8fafc;
+            --bg-card: #ffffff;
+            --border: #e2e8f0;
+            --border-focus: #0f172a;
+            --text-heading: #0f172a;
+            --text-body: #334155;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --primary: #0f172a;
+            --primary-hover: #1e293b;
+            --accent: #059669;
+            --accent-hover: #047857;
+            --accent-soft: #ecfdf5;
             --error: #ef4444;
-            --success: #10b981;
-            --radius-md: 8px;
-            --radius-lg: 12px;
+            --error-soft: #fef2f2;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --shadow-card: 0 20px 25px -5px rgba(15, 23, 42, 0.06), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+            --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            color: var(--text-main);
-            background-color: var(--bg-white);
-            -webkit-font-smoothing: antialiased;
+            background-color: var(--bg-page);
+            color: var(--text-body);
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 40px 20px 24px;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 28px 28px;
         }
 
         a {
+            color: var(--text-heading);
             text-decoration: none;
-            color: var(--primary);
-            font-weight: 600;
-            transition: color 0.2s;
+            font-weight: 500;
+            transition: var(--transition);
         }
 
         a:hover {
-            color: var(--primary-hover);
+            color: var(--accent);
         }
 
         button {
@@ -66,681 +76,497 @@
             font: inherit;
         }
 
-        [hidden] {
-            display: none !important;
-        }
-
-        .split-layout {
+        /* Top Brand */
+        .brand-header {
             display: flex;
-            min-height: 100vh;
-            width: 100%;
-        }
-
-        .left-panel {
-            flex: 1;
-            position: relative;
-            background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
-            background-size: cover;
-            background-position: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 4rem clamp(2rem, 5vw, 6rem);
-            color: white;
-        }
-
-        .left-panel::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.7));
-            z-index: 1;
-        }
-
-        .left-content {
-            position: relative;
-            z-index: 2;
-            max-width: 540px;
-            animation: fadeIn 0.8s ease-out forwards;
-        }
-
-        .right-panel {
-            flex: 1;
-            background: var(--bg-white);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-        }
-
-        .form-container {
-            width: 100%;
-            max-width: 420px;
-            animation: slideUp 0.6s ease-out forwards;
-        }
-
-        .brand {
-            display: inline-flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 3rem;
-            color: white;
-            font-size: 1.125rem;
-            font-weight: 700;
-            letter-spacing: 0.05em;
+            margin-bottom: 28px;
         }
 
-        .brand-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .brand-badge {
             width: 40px;
             height: 40px;
             background: var(--primary);
+            color: #ffffff;
             border-radius: var(--radius-md);
+            display: grid;
+            place-items: center;
             font-size: 1.25rem;
-        }
-
-        .eyebrow {
-            display: inline-block;
-            margin-bottom: 1rem;
-            color: var(--primary);
-            font-size: 0.875rem;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-        }
-
-        .left-content h1 {
-            font-size: clamp(2.5rem, 4vw, 3.5rem);
             font-weight: 800;
-            line-height: 1.1;
-            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
         }
 
-        .left-content p {
+        .brand-title {
             font-size: 1.125rem;
-            line-height: 1.6;
-            color: #cbd5e1;
-            margin-bottom: 3rem;
+            font-weight: 700;
+            color: var(--text-heading);
+            letter-spacing: -0.01em;
         }
 
-
-
-        .form-header {
-            margin-bottom: 2rem;
-        }
-
-        .form-header h2 {
-            font-size: 1.875rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-            color: var(--text-main);
-        }
-
-        .form-header p {
+        .brand-subtitle {
+            font-size: 0.75rem;
             color: var(--text-muted);
-            font-size: 0.9375rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-weight: 600;
         }
 
-        .input-group {
-            margin-bottom: 1.5rem;
+        /* Main Card */
+        .auth-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            width: 100%;
+            max-width: 440px;
+            padding: 36px 32px;
+            position: relative;
         }
 
-        .input-group label {
-            display: block;
-            margin-bottom: 0.5rem;
+        /* Segmented Tabs */
+        .tab-switch {
+            display: flex;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: var(--radius-md);
+            margin-bottom: 28px;
+            gap: 4px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 8px 14px;
             font-size: 0.875rem;
             font-weight: 600;
-            color: #374151;
+            color: var(--text-muted);
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+            text-align: center;
         }
 
-        .input-group label .required {
-            color: var(--error);
-            margin-left: 0.125rem;
+        .tab-btn.active {
+            background: #ffffff;
+            color: var(--text-heading);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         }
 
-        .input-wrapper {
+        .card-header {
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 1.375rem;
+            font-weight: 700;
+            color: var(--text-heading);
+            letter-spacing: -0.02em;
+            margin-bottom: 6px;
+        }
+
+        .card-desc {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.45;
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--text-heading);
+            margin-bottom: 6px;
+        }
+
+        .input-wrap {
             position: relative;
             display: flex;
             align-items: center;
-            width: 100%;
         }
 
-        input[type="text"],
-        input[type="email"],
-        input[type="password"],
-        input[type="tel"] {
+        .form-input {
             width: 100%;
-            padding: 0.875rem 1rem;
+            padding: 10px 14px;
             font-size: 0.9375rem;
-            color: var(--text-main);
-            background: var(--bg-white);
-            border: 2px solid var(--border);
+            color: var(--text-heading);
+            background: #ffffff;
+            border: 1px solid var(--border);
             border-radius: var(--radius-md);
             outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: var(--transition);
         }
 
-        .input-wrapper input {
-            padding-right: 2.75rem;
+        .form-input:focus {
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
         }
 
-        input[type="text"]::placeholder,
-        input[type="email"]::placeholder,
-        input[type="password"]::placeholder,
-        input[type="tel"]::placeholder {
-            color: #9ca3af;
+        .form-input::placeholder {
+            color: var(--text-light);
         }
 
-        /* Magic green focus and filled states */
-        input[type="text"]:focus,
-        input[type="email"]:focus,
-        input[type="password"]:focus,
-        input[type="tel"]:focus,
-        input[type="text"]:not(:placeholder-shown),
-        input[type="email"]:not(:placeholder-shown),
-        input[type="password"]:not(:placeholder-shown),
-        input[type="tel"]:not(:placeholder-shown) {
-            border-color: var(--primary);
-        }
-
-        input[type="text"]:focus,
-        input[type="email"]:focus,
-        input[type="password"]:focus,
-        input[type="tel"]:focus {
-            box-shadow: 0 0 0 4px var(--primary-light);
-        }
-
-        .password-toggle {
+        .toggle-password {
             position: absolute;
-            right: 0.625rem;
+            right: 10px;
             top: 50%;
             transform: translateY(-50%);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 2.25rem;
-            height: 2.25rem;
-            border-radius: var(--radius-md);
             color: var(--text-muted);
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            transition: color 0.2s, background-color 0.2s;
-            user-select: none;
+            padding: 6px;
+            border-radius: var(--radius-sm);
+            display: grid;
+            place-items: center;
+            transition: var(--transition);
         }
 
-        .password-toggle:hover {
-            color: var(--primary);
-            background-color: var(--primary-light);
+        .toggle-password:hover {
+            color: var(--text-heading);
+            background: #f1f5f9;
         }
 
-        .password-toggle:focus-visible {
-            outline: 2px solid var(--primary);
-            outline-offset: 2px;
-        }
-
-        .password-toggle svg {
-            display: block;
-            pointer-events: none;
-        }
-
-        .form-options {
+        /* Checkbox & Options */
+        .form-row-between {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 2rem;
-            font-size: 0.875rem;
+            margin-bottom: 24px;
+            font-size: 0.8125rem;
         }
 
-        .remember-me {
+        .checkbox-label {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            color: #4b5563;
+            gap: 8px;
+            color: var(--text-muted);
+            cursor: pointer;
+            user-select: none;
             font-weight: 500;
-            cursor: pointer;
         }
 
-        .remember-me input {
-            width: 1rem;
-            height: 1rem;
+        .checkbox-label input {
             accent-color: var(--primary);
+            width: 15px;
+            height: 15px;
             cursor: pointer;
         }
 
-        .btn-primary {
+        /* Submit Button */
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: #ffffff;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            transition: var(--transition);
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 100%;
-            padding: 0.875rem;
-            background: var(--primary);
-            color: white;
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: var(--radius-md);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 6px -1px var(--primary-light);
+            gap: 8px;
+            box-shadow: 0 2px 4px rgba(15, 23, 42, 0.1);
         }
 
-        .btn-primary:hover:not(:disabled) {
+        .btn-submit:hover:not(:disabled) {
             background: var(--primary-hover);
             transform: translateY(-1px);
-            box-shadow: 0 6px 8px -1px rgba(16, 185, 129, 0.25);
+            box-shadow: 0 4px 8px rgba(15, 23, 42, 0.15);
         }
 
-        .btn-primary:focus-visible {
-            outline: 2px solid var(--primary);
-            outline-offset: 3px;
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.75;
+        .btn-submit:disabled {
+            opacity: 0.65;
             cursor: not-allowed;
             transform: none;
         }
 
         .btn-spinner {
             display: inline-block;
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(255, 255, 255, 0.35);
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
             border-top-color: #ffffff;
             border-radius: 50%;
-            animation: btnSpin 0.6s linear infinite;
-            margin-right: 8px;
+            animation: spin 0.6s linear infinite;
         }
 
-        @keyframes btnSpin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .register-link {
-            text-align: center;
-            margin-top: 1.5rem;
-            font-size: 0.875rem;
-            color: var(--text-muted);
-        }
-
-        .divider {
-            display: flex;
-            align-items: center;
-            margin: 2rem 0;
-            color: var(--text-muted);
-            font-size: 0.875rem;
-        }
-
-        .divider::before,
-        .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .divider span {
-            padding: 0 1rem;
-        }
-
-        .social-login {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-
-        .btn-social {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            padding: 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--text-main);
-            transition: background 0.2s;
-        }
-
-        .btn-social:hover {
-            background: var(--bg-gray);
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         .message {
-            min-height: 1.25rem;
-            margin-top: 1rem;
-            color: var(--error);
-            font-size: 0.875rem;
+            margin-top: 14px;
+            font-size: 0.8125rem;
             text-align: center;
-            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            background: var(--error-soft);
+            color: var(--error);
+            border: 1px solid #fecaca;
         }
 
         .message.success {
-            color: var(--success);
+            background: var(--accent-soft);
+            color: var(--accent);
+            border-color: #a7f3d0;
         }
 
         .message:empty {
             display: none;
         }
 
-        .back-link {
+        /* Quick Demo Accounts Bar */
+        .demo-accounts {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .demo-title {
+            font-size: 0.6875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .demo-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .demo-chip {
+            background: #f1f5f9;
+            color: var(--text-body);
+            border: 1px solid var(--border);
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .demo-chip:hover {
+            background: #e2e8f0;
+            color: var(--text-heading);
+            border-color: #cbd5e1;
+        }
+
+        .demo-chip strong {
+            font-weight: 700;
+            color: var(--text-heading);
+        }
+
+        /* Back Button */
+        .back-btn {
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 2rem;
+            gap: 6px;
             color: var(--text-muted);
+            font-size: 0.8125rem;
             font-weight: 600;
+            margin-bottom: 16px;
         }
 
-        .back-link:hover {
-            color: var(--text-main);
+        .back-btn:hover {
+            color: var(--text-heading);
         }
 
-        /* Animations */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Responsive Layout */
-        @media (max-width: 900px) {
-            .split-layout {
-                flex-direction: column;
-            }
-
-            .left-panel {
-                min-height: 40vh;
-                padding: 3rem 2rem;
-                justify-content: center;
-            }
-
-            .left-content {
-                text-align: center;
-                margin: 0 auto;
-            }
-
-            .right-panel {
-                padding: 3rem 1.5rem;
-                align-items: flex-start;
-            }
-
-            .form-container {
-                max-width: 100%;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .social-login {
-                grid-template-columns: 1fr;
-            }
+        /* Footer */
+        .app-footer {
+            margin-top: 36px;
+            text-align: center;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
         }
     </style>
 </head>
-
 <body>
-    <main class="split-layout">
-        <!-- Left Panel: Brand & Introduction -->
-        <section class="left-panel">
-            <div class="left-content">
-                <a href="./Login.html" class="brand">
-                    <span class="brand-icon">T</span>
-                    ĐÀO TẠO TMS
-                </a>
 
-                <span class="eyebrow">Một không gian học tập</span>
-                <h1>Mọi việc học,<br>trong tầm tay.</h1>
-                <p>Đăng nhập để tiếp tục công việc và xem thông tin đào tạo được phân quyền riêng cho bạn trên hệ thống
-                    hiện đại của chúng tôi.</p>
+    <!-- Brand Header -->
+    <header class="brand-header">
+        <div class="brand-badge">T</div>
+        <div>
+            <div class="brand-title">HỆ THỐNG ĐÀO TẠO TMS</div>
+            <div class="brand-subtitle">Cổng Thông Tin Học Tập & Giảng Dạy</div>
+        </div>
+    </header>
 
+    <!-- Main Card -->
+    <main class="auth-card">
+        <!-- View Tabs -->
+        <div class="tab-switch">
+            <button class="tab-btn active" id="tab-login" onclick="switchView('login')">Đăng nhập</button>
+            <button class="tab-btn" id="tab-register" onclick="switchView('register')">Đăng ký</button>
+        </div>
 
+        <!-- LOGIN VIEW -->
+        <div id="login-view">
+            <div class="card-header">
+                <h1 class="card-title">Đăng nhập hệ thống</h1>
+                <p class="card-desc">Truy cập tài khoản để xem thông tin đào tạo và lớp học phân quyền riêng cho bạn.</p>
             </div>
-        </section>
 
-        <!-- Right Panel: Login / Recovery Forms -->
-        <section class="right-panel">
-            <div class="form-container">
+            <form id="login-form" novalidate>
+                <div class="form-group">
+                    <label class="form-label" for="email">Tài khoản</label>
+                    <input class="form-input" id="email" name="email" type="text" autocomplete="username"
+                        placeholder="Mã sinh viên hoặc email" required>
+                </div>
 
-                <!-- LOGIN VIEW -->
-                <div id="login-view">
-                    <div class="form-header">
-                        <h2>Đăng nhập</h2>
-                        <p>Vui lòng điền thông tin để truy cập tài khoản</p>
+                <div class="form-group">
+                    <div class="form-label">
+                        <label for="password">Mật khẩu</label>
+                        <a href="#recovery" id="show-recovery" style="font-size: 0.8125rem; color: var(--text-muted);">Quên mật khẩu?</a>
                     </div>
-
-                    <form id="login-form" novalidate>
-                        <div class="input-group">
-                            <label for="email">Tài khoản <span class="required">*</span></label>
-                            <!-- Note: Placeholder is needed for :not(:placeholder-shown) CSS trick to work properly -->
-                            <input id="email" name="email" type="text" autocomplete="username"
-                                placeholder="Mã sinh viên hoặc email" required>
-                        </div>
-
-                        <div class="input-group">
-                            <label for="password">Mật khẩu <span class="required">*</span></label>
-                            <div class="input-wrapper">
-                                <input id="password" name="password" type="password" autocomplete="current-password"
-                                    placeholder="Nhập mật khẩu của bạn" required>
-                                <button type="button" class="password-toggle" id="toggle-password"
-                                    aria-label="Hiện mật khẩu" title="Hiện mật khẩu">
-                                    <svg class="eye-icon eye-show" viewBox="0 0 24 24" width="20" height="20"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                        <circle cx="12" cy="12" r="3"></circle>
-                                    </svg>
-                                    <svg class="eye-icon eye-hide" style="display:none;" viewBox="0 0 24 24" width="20"
-                                        height="20" fill="none" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round">
-                                        <path
-                                            d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
-                                        </path>
-                                        <line x1="1" y1="1" x2="23" y2="23"></line>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="form-options">
-                            <label class="remember-me">
-                                <input type="checkbox" name="remember">
-                                Ghi nhớ thiết bị
-                            </label>
-                            <a href="#" id="show-recovery">Quên mật khẩu?</a>
-                        </div>
-
-                        <button class="btn-primary" id="login-submit" type="submit">Đăng nhập</button>
-
-                        <div class="register-link">
-                            Chưa có tài khoản? <a href="#register" id="show-register">Đăng ký ngay</a>
-                        </div>
-
-                        <p class="message" id="login-message" role="alert" aria-live="polite"></p>
-                    </form>
-
-                    <div class="divider">
-                        <span>Hoặc tiếp tục với</span>
-                    </div>
-
-                    <div class="social-login">
-                        <button type="button" class="btn-social">
-                            <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                                    fill="#4285F4" />
-                                <path
-                                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                                    fill="#34A853" />
-                                <path
-                                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                                    fill="#FBBC05" />
-                                <path
-                                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                                    fill="#EA4335" />
-                            </svg>
-                            Google
-                        </button>
-                        <button type="button" class="btn-social">
-                            <svg viewBox="0 0 21 21" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M10 0H0v10h10V0z" fill="#f25022" />
-                                <path d="M21 0H11v10h10V0z" fill="#7fba00" />
-                                <path d="M10 11H0v10h10V11z" fill="#00a4ef" />
-                                <path d="M21 11H11v10h10V11z" fill="#ffb900" />
-                            </svg>
-                            Microsoft
+                    <div class="input-wrap">
+                        <input class="form-input" id="password" name="password" type="password" autocomplete="current-password"
+                            placeholder="Nhập mật khẩu" required style="padding-right: 40px;">
+                        <button type="button" class="toggle-password" id="toggle-password" aria-label="Hiện mật khẩu" title="Hiện mật khẩu">
+                            <svg class="eye-show" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg class="eye-hide" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                         </button>
                     </div>
                 </div>
 
-                <!-- REGISTER VIEW -->
-                <div id="register-view" hidden>
-                    <button class="back-link" id="back-to-login-from-reg" type="button">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M19 12H5M12 19l-7-7 7-7" />
-                        </svg>
-                        Quay lại đăng nhập
-                    </button>
-
-                    <div class="form-header">
-                        <h2>Đăng ký tài khoản</h2>
-                        <p>Tạo tài khoản TMS để tham gia học tập và quản lý</p>
-                    </div>
-
-                    <form id="register-form" novalidate>
-                        <div class="input-group">
-                            <label for="reg-name">Họ và tên <span class="required">*</span></label>
-                            <input id="reg-name" name="name" type="text" autocomplete="name"
-                                placeholder="Ví dụ: Nguyễn Văn A" required>
-                        </div>
-
-                        <div class="input-group">
-                            <label for="reg-email">Email hoặc Mã SV <span class="required">*</span></label>
-                            <input id="reg-email" name="email" type="text" autocomplete="username"
-                                placeholder="name@example.com hoặc mã sinh viên" required>
-                        </div>
-
-                        <div class="input-group">
-                            <label for="reg-phone">Số điện thoại</label>
-                            <input id="reg-phone" name="phone" type="tel" autocomplete="tel" placeholder="0912 345 678">
-                        </div>
-
-                        <div class="input-group">
-                            <label for="reg-password">Mật khẩu <span class="required">*</span></label>
-                            <div class="input-wrapper">
-                                <input id="reg-password" name="password" type="password" autocomplete="new-password"
-                                    placeholder="Tối thiểu 6 ký tự" required minlength="6">
-                                <button type="button" class="password-toggle" id="toggle-reg-password"
-                                    aria-label="Hiện mật khẩu" title="Hiện mật khẩu">
-                                    <svg class="eye-icon eye-show" viewBox="0 0 24 24" width="20" height="20"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                        <circle cx="12" cy="12" r="3"></circle>
-                                    </svg>
-                                    <svg class="eye-icon eye-hide" style="display:none;" viewBox="0 0 24 24" width="20"
-                                        height="20" fill="none" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round">
-                                        <path
-                                            d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
-                                        </path>
-                                        <line x1="1" y1="1" x2="23" y2="23"></line>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="input-group">
-                            <label for="reg-confirm-password">Xác nhận mật khẩu <span class="required">*</span></label>
-                            <div class="input-wrapper">
-                                <input id="reg-confirm-password" name="confirmPassword" type="password"
-                                    autocomplete="new-password" placeholder="Nhập lại mật khẩu" required minlength="6">
-                                <button type="button" class="password-toggle" id="toggle-reg-confirm"
-                                    aria-label="Hiện mật khẩu" title="Hiện mật khẩu">
-                                    <svg class="eye-icon eye-show" viewBox="0 0 24 24" width="20" height="20"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                        <circle cx="12" cy="12" r="3"></circle>
-                                    </svg>
-                                    <svg class="eye-icon eye-hide" style="display:none;" viewBox="0 0 24 24" width="20"
-                                        height="20" fill="none" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round">
-                                        <path
-                                            d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24">
-                                        </path>
-                                        <line x1="1" y1="1" x2="23" y2="23"></line>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="form-options">
-                            <label class="remember-me" style="font-size: 0.8125rem;">
-                                <input type="checkbox" id="reg-terms" required checked>
-                                Tôi đồng ý với Điều khoản và Chính sách bảo mật
-                            </label>
-                        </div>
-
-                        <button class="btn-primary" id="register-submit" type="submit">Đăng ký ngay</button>
-
-                        <div class="register-link">
-                            Đã có tài khoản? <a href="#login" id="to-login-link">Đăng nhập</a>
-                        </div>
-
-                        <p class="message" id="register-message" role="alert" aria-live="polite"></p>
-                    </form>
+                <div class="form-row-between">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="remember" checked>
+                        <span>Ghi nhớ thiết bị này</span>
+                    </label>
                 </div>
 
-                <!-- RECOVERY VIEW -->
-                <div id="recovery-view" hidden>
-                    <button class="back-link" id="back-to-login" type="button">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M19 12H5M12 19l-7-7 7-7" />
-                        </svg>
-                        Quay lại đăng nhập
-                    </button>
+                <button class="btn-submit" id="login-submit" type="submit">Đăng nhập</button>
+                <div class="message" id="login-message" role="alert" aria-live="polite"></div>
+            </form>
 
-                    <div class="form-header">
-                        <h2>Khôi phục mật khẩu</h2>
-                        <p>Nhập email liên kết với tài khoản. Chúng tôi sẽ gửi hướng dẫn khôi phục cho bạn.</p>
-                    </div>
-
-                    <form id="recovery-form" novalidate>
-                        <div class="input-group">
-                            <label for="recovery-email">Email <span class="required">*</span></label>
-                            <input id="recovery-email" name="email" type="email" autocomplete="email"
-                                placeholder="Nhập email của bạn" required>
-                        </div>
-
-                        <button class="btn-primary" id="recovery-submit" type="submit">Gửi hướng dẫn</button>
-                        <p class="message" id="recovery-message" role="status" aria-live="polite"></p>
-                    </form>
+            <!-- Quick Demo Accounts -->
+            <div class="demo-accounts">
+                <div class="demo-title">
+                    <span>Tài khoản kiểm thử nhanh</span>
+                    <span style="font-weight: 500; font-size: 11px;">(Bấm để điền)</span>
                 </div>
-
+                <div class="demo-chips">
+                    <button type="button" class="demo-chip" onclick="fillDemo('admin@tms.edu.vn', 'admin123')">
+                        <strong>Admin</strong> (Quản trị viên)
+                    </button>
+                    <button type="button" class="demo-chip" onclick="fillDemo('teacher@tms.edu.vn', 'teacher123')">
+                        <strong>Giảng viên</strong> (Trần Minh)
+                    </button>
+                    <button type="button" class="demo-chip" onclick="fillDemo('student@tms.edu.vn', 'student123')">
+                        <strong>Học viên</strong> (Minh Tuấn)
+                    </button>
+                    <button type="button" class="demo-chip" onclick="fillDemo('accountant@tms.edu.vn', 'accountant123')">
+                        <strong>Kế toán</strong> (Thanh Mai)
+                    </button>
+                    <button type="button" class="demo-chip" onclick="fillDemo('manager@tms.edu.vn', 'manager123')">
+                        <strong>Quản lý</strong> (Quốc Bảo)
+                    </button>
+                </div>
             </div>
-        </section>
+        </div>
+
+        <!-- REGISTER VIEW -->
+        <div id="register-view" hidden>
+            <div class="card-header">
+                <h1 class="card-title">Đăng ký tài khoản</h1>
+                <p class="card-desc">Tạo tài khoản học viên để tham gia các khóa học và theo dõi bảng điểm trực tuyến.</p>
+            </div>
+
+            <form id="register-form" novalidate>
+                <div class="form-group">
+                    <label class="form-label" for="reg-name">Họ và tên</label>
+                    <input class="form-input" id="reg-name" name="name" type="text" autocomplete="name"
+                        placeholder="Ví dụ: Nguyễn Văn A" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="reg-email">Email hoặc Mã SV</label>
+                    <input class="form-input" id="reg-email" name="email" type="text" autocomplete="username"
+                        placeholder="name@example.com hoặc mã sinh viên" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="reg-phone">Số điện thoại</label>
+                    <input class="form-input" id="reg-phone" name="phone" type="tel" autocomplete="tel" placeholder="0912 345 678">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="reg-password">Mật khẩu</label>
+                    <div class="input-wrap">
+                        <input class="form-input" id="reg-password" name="password" type="password" autocomplete="new-password"
+                            placeholder="Tối thiểu 6 ký tự" required minlength="6" style="padding-right: 40px;">
+                        <button type="button" class="toggle-password" id="toggle-reg-password" aria-label="Hiện mật khẩu" title="Hiện mật khẩu">
+                            <svg class="eye-show" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg class="eye-hide" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="reg-confirm-password">Xác nhận mật khẩu</label>
+                    <div class="input-wrap">
+                        <input class="form-input" id="reg-confirm-password" name="confirmPassword" type="password"
+                            autocomplete="new-password" placeholder="Nhập lại mật khẩu" required minlength="6" style="padding-right: 40px;">
+                        <button type="button" class="toggle-password" id="toggle-reg-confirm" aria-label="Hiện mật khẩu" title="Hiện mật khẩu">
+                            <svg class="eye-show" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <svg class="eye-hide" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-row-between">
+                    <label class="checkbox-label" style="font-size: 0.8125rem;">
+                        <input type="checkbox" id="reg-terms" required checked>
+                        <span>Đồng ý với Điều khoản và Quy định đào tạo</span>
+                    </label>
+                </div>
+
+                <button class="btn-submit" id="register-submit" type="submit">Đăng ký tài khoản</button>
+                <div class="message" id="register-message" role="alert" aria-live="polite"></div>
+            </form>
+        </div>
+
+        <!-- RECOVERY VIEW -->
+        <div id="recovery-view" hidden>
+            <button class="back-btn" id="back-to-login" type="button" onclick="switchView('login')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                Quay lại đăng nhập
+            </button>
+
+            <div class="card-header">
+                <h1 class="card-title">Khôi phục mật khẩu</h1>
+                <p class="card-desc">Nhập email hoặc mã sinh viên liên kết với tài khoản. Hệ thống sẽ gửi chỉ dẫn khôi phục mật khẩu.</p>
+            </div>
+
+            <form id="recovery-form" novalidate>
+                <div class="form-group">
+                    <label class="form-label" for="recovery-email">Email tài khoản</label>
+                    <input class="form-input" id="recovery-email" name="email" type="email" autocomplete="email"
+                        placeholder="Nhập email của bạn" required>
+                </div>
+
+                <button class="btn-submit" id="recovery-submit" type="submit">Gửi hướng dẫn</button>
+                <div class="message" id="recovery-message" role="status" aria-live="polite"></div>
+            </form>
+        </div>
     </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        Hệ thống Đào tạo & Quản lý Học tập TMS • Bảo mật phân quyền RBAC
+    </footer>
 
     <script>
         const SUPABASE_URL = "https://fljbbgqfgyyhvxhpflhg.supabase.co";
@@ -752,27 +578,34 @@
         const recoveryForm = document.querySelector("#recovery-form");
         const recoverySubmit = document.querySelector("#recovery-submit");
         const recoveryMessage = document.querySelector("#recovery-message");
+
         const roleHome = {
-            visitor: "./Index.html?role=visitor",
-            student: "./Index.html?role=student",
-            learner: "./Index.html?role=student",
-            instructor: "./Index.html?role=instructor",
-            assistant: "./Index.html?role=teaching_assistant",
-            teaching_assistant: "./Index.html?role=teaching_assistant",
-            admissions: "./Index.html?role=admissions",
-            admissions_counselor: "./Index.html?role=admissions",
-            accountant: "./Index.html?role=accountant",
-            training_manager: "./Index.html?role=training_manager",
-            training_management: "./Index.html?role=training_manager",
-            administrator: "./Index.html?role=administrator",
-            system_administrator: "./Index.html?role=administrator",
-            admin: "./Index.html?role=administrator"
+            visitor: "./Dashboard.html?role=visitor",
+            student: "./Dashboard.html?role=student",
+            learner: "./Dashboard.html?role=student",
+            instructor: "./Dashboard.html?role=instructor",
+            assistant: "./Dashboard.html?role=teaching_assistant",
+            teaching_assistant: "./Dashboard.html?role=teaching_assistant",
+            admissions: "./Dashboard.html?role=admissions",
+            admissions_counselor: "./Dashboard.html?role=admissions",
+            accountant: "./Dashboard.html?role=accountant",
+            training_manager: "./Dashboard.html?role=training_manager",
+            training_management: "./Dashboard.html?role=training_manager",
+            administrator: "./Dashboard.html?role=administrator",
+            system_administrator: "./Dashboard.html?role=administrator",
+            admin: "./Dashboard.html?role=administrator"
         };
+
+        function fillDemo(email, pass) {
+            document.querySelector("#email").value = email;
+            document.querySelector("#password").value = pass;
+            switchView('login');
+        }
 
         function setBusy(button, busy, busyLabel, idleLabel) {
             button.disabled = busy;
             if (busy) {
-                button.innerHTML = `<span class="btn-spinner" aria-hidden="true"></span>${busyLabel}`;
+                button.innerHTML = `<span class="btn-spinner" aria-hidden="true"></span> ${busyLabel}`;
             } else {
                 button.textContent = idleLabel;
             }
@@ -793,11 +626,15 @@
         }
 
         async function parseResponse(response) {
-            try {
-                return await response.json();
-            } catch {
-                return {};
+            const contentType = response.headers.get("content-type") || "";
+            if (contentType.includes("application/json")) {
+                try {
+                    return await response.json();
+                } catch {
+                    return {};
+                }
             }
+            return {};
         }
 
         function setupPasswordToggle(toggleBtn, inputEl) {
@@ -816,7 +653,6 @@
                 const label = isPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu";
                 toggleBtn.setAttribute("aria-label", label);
                 toggleBtn.setAttribute("title", label);
-                toggleBtn.setAttribute("aria-pressed", String(isPassword));
             });
         }
 
@@ -828,10 +664,15 @@
             const loginView = document.querySelector("#login-view");
             const recoveryView = document.querySelector("#recovery-view");
             const registerView = document.querySelector("#register-view");
+            const tabLogin = document.querySelector("#tab-login");
+            const tabRegister = document.querySelector("#tab-register");
 
             if (loginView) loginView.hidden = (viewName !== "login");
             if (recoveryView) recoveryView.hidden = (viewName !== "recovery");
             if (registerView) registerView.hidden = (viewName !== "register");
+
+            if (tabLogin) tabLogin.classList.toggle("active", viewName === "login");
+            if (tabRegister) tabRegister.classList.toggle("active", viewName === "register");
 
             loginMessage.textContent = "";
             recoveryMessage.textContent = "";
@@ -856,24 +697,6 @@
             switchView("recovery");
         });
 
-        document.querySelector("#back-to-login")?.addEventListener("click", () => {
-            switchView("login");
-        });
-
-        document.querySelector("#show-register")?.addEventListener("click", (event) => {
-            event.preventDefault();
-            switchView("register");
-        });
-
-        document.querySelector("#back-to-login-from-reg")?.addEventListener("click", () => {
-            switchView("login");
-        });
-
-        document.querySelector("#to-login-link")?.addEventListener("click", (event) => {
-            event.preventDefault();
-            switchView("login");
-        });
-
         window.addEventListener("hashchange", () => {
             const hash = window.location.hash.toLowerCase();
             if (hash === "#register") {
@@ -891,7 +714,7 @@
             switchView("recovery");
         }
 
-        // Register form logic
+        // Đăng ký người dùng
         const registerForm = document.querySelector("#register-form");
         const registerSubmit = document.querySelector("#register-submit");
         const registerMessage = document.querySelector("#register-message");
@@ -913,32 +736,28 @@
                     nameInput.focus();
                     return;
                 }
-
                 if (!emailInput.value.trim()) {
-                    showMessage(registerMessage, "Vui lòng nhập email hoặc mã tài khoản.");
+                    showMessage(registerMessage, "Vui lòng nhập email hoặc mã sinh viên.");
                     emailInput.focus();
                     return;
                 }
-
-                if (!passInput.value || passInput.value.length < 6) {
+                if (passInput.value.length < 6) {
                     showMessage(registerMessage, "Mật khẩu phải có ít nhất 6 ký tự.");
                     passInput.focus();
                     return;
                 }
-
                 if (passInput.value !== confirmInput.value) {
                     showMessage(registerMessage, "Mật khẩu xác nhận không khớp!");
                     confirmInput.focus();
                     return;
                 }
-
                 if (termsInput && !termsInput.checked) {
                     showMessage(registerMessage, "Bạn cần đồng ý với Điều khoản sử dụng.");
                     termsInput.focus();
                     return;
                 }
 
-                setBusy(registerSubmit, true, "Đang đăng ký…", "Đăng ký ngay");
+                setBusy(registerSubmit, true, "Đang đăng ký…", "Đăng ký tài khoản");
 
                 const newUserId = "usr_" + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
                 const regEmail = emailInput.value.trim().toLowerCase();
@@ -946,9 +765,6 @@
                 const regPhone = phoneInput.value.trim();
                 const regPass = passInput.value;
 
-                let directSupabaseSaved = false;
-
-                // Chạy song song các kênh đồng bộ dữ liệu
                 const API_BASE_URL = (window.location.origin && window.location.origin.startsWith("http")) ? window.location.origin : "http://localhost:3000";
 
                 const supaUserTask = fetch(`${SUPABASE_URL}/rest/v1/users`, {
@@ -1014,19 +830,18 @@
 
                 await Promise.allSettled([supaUserTask, supaRoleTask, backendTask, authTask]);
 
-                showMessage(registerMessage, "Đăng ký thành công! Dữ liệu đã tự động cập nhật lên Supabase.", true);
+                showMessage(registerMessage, "Đăng ký thành công! Bạn có thể đăng nhập ngay.", true);
                 document.querySelector("#email").value = regEmail;
                 setTimeout(() => {
                     switchView("login");
                     showMessage(loginMessage, "Đăng ký thành công. Vui lòng đăng nhập bằng tài khoản vừa tạo.", true);
-                }, 800); finally {
-                    setBusy(registerSubmit, false, "Đang đăng ký…", "Đăng ký ngay");
-                }
+                }, 800);
+                setBusy(registerSubmit, false, "Đang đăng ký…", "Đăng ký tài khoản");
             });
         }
 
-        // Kiểm tra trạng thái khóa tạm thời khi tải trang
-        const LOCK_DURATION_MS = 15 * 60 * 1000; // 15 phút = 900 giây
+        // Kiểm soát khóa tạm thời
+        const LOCK_DURATION_MS = 15 * 60 * 1000;
         function getLockoutRemaining() {
             const lockoutUntil = Number(localStorage.getItem("tms_login_lockout_until") || 0);
             const remainingSec = Math.ceil((lockoutUntil - Date.now()) / 1000);
@@ -1051,7 +866,7 @@
             const remaining = getLockoutRemaining();
             if (remaining > 0) {
                 loginSubmit.disabled = true;
-                loginSubmit.textContent = "Đăng nhập"; // Luôn dọn sạch spinner
+                loginSubmit.textContent = "Đăng nhập";
 
                 loginMessage.textContent = `Tài khoản tạm khóa do đăng nhập sai 5 lần liên tiếp. Vui lòng thử lại sau ${formatRemaining(remaining)}.`;
                 loginMessage.classList.remove("success");
@@ -1073,11 +888,8 @@
             return false;
         }
 
-        // Hỗ trợ tiện ích mở khóa khi cần qua console hoặc double click vào thông báo
         window.unlockAccount = unlockAccount;
         loginMessage.addEventListener("dblclick", () => unlockAccount());
-
-        // Khởi động kiểm tra khóa
         checkAndApplyLockout();
 
         function handleFailedAttempt() {
@@ -1089,7 +901,6 @@
                 localStorage.setItem("tms_login_lockout_until", String(lockoutUntil));
                 checkAndApplyLockout();
             } else {
-                // Tiêu chí bảo mật: Không tiết lộ tài khoản có tồn tại hay không
                 showMessage(loginMessage, `Tài khoản hoặc mật khẩu không đúng (Lần thử ${failCount}/5)`);
             }
         }
@@ -1099,10 +910,7 @@
             localStorage.removeItem("tms_login_lockout_until");
             const cleanRole = String(role || "").trim().toLowerCase().replace(/^role_/, "").replace(/[\s-]+/g, "_");
             if (!cleanRole) {
-                showMessage(
-                    loginMessage,
-                    "Không xác định được vai trò người dùng. Vui lòng liên hệ quản trị viên."
-                );
+                showMessage(loginMessage, "Không xác định được vai trò người dùng. Vui lòng liên hệ quản trị viên.");
                 return;
             }
             const userObj = userData || {
@@ -1116,7 +924,7 @@
                 localStorage.setItem("tms_token", token);
                 localStorage.setItem("token", token);
             }
-            const destination = roleHome[cleanRole] || `./Index.html?role=${cleanRole}`;
+            const destination = roleHome[cleanRole] || `./Dashboard.html?role=${cleanRole}`;
             showMessage(loginMessage, "Đăng nhập thành công! Đang chuyển hướng...", true);
             setTimeout(() => {
                 window.location.assign(destination);
@@ -1129,7 +937,7 @@
             if (checkAndApplyLockout()) return;
             if (!loginForm.reportValidity()) return;
 
-            setBusy(loginSubmit, true, "Đang đăng nhập…", "Đăng nhập");
+            setBusy(loginSubmit, true, "Đang xác thực…", "Đăng nhập");
             try {
                 const API_BASE_URL = window.location.origin && window.location.origin.startsWith("http") ? window.location.origin : "http://localhost:3000";
 
@@ -1159,11 +967,9 @@
                 const role = String(result.role || "").trim().toLowerCase().replace(/^role_/, "").replace(/[\s-]+/g, "_");
                 handleSuccessfulLogin(role, result.user, result.token);
             } catch {
-                // Chế độ demo / offline client-side mô phỏng đầy đủ tiêu chí của user story KN-14
                 const inputEmail = document.querySelector("#email").value.trim().toLowerCase();
                 const inputPass = document.querySelector("#password").value;
 
-                // Thử xác thực trực tiếp qua Supabase REST API
                 try {
                     const supaCheck = await fetch(`${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(inputEmail)}`, {
                         headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
@@ -1198,11 +1004,9 @@
                     return;
                 }
 
-                // Nếu sai tài khoản hoặc mật khẩu: bảo mật không tiết lộ email có tồn tại hay không
                 handleFailedAttempt();
             } finally {
-                // Luôn dọn dẹp trạng thái busy/spinner trước, sau đó kiểm tra và áp dụng lockout
-                setBusy(loginSubmit, false, "Đang đăng nhập…", "Đăng nhập");
+                setBusy(loginSubmit, false, "Đang xác thực…", "Đăng nhập");
                 checkAndApplyLockout();
             }
         });
@@ -1230,5 +1034,4 @@
         });
     </script>
 </body>
-
 </html>
