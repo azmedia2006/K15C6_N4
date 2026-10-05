@@ -948,7 +948,7 @@
 
                 let directSupabaseSaved = false;
 
-                // Chạy song song tất cả các kênh đồng bộ (Tối ưu phản hồi < 400ms, không giật lag)
+                // Chạy song song các kênh đồng bộ dữ liệu
                 const API_BASE_URL = (window.location.origin && window.location.origin.startsWith("http")) ? window.location.origin : "http://localhost:3000";
 
                 const supaUserTask = fetch(`${SUPABASE_URL}/rest/v1/users`, {

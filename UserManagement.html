@@ -970,28 +970,36 @@
         <!-- Metric Cards -->
         <div class="metric-cards">
             <div class="metric-card">
-                <div class="metric-icon green">👥</div>
+                <div class="metric-icon green">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
                 <div class="metric-info">
                     <h3 id="stat-total">9</h3>
                     <p>Tổng tài khoản</p>
                 </div>
             </div>
             <div class="metric-card">
-                <div class="metric-icon blue">🎓</div>
+                <div class="metric-icon blue">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                </div>
                 <div class="metric-info">
                     <h3 id="stat-instructors">2</h3>
                     <p>Giảng viên & Trợ giảng</p>
                 </div>
             </div>
             <div class="metric-card">
-                <div class="metric-icon purple">💼</div>
+                <div class="metric-icon purple">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                </div>
                 <div class="metric-info">
                     <h3 id="stat-staff">4</h3>
                     <p>Cán bộ quản lý & Vận hành</p>
                 </div>
             </div>
             <div class="metric-card">
-                <div class="metric-icon amber">⚡</div>
+                <div class="metric-icon amber">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
                 <div class="metric-info">
                     <h3 id="stat-active">9</h3>
                     <p>Đang hoạt động</p>
@@ -1538,7 +1546,7 @@
         if (!isAuto) customInput.focus();
     }
 
-    // Xử lý Tạo mới người dùng (KN-11) - Tối ưu 0ms phản hồi tức thì
+    // Xử lý tạo mới người dùng
     async function handleCreateUser(e) {
         e.preventDefault();
         const name = document.getElementById("create-name").value.trim();
@@ -1727,7 +1735,7 @@
         })().catch(err => console.warn("Background update error:", err));
     }
 
-    // Xóa người dùng (KN-11) - Tối ưu 0ms biến mất ngay lập tức
+    // Xóa người dùng
     async function handleDeleteUser(id, name) {
         if (id === "usr_admin") {
             showToast("Không thể xóa tài khoản Quản trị viên hệ thống!", "error");

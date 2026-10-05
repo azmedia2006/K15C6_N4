@@ -1178,7 +1178,7 @@
                 <div class="header-actions">
                     <!-- Quick Demo Role Switcher -->
                     <div class="role-switcher-wrap" title="Chuyển vai trò nhanh để kiểm thử giao diện phân quyền">
-                        <span style="font-size: 13px;">🎭</span>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                         <select id="quick-role-select" class="role-switcher-select" onchange="quickSwitchRole(this.value)">
                             <option value="administrator">Quản trị viên (Admin)</option>
                             <option value="training_manager">Quản lý đào tạo</option>
@@ -1231,7 +1231,7 @@
                 <!-- Welcome Banner -->
                 <section class="welcome-banner">
                     <div>
-                        <h1 class="welcome-title">Xin chào, <span id="welcome-name">Nguyễn Văn Anh</span>! 👋</h1>
+                        <h1 class="welcome-title">Xin chào, <span id="welcome-name">Nguyễn Văn Anh</span>!</h1>
                         <p class="welcome-sub" id="welcome-sub">Hôm nay hệ thống có 4 buổi học đang xếp lịch, 3 công việc cần phê duyệt và tiến độ hoàn thành các khóa đào tạo đạt 82%.</p>
                     </div>
                     <div class="banner-buttons" id="banner-buttons">
@@ -1267,9 +1267,9 @@
                                     <div class="timeline-info">
                                         <strong>An toàn lao động & Tiêu chuẩn xưởng</strong>
                                         <div class="timeline-meta">
-                                            <span class="meta-pill">📍 Phòng A2</span>
-                                            <span class="meta-pill">👨‍🏫 GV Trần Minh</span>
-                                            <span class="meta-pill">👥 32 Học viên</span>
+                                            <span class="meta-pill">Phòng A2</span>
+                                            <span class="meta-pill">GV Trần Minh</span>
+                                            <span class="meta-pill">32 Học viên</span>
                                         </div>
                                     </div>
                                     <span class="badge badge-neutral">Đã kết thúc</span>
@@ -1283,12 +1283,12 @@
                                     <div class="timeline-info">
                                         <strong>Kỹ năng quản trị và điều phối dự án TMS</strong>
                                         <div class="timeline-meta">
-                                            <span class="meta-pill">📍 Phòng B1</span>
-                                            <span class="meta-pill">👩‍🏫 GV Lê Hoa</span>
-                                            <span class="meta-pill">👥 24 Học viên</span>
+                                            <span class="meta-pill">Phòng B1</span>
+                                            <span class="meta-pill">GV Lê Hoa</span>
+                                            <span class="meta-pill">24 Học viên</span>
                                         </div>
                                     </div>
-                                    <span class="badge badge-success">● Đang diễn ra</span>
+                                    <span class="badge badge-success">Đang diễn ra</span>
                                 </li>
 
                                 <li class="timeline-item">
@@ -1299,9 +1299,9 @@
                                     <div class="timeline-info">
                                         <strong>Tiếng Anh giao tiếp công nghệ & Báo cáo</strong>
                                         <div class="timeline-meta">
-                                            <span class="meta-pill">💻 Trực tuyến Zoom</span>
-                                            <span class="meta-pill">👨‍🏫 GV Phạm Quân</span>
-                                            <span class="meta-pill">👥 40 Học viên</span>
+                                            <span class="meta-pill">Trực tuyến Zoom</span>
+                                            <span class="meta-pill">GV Phạm Quân</span>
+                                            <span class="meta-pill">40 Học viên</span>
                                         </div>
                                     </div>
                                     <span class="badge badge-warning">Sắp bắt đầu</span>
@@ -1454,7 +1454,7 @@
             <div id="view-courses" class="view-section">
                 <div class="ui-card">
                     <div class="card-head">
-                        <h2>📚 Danh mục Khóa học Đào tạo TMS</h2>
+                        <h2>Danh mục Khóa học Đào tạo TMS</h2>
                         <button class="btn btn-primary" onclick="openActionModal('Tạo khóa đào tạo mới', 'Vui lòng nhập tên khóa học, mã môn học và số tín chỉ.')">+ Thêm Khóa học</button>
                     </div>
                     <div class="table-responsive">
@@ -1504,7 +1504,7 @@
             <div id="view-classes" class="view-section">
                 <div class="ui-card">
                     <div class="card-head">
-                        <h2>🏫 Quản lý Lớp học & Phòng đào tạo</h2>
+                        <h2>Quản lý Lớp học & Phòng đào tạo</h2>
                         <button class="btn btn-primary" onclick="openCreateClassModal()">+ Mở lớp học mới</button>
                     </div>
                     <div class="table-responsive">
@@ -1554,7 +1554,7 @@
             <div id="view-schedule" class="view-section">
                 <div class="ui-card">
                     <div class="card-head">
-                        <h2>📅 Thời khóa biểu toàn hệ thống (Tuần này)</h2>
+                        <h2>Thời khóa biểu toàn hệ thống (Tuần này)</h2>
                         <div style="display:flex; gap:8px;">
                             <button class="btn btn-secondary" onclick="showToast('Đang xem tuần hiện tại')">Tuần này</button>
                             <button class="btn btn-primary" onclick="showToast('Xuất lịch học dạng iCal / Excel thành công!')">Xuất lịch</button>
@@ -1599,8 +1599,8 @@
             <div id="view-attendance" class="view-section">
                 <div class="ui-card">
                     <div class="card-head">
-                        <h2>📋 Sổ Điểm danh & Theo dõi Chuyên cần</h2>
-                        <button class="btn btn-primary" onclick="showToast('Đã lưu dữ liệu điểm danh ca hôm nay thành công!')">💾 Lưu điểm danh</button>
+                        <h2>Sổ Điểm danh & Theo dõi Chuyên cần</h2>
+                        <button class="btn btn-primary" onclick="showToast('Đã lưu dữ liệu điểm danh ca hôm nay thành công!')">Lưu điểm danh</button>
                     </div>
                     <div class="table-responsive">
                         <table class="data-table">
@@ -1619,21 +1619,21 @@
                                     <td>Lê Minh Tuấn</td>
                                     <td>K15-PM01</td>
                                     <td><strong style="color:var(--primary);">92%</strong></td>
-                                    <td><button class="btn btn-primary" style="padding:4px 10px; font-size:12px;" onclick="toggleCheckin(this)">✔ Có mặt</button></td>
+                                    <td><button class="btn btn-primary" style="padding:4px 10px; font-size:12px;" onclick="toggleCheckin(this)">Có mặt</button></td>
                                 </tr>
                                 <tr>
                                     <td><strong>SV002</strong></td>
                                     <td>Hoàng Thùy Linh</td>
                                     <td>K15-PM01</td>
                                     <td><strong style="color:var(--primary);">88%</strong></td>
-                                    <td><button class="btn btn-primary" style="padding:4px 10px; font-size:12px;" onclick="toggleCheckin(this)">✔ Có mặt</button></td>
+                                    <td><button class="btn btn-primary" style="padding:4px 10px; font-size:12px;" onclick="toggleCheckin(this)">Có mặt</button></td>
                                 </tr>
                                 <tr>
                                     <td><strong>SV003</strong></td>
                                     <td>Trần Đình Trọng</td>
                                     <td>K15-PM01</td>
                                     <td><strong style="color:var(--amber);">74% (Cảnh báo)</strong></td>
-                                    <td><button class="btn btn-secondary" style="padding:4px 10px; font-size:12px; color:var(--red);" onclick="toggleCheckin(this)">✖ Vắng mặt</button></td>
+                                    <td><button class="btn btn-secondary" style="padding:4px 10px; font-size:12px; color:var(--red);" onclick="toggleCheckin(this)">Vắng mặt</button></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1645,7 +1645,7 @@
             <div id="view-scores" class="view-section">
                 <div class="ui-card">
                     <div class="card-head">
-                        <h2>📊 Quản lý Bài tập & Bảng điểm Thành phần</h2>
+                        <h2>Quản lý Bài tập & Bảng điểm Thành phần</h2>
                         <button class="btn btn-primary" onclick="openActionModal('Giao bài tập mới', 'Nhập tiêu đề bài tập, thời hạn nộp bài và tiêu chí chấm điểm (Rubric).')">+ Giao bài tập mới</button>
                     </div>
                     <div class="table-responsive">
@@ -1684,7 +1684,7 @@
             <div id="view-tuition" class="view-section">
                 <div class="ui-card">
                     <div class="card-head">
-                        <h2>💰 Quản lý Học phí & Công nợ Trung tâm</h2>
+                        <h2>Quản lý Học phí & Công nợ Trung tâm</h2>
                         <button class="btn btn-primary" onclick="openActionModal('Lập biên lai thu tiền học phí', 'Nhập mã học viên, số tiền thu và phương thức đóng (tiền mặt / chuyển khoản).')">+ Lập Biên lai thu</button>
                     </div>
                     <div class="table-responsive">
@@ -1729,7 +1729,7 @@
             <div id="view-students" class="view-section">
                 <div class="ui-card">
                     <div class="card-head">
-                        <h2>🎓 Hồ sơ & Danh sách Học viên</h2>
+                        <h2>Hồ sơ & Danh sách Học viên</h2>
                         <button class="btn btn-primary" onclick="openActionModal('Tiếp nhận hồ sơ học viên mới', 'Nhập thông tin học viên để ghi danh vào lớp.')">+ Thêm học viên</button>
                     </div>
                     <div class="table-responsive">
@@ -1771,7 +1771,7 @@
             <div id="view-instructors" class="view-section">
                 <div class="ui-card">
                     <div class="card-head">
-                        <h2>👨‍🏫 Đội ngũ Giảng viên & Chuyên gia</h2>
+                        <h2>Đội ngũ Giảng viên & Chuyên gia</h2>
                         <button class="btn btn-primary" onclick="openActionModal('Mời giảng viên thỉnh giảng', 'Nhập thông tin giảng viên và môn học phụ trách.')">+ Thêm Giảng viên</button>
                     </div>
                     <div class="table-responsive">
@@ -1791,14 +1791,14 @@
                                     <td>Thạc sĩ CNTT</td>
                                     <td>Quản trị dự án PMP, Data Analytics</td>
                                     <td>3 lớp</td>
-                                    <td>⭐ 4.9 / 5.0</td>
+                                    <td>4.9 / 5.0</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Lê Hoa</strong></td>
                                     <td>Chuyên gia BI & Analytics</td>
                                     <td>Phân tích dữ liệu doanh nghiệp</td>
                                     <td>2 lớp</td>
-                                    <td>⭐ 4.8 / 5.0</td>
+                                    <td>4.8 / 5.0</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1810,8 +1810,8 @@
             <div id="view-reports" class="view-section">
                 <div class="ui-card">
                     <div class="card-head">
-                        <h2>📈 Báo cáo & Thống kê Hoạt động Đào tạo</h2>
-                        <button class="btn btn-primary" onclick="showToast('Đã xuất báo cáo tổng hợp quý sang file Excel thành công!')">📥 Xuất Excel</button>
+                        <h2>Báo cáo & Thống kê Hoạt động Đào tạo</h2>
+                        <button class="btn btn-primary" onclick="showToast('Đã xuất báo cáo tổng hợp quý sang file Excel thành công!')">Xuất Excel</button>
                     </div>
                     <div class="stats-grid" style="margin-bottom:20px;">
                         <div class="stat-card">
@@ -1879,7 +1879,7 @@
             const container = document.getElementById("toast-container");
             const toast = document.createElement("div");
             toast.className = "toast";
-            toast.innerHTML = `<span>✔</span> <span>${message}</span>`;
+            toast.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> <span>${message}</span>`;
             container.appendChild(toast);
             setTimeout(() => {
                 toast.style.opacity = "0";
@@ -1929,17 +1929,17 @@
             if (btn.textContent.includes("Có mặt")) {
                 btn.className = "btn btn-secondary";
                 btn.style.color = "var(--red)";
-                btn.textContent = "✖ Vắng mặt";
+                btn.textContent = "Vắng mặt";
                 showToast("Đã đổi trạng thái học viên sang Vắng mặt", "info");
             } else {
                 btn.className = "btn btn-primary";
                 btn.style.color = "white";
-                btn.textContent = "✔ Có mặt";
+                btn.textContent = "Có mặt";
                 showToast("Đã đánh dấu Có mặt cho học viên!");
             }
         }
 
-        // View Switching System (Fixes "Ấn đâu cũng không được")
+        // View navigation handler
         function switchView(viewName) {
             // Update sidebar nav active
             document.querySelectorAll("#sidebar-nav .nav-item").forEach(item => {
@@ -2079,42 +2079,42 @@
             label.style.display = hasVisibleMenu ? "" : "none";
         });
 
-        // 2. Nội dung chi tiết riêng biệt cho từng vai trò (Giải quyết "login vai trò nào cũng về 1 trang")
+        // Cấu hình dữ liệu hiển thị theo vai trò người dùng
         const roleProfiles = {
             administrator: {
-                name: "Nguyễn Văn Anh",
-                roleName: "Quản trị hệ thống (Admin)",
+                name: "Quản trị viên Hệ thống",
+                roleName: "Quản trị cấp cao (Administrator)",
                 avatar: "AD",
-                welcomeSub: "Hệ thống hoạt động ổn định. Phân quyền và tài khoản nhân sự được bảo vệ an toàn chuẩn doanh nghiệp.",
+                welcomeSub: "Bạn đang có toàn quyền quản trị trung tâm, phân quyền vai trò bảo mật và quản lý tài nguyên dữ liệu.",
                 buttons: `
                     <a href="./UserManagement.html" class="btn-banner-light">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-                        Quản lý Người dùng (KN-11)
+                        Quản lý Người dùng
                     </a>
                     <a href="./RoleManagement.html" class="btn-banner-outline">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                        Phân quyền Vai trò (KN-12)
+                        Phân quyền Vai trò
                     </a>
                     <button class="btn-banner-outline" onclick="showToast('Xuất báo cáo hệ thống PDF thành công!')">Xuất báo cáo</button>
                 `,
                 stats: `
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Tài khoản nhân sự</span><div class="stat-icon teal">👥</div></div>
+                        <div class="stat-header"><span class="stat-label">Tài khoản nhân sự</span><div class="stat-icon teal"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div></div>
                         <div class="stat-value">9</div>
-                        <div class="stat-trend up"><span>✔ 9 tài khoản đang hoạt động</span></div>
+                        <div class="stat-trend up"><span>9 tài khoản đang hoạt động</span></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Vai trò RBAC</span><div class="stat-icon purple">🔒</div></div>
+                        <div class="stat-header"><span class="stat-label">Vai trò RBAC</span><div class="stat-icon purple"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div></div>
                         <div class="stat-value">8</div>
                         <div class="stat-trend neutral"><span>Phân quyền Nhiều - Nhiều (N-N)</span></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Lớp học trung tâm</span><div class="stat-icon blue">🏫</div></div>
+                        <div class="stat-header"><span class="stat-label">Lớp học trung tâm</span><div class="stat-icon blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div></div>
                         <div class="stat-value">37</div>
                         <div class="stat-trend up"><span>+5 lớp tuần này</span></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">An toàn hệ thống</span><div class="stat-icon amber">🛡️</div></div>
+                        <div class="stat-header"><span class="stat-label">An toàn hệ thống</span><div class="stat-icon amber"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div></div>
                         <div class="stat-value">100%</div>
                         <div class="stat-trend up"><span>Audit Log lưu đầy đủ</span></div>
                     </div>
@@ -2135,24 +2135,24 @@
                 `,
                 stats: `
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Môn học đang học</span><div class="stat-icon teal">📖</div></div>
+                        <div class="stat-header"><span class="stat-label">Môn học đang học</span><div class="stat-icon teal"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div></div>
                         <div class="stat-value">2</div>
                         <div class="stat-trend up"><span>K15-PM01 & Data Analytics</span></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Tỷ lệ chuyên cần</span><div class="stat-icon blue">📋</div></div>
+                        <div class="stat-header"><span class="stat-label">Tỷ lệ chuyên cần</span><div class="stat-icon blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div></div>
                         <div class="stat-value">92%</div>
                         <div class="stat-trend up"><span>23 / 25 buổi có mặt</span></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Điểm GPA tích lũy</span><div class="stat-icon purple">⭐</div></div>
+                        <div class="stat-header"><span class="stat-label">Điểm GPA tích lũy</span><div class="stat-icon purple"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg></div></div>
                         <div class="stat-value">8.6</div>
                         <div class="stat-trend up"><span>Xếp loại Giỏi</span></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Công nợ học phí</span><div class="stat-icon amber">💳</div></div>
+                        <div class="stat-header"><span class="stat-label">Công nợ học phí</span><div class="stat-icon amber"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div></div>
                         <div class="stat-value">0 đ</div>
-                        <div class="stat-trend up"><span>✔ Đã hoàn thành 100%</span></div>
+                        <div class="stat-trend up"><span>Đã hoàn thành 100%</span></div>
                     </div>
                 `
             },
@@ -2170,22 +2170,22 @@
                 `,
                 stats: `
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Lớp đang dạy</span><div class="stat-icon teal">🏫</div></div>
+                        <div class="stat-header"><span class="stat-label">Lớp đang dạy</span><div class="stat-icon teal"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div></div>
                         <div class="stat-value">3</div>
                         <div class="stat-trend up"><span>K15-PM01, K15-DA02, K16</span></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Học viên phụ trách</span><div class="stat-icon blue">👥</div></div>
+                        <div class="stat-header"><span class="stat-label">Học viên phụ trách</span><div class="stat-icon blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div></div>
                         <div class="stat-value">108</div>
                         <div class="stat-trend neutral"><span>3 ca học trong tuần</span></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Bài nộp chờ chấm</span><div class="stat-icon purple">📝</div></div>
+                        <div class="stat-header"><span class="stat-label">Bài nộp chờ chấm</span><div class="stat-icon purple"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div></div>
                         <div class="stat-value">14</div>
                         <div class="stat-trend down"><span>Hạn hoàn thành: Ngày mai</span></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Tỷ lệ chuyên cần</span><div class="stat-icon amber">⭐</div></div>
+                        <div class="stat-header"><span class="stat-label">Tỷ lệ chuyên cần</span><div class="stat-icon amber"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div></div>
                         <div class="stat-value">96.5%</div>
                         <div class="stat-trend up"><span>Lớp học đạt chuẩn</span></div>
                     </div>
@@ -2205,22 +2205,22 @@
                 `,
                 stats: `
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Cần thu đợt này</span><div class="stat-icon amber">💰</div></div>
+                        <div class="stat-header"><span class="stat-label">Cần thu đợt này</span><div class="stat-icon amber"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div></div>
                         <div class="stat-value">148.5 Tr</div>
                         <div class="stat-trend down"><span>23 học viên đến hạn</span></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Đã thu trong tháng</span><div class="stat-icon teal">💵</div></div>
+                        <div class="stat-header"><span class="stat-label">Đã thu trong tháng</span><div class="stat-icon teal"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div>
                         <div class="stat-value">892 Tr</div>
                         <div class="stat-trend up"><span>+12.4% so với tháng trước</span></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Học viên quá hạn</span><div class="stat-icon purple">⚠️</div></div>
+                        <div class="stat-header"><span class="stat-label">Học viên quá hạn</span><div class="stat-icon purple"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 22 22 22 12 2"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div></div>
                         <div class="stat-value">5</div>
                         <div class="stat-trend down"><span>Cần gửi thông báo nhắc</span></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Biên lai chờ duyệt</span><div class="stat-icon blue">🧾</div></div>
+                        <div class="stat-header"><span class="stat-label">Biên lai chờ duyệt</span><div class="stat-icon blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div></div>
                         <div class="stat-value">15</div>
                         <div class="stat-trend neutral"><span>Chờ kế toán trưởng ký</span></div>
                     </div>
@@ -2240,22 +2240,22 @@
                 `,
                 stats: `
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Lớp học đang mở</span><div class="stat-icon teal">🏫</div></div>
+                        <div class="stat-header"><span class="stat-label">Lớp học đang mở</span><div class="stat-icon teal"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div></div>
                         <div class="stat-value">37</div>
                         <div class="stat-trend up"><span>5 lớp mới trong tuần</span></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Tổng học viên</span><div class="stat-icon blue">👥</div></div>
+                        <div class="stat-header"><span class="stat-label">Tổng học viên</span><div class="stat-icon blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div></div>
                         <div class="stat-value">1,248</div>
                         <div class="stat-trend up"><span>+86 học viên mới</span></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Giảng viên giảng dạy</span><div class="stat-icon purple">👨‍🏫</div></div>
+                        <div class="stat-header"><span class="stat-label">Giảng viên giảng dạy</span><div class="stat-icon purple"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div></div>
                         <div class="stat-value">28</div>
                         <div class="stat-trend neutral"><span>100% phủ lịch dạy</span></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Tiến độ đào tạo</span><div class="stat-icon amber">📈</div></div>
+                        <div class="stat-header"><span class="stat-label">Tiến độ đào tạo</span><div class="stat-icon amber"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div></div>
                         <div class="stat-value">82.4%</div>
                         <div class="stat-trend up"><span>Đúng kế hoạch năm</span></div>
                     </div>
@@ -2272,22 +2272,22 @@
                 `,
                 stats: `
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Khóa đào tạo</span><div class="stat-icon teal">📚</div></div>
+                        <div class="stat-header"><span class="stat-label">Khóa đào tạo</span><div class="stat-icon teal"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div></div>
                         <div class="stat-value">12</div>
                         <div class="stat-trend up"><span>Chứng chỉ quốc tế</span></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Học viên tốt nghiệp</span><div class="stat-icon blue">🎓</div></div>
+                        <div class="stat-header"><span class="stat-label">Học viên tốt nghiệp</span><div class="stat-icon blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div></div>
                         <div class="stat-value">1,200+</div>
                         <div class="stat-trend up"><span>Đã đi làm tại doanh nghiệp</span></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Tỷ lệ việc làm</span><div class="stat-icon purple">💼</div></div>
+                        <div class="stat-header"><span class="stat-label">Tỷ lệ việc làm</span><div class="stat-icon purple"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></div></div>
                         <div class="stat-value">95%</div>
                         <div class="stat-trend up"><span>Sau 3 tháng tốt nghiệp</span></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-header"><span class="stat-label">Giảng viên chuyên gia</span><div class="stat-icon amber">⭐</div></div>
+                        <div class="stat-header"><span class="stat-label">Giảng viên chuyên gia</span><div class="stat-icon amber"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div></div>
                         <div class="stat-value">28</div>
                         <div class="stat-trend neutral"><span>Từ các tập đoàn lớn</span></div>
                     </div>
