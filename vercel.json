@@ -1,13 +1,24 @@
 {
   "version": 2,
+  "cleanUrls": true,
+  "redirects": [
+    { "source": "/frontend/Login.html", "destination": "/", "permanent": true },
+    { "source": "/frontend/:path*", "destination": "/:path*", "permanent": true }
+  ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.js" },
-    { "source": "/", "destination": "/frontend/Login.html" },
-    { "source": "/frontend/(.*)", "destination": "/frontend/$1" },
-    { "source": "/Login.html", "destination": "/frontend/Login.html" },
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/login", "destination": "/index.html" },
+    { "source": "/Login.html", "destination": "/index.html" },
+    { "source": "/dashboard", "destination": "/frontend/Index.html" },
     { "source": "/Index.html", "destination": "/frontend/Index.html" },
+    { "source": "/users", "destination": "/frontend/UserManagement.html" },
     { "source": "/UserManagement.html", "destination": "/frontend/UserManagement.html" },
+    { "source": "/roles", "destination": "/frontend/RoleManagement.html" },
     { "source": "/RoleManagement.html", "destination": "/frontend/RoleManagement.html" },
-    { "source": "/(.*)", "destination": "/$1" }
+    { "source": "/change-password", "destination": "/frontend/ChangePassword.html" },
+    { "source": "/ChangePassword.html", "destination": "/frontend/ChangePassword.html" },
+    { "source": "/register", "destination": "/frontend/Register.html" },
+    { "source": "/Register.html", "destination": "/frontend/Register.html" }
   ]
 }

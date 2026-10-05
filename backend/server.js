@@ -586,12 +586,23 @@ app.get("/api/health", (req, res) => {
     });
 });
 
-// Phục vụ giao diện Frontend tĩnh
+// Phục vụ giao diện Frontend tĩnh & Clean URLs
 const frontendDir = path.join(__dirname, "../frontend");
+const rootDir = path.join(__dirname, "..");
+app.use(express.static(rootDir));
 app.use(express.static(frontendDir));
 app.use("/frontend", express.static(frontendDir));
+
 app.get("/", (req, res) => {
-    res.redirect("/Login.html");
+    res.sendFile(path.join(rootDir, "index.html"));
+});
+
+// Chuyển hướng sạch nếu người dùng gõ /frontend/Login.html
+app.get("/frontend/Login.html", (req, res) => {
+    res.redirect(301, "/");
+});
+app.get("/frontend/:page", (req, res) => {
+    res.redirect(301, `/${req.params.page}`);
 });
 
 // Chỉ listen khi chạy trực tiếp file server.js
