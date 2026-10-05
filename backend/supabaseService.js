@@ -319,6 +319,7 @@ async function deleteSingleUser(userId, email, allUsers = null) {
             await supabaseRequest(`/rest/v1/users?id=eq.${encodeURIComponent(userId)}`, { method: "DELETE" });
         }
         if (email) {
+            await supabaseRequest(`/rest/v1/users?email=eq.${encodeURIComponent(email)}`, { method: "DELETE" });
             await deleteUserFromAuth(email);
         }
         if (Array.isArray(allUsers)) {

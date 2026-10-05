@@ -382,12 +382,24 @@ app.delete(
     requireRole("administrator"),
     async (req, res) => {
         try {
-            const userToDelete = users.find(u => u.id === req.params.id);
-            const result = deleteUser(req.params.id, req.user ? req.user.id : null);
-            removeAllUserRoles(req.params.id);
+            const targetId = req.params.id;
+            if (targetId === "usr_admin" || targetId === req.user?.id) {
+                return res.status(403).json({
+                    success: false,
+                    message: "Không thể tự xóa tài khoản Quản trị viên của chính mình."
+                });
+            }
+
+            const userToDelete = users.find(u => u.id === targetId);
+            let result = { success: true, message: "Xóa người dùng thành công." };
+
+            if (userToDelete) {
+                result = deleteUser(targetId, req.user ? req.user.id : null);
+                removeAllUserRoles(targetId);
+            }
 
             // Đồng bộ xóa sang Supabase (PostgreSQL tables, Auth, Storage)
-            await supabaseService.deleteSingleUser(req.params.id, userToDelete ? userToDelete.email : null, users);
+            await supabaseService.deleteSingleUser(targetId, userToDelete ? userToDelete.email : null, users);
             await supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs());
 
             return res.status(200).json(result);

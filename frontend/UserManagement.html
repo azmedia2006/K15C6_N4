@@ -1736,6 +1736,30 @@
             return;
         }
 
+        const targetUser = usersData.find(u => u.id === id);
+        const userEmail = targetUser ? targetUser.email : null;
+
+        // 1. Xóa trực tiếp Supabase (PostgreSQL tables: public.users & public.user_roles)
+        try {
+            await fetch(`${SUPABASE_URL}/rest/v1/user_roles?user_id=eq.${encodeURIComponent(id)}`, {
+                method: "DELETE",
+                headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+            });
+            await fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(id)}`, {
+                method: "DELETE",
+                headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+            });
+            if (userEmail) {
+                await fetch(`${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(userEmail)}`, {
+                    method: "DELETE",
+                    headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+                });
+            }
+        } catch (supaErr) {
+            console.warn("Lỗi xóa Supabase:", supaErr.message);
+        }
+
+        // 2. Gửi request lên Backend API
         const token = await getValidAdminToken();
         if (token) {
             try {
@@ -1748,22 +1772,10 @@
             }
         }
 
-        // Xóa trực tiếp Supabase
-        try {
-            await fetch(`${SUPABASE_URL}/rest/v1/user_roles?user_id=eq.${encodeURIComponent(id)}`, {
-                method: "DELETE",
-                headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
-            });
-            await fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(id)}`, {
-                method: "DELETE",
-                headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
-            });
-        } catch {}
-
-        usersData = usersData.filter(u => u.id !== id);
+        usersData = usersData.filter(u => u.id !== id && (!userEmail || u.email.toLowerCase() !== userEmail.toLowerCase()));
         renderTable();
         updateMetrics();
-        showToast(`Đã xóa tài khoản '${name}'.`, "success");
+        showToast(`Đã xóa tài khoản '${name}' thành công và đồng bộ Supabase!`, "success");
     }
 
     // Sao chép thông tin bàn giao
