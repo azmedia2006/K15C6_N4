@@ -29,8 +29,9 @@
         } catch (e) {}
 
         var userRoles = [];
-        if (currentRole) userRoles.push(currentRole);
-        if (currentUser && currentUser.role) userRoles.push(currentUser.role.toLowerCase());
+        if (currentUser && currentUser.role) {
+            userRoles.push(currentUser.role.toLowerCase());
+        }
         if (currentUser && Array.isArray(currentUser.roles)) {
             currentUser.roles.forEach(function(r) {
                 var roleCode = (typeof r === "string" ? r : (r.code || r.name || "")).toLowerCase();
@@ -38,6 +39,13 @@
                     userRoles.push(roleCode);
                 }
             });
+        }
+        // Bảo mật: Chỉ công nhận quyền hạn thực tế trong hồ sơ, không bao giờ tin tưởng mù quáng vào currentRole
+        if (userRoles.indexOf("administrator") !== -1 || userRoles.indexOf("admin") !== -1) {
+            userRoles.push("administrator");
+            userRoles.push("admin");
+        } else if (currentRole && userRoles.indexOf(currentRole) !== -1) {
+            // currentRole hợp lệ mà người dùng thực sự sở hữu
         }
 
         var isUnauthenticated = !token && (!currentUser || !currentUser.id);

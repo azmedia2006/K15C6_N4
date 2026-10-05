@@ -1235,7 +1235,7 @@
 
                 <div class="header-actions">
                     <!-- Role / Perspective Switcher -->
-                    <div class="role-switcher-wrap" title="Chuyển chế độ xem vai trò">
+                    <div class="role-switcher-wrap" id="role-switcher-container" title="Vai trò người dùng">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                         <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Vai trò:</span>
                         <select id="quick-role-select" class="role-switcher-select" onchange="quickSwitchRole(this.value)">
@@ -2043,7 +2043,7 @@
             }
         }
 
-        // KN-32 & KN-14: Phân quyền vai trò người dùng (RBAC)
+        // KN-32 & KN-14: Phân quyền vai trò người dùng (RBAC) & Kiểm soát chống leo thang đặc quyền
         const params = new URLSearchParams(window.location.search);
 
         function normalizeRole(value) {
@@ -2065,40 +2065,126 @@
             return aliases[normalized] || normalized;
         }
 
-        const allowedRoles = new Set([
-            "visitor",
-            "student",
-            "instructor",
-            "teaching_assistant",
-            "admissions",
-            "accountant",
-            "training_manager",
-            "administrator"
-        ]);
+        const allRolesMap = {
+            administrator: "Quản trị viên (Admin)",
+            training_manager: "Quản lý đào tạo",
+            instructor: "Giảng viên",
+            teaching_assistant: "Trợ giảng",
+            student: "Học viên",
+            admissions: "Tư vấn tuyển sinh",
+            accountant: "Kế toán đào tạo",
+            visitor: "Khách tham quan"
+        };
+        const allowedRoles = new Set(Object.keys(allRolesMap));
+
+        let currentUser = null;
+        try {
+            currentUser = JSON.parse(localStorage.getItem("tms_current_user") || localStorage.getItem("tms_user"));
+        } catch (e) {
+            currentUser = null;
+        }
+
+        // Xác định vai trò gốc thực tế của tài khoản (Authentication)
+        const userPrimaryRole = normalizeRole((currentUser && currentUser.role) || "visitor");
+        const authorizedRoles = new Set();
+        if (allowedRoles.has(userPrimaryRole)) {
+            authorizedRoles.add(userPrimaryRole);
+        }
+        if (currentUser && Array.isArray(currentUser.roles)) {
+            currentUser.roles.forEach(r => {
+                const code = normalizeRole(typeof r === "string" ? r : (r.code || r.name || r.id || ""));
+                if (allowedRoles.has(code)) authorizedRoles.add(code);
+            });
+        }
+        if (authorizedRoles.size === 0) {
+            authorizedRoles.add("visitor");
+        }
+
+        const isRealAdmin = authorizedRoles.has("administrator");
 
         const storedRole = normalizeRole(localStorage.getItem("tms_current_role"));
         const requestedRole = normalizeRole(params.get("role"));
 
         let role;
-        if (requestedRole && allowedRoles.has(requestedRole)) {
-            role = requestedRole;
+        if (isRealAdmin) {
+            // Quản trị viên hệ thống có toàn quyền xem trước (Preview) mọi vai trò trong hệ thống
+            if (requestedRole && allowedRoles.has(requestedRole)) {
+                role = requestedRole;
+            } else if (storedRole && allowedRoles.has(storedRole)) {
+                role = storedRole;
+            } else {
+                role = "administrator";
+            }
             localStorage.setItem("tms_current_role", role);
-        } else if (storedRole && allowedRoles.has(storedRole)) {
-            role = storedRole;
         } else {
-            role = "administrator"; // Mặc định chế độ quản trị
+            // Người dùng thường (Khách tham quan, Học viên...):
+            // CHỈ được phép dùng các vai trò được cấp phép trong authorizedRoles!
+            // Tuyệt đối không cho phép leo thang đặc quyền (Privilege Escalation) lên Quản trị viên
+            if (requestedRole && authorizedRoles.has(requestedRole)) {
+                role = requestedRole;
+            } else if (storedRole && authorizedRoles.has(storedRole)) {
+                role = storedRole;
+            } else {
+                role = userPrimaryRole;
+            }
+
+            // Dọn sạch URL nếu có ?role không được cấp phép
+            if (requestedRole && !authorizedRoles.has(requestedRole)) {
+                const cleanUrl = window.location.origin + window.location.pathname + (window.location.hash || "");
+                window.history.replaceState({}, document.title, cleanUrl);
+            }
             localStorage.setItem("tms_current_role", role);
         }
 
-        // Cập nhật giá trị vào dropdown quick-role-select
-        const roleSelect = document.getElementById("quick-role-select");
-        if (roleSelect) {
-            roleSelect.value = role;
+        // Hiển thị bộ chuyển đổi vai trò linh hoạt theo quyền hạn
+        function renderRoleSwitcherUI() {
+            const container = document.getElementById("role-switcher-container");
+            if (!container) return;
+
+            if (isRealAdmin) {
+                // Admin: Cho phép chuyển đổi các góc nhìn
+                let optionsHtml = Object.keys(allRolesMap).map(r => 
+                    `<option value="${r}" ${r === role ? 'selected' : ''}>${allRolesMap[r]}</option>`
+                ).join("");
+                container.innerHTML = `
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Góc nhìn:</span>
+                    <select id="quick-role-select" class="role-switcher-select" onchange="quickSwitchRole(this.value)">
+                        ${optionsHtml}
+                    </select>
+                `;
+            } else if (authorizedRoles.size > 1) {
+                // Người dùng có nhiều vai trò (KN-12 N-N): chỉ hiển thị vai trò người dùng thực sự sở hữu
+                let optionsHtml = Array.from(authorizedRoles).map(r => 
+                    `<option value="${r}" ${r === role ? 'selected' : ''}>${allRolesMap[r] || r}</option>`
+                ).join("");
+                container.innerHTML = `
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Vai trò:</span>
+                    <select id="quick-role-select" class="role-switcher-select" onchange="quickSwitchRole(this.value)">
+                        ${optionsHtml}
+                    </select>
+                `;
+            } else {
+                // Người dùng có 1 vai trò duy nhất (Ví dụ: Khách tham quan, Học viên): hiển thị vai trò cố định, KHÔNG có dropdown
+                container.innerHTML = `
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Vai trò:</span>
+                    <span style="font-size: 0.8125rem; font-weight: 600; color: var(--text-main); padding-right: 4px;">${allRolesMap[role] || "Khách tham quan"}</span>
+                `;
+            }
         }
+        renderRoleSwitcherUI();
 
         function quickSwitchRole(newRole) {
-            localStorage.setItem("tms_current_role", newRole);
-            window.location.href = `./Index.html?role=${newRole}`;
+            const cleanRole = normalizeRole(newRole);
+            if (!isRealAdmin && !authorizedRoles.has(cleanRole)) {
+                showToast("Bạn không có quyền truy cập vai trò " + (allRolesMap[cleanRole] || cleanRole) + "!", "danger");
+                renderRoleSwitcherUI();
+                return;
+            }
+            localStorage.setItem("tms_current_role", cleanRole);
+            window.location.href = `./Index.html?role=${cleanRole}`;
         }
 
         // 1. Phân quyền danh mục Menu (KN-14 RBAC)
