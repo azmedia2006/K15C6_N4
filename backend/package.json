@@ -6,12 +6,13 @@
   "scripts": {
     "start": "node server.js",
     "migrate": "node migrations/migrate_roles_n_n.js",
-    "test": "node test/auth.test.js && node test/user_management.test.js && node test/role_management.test.js && node test/rbac_kn8.test.js && node test/supabase.test.js",
+    "test": "node test/auth.test.js && node test/user_management.test.js && node test/role_management.test.js && node test/rbac_kn8.test.js && node test/supabase.test.js && node test/error_handling_kn10.test.js",
     "test:auth": "node test/auth.test.js",
     "test:user": "node test/user_management.test.js",
     "test:role": "node test/role_management.test.js",
     "test:kn8": "node test/rbac_kn8.test.js",
-    "test:supabase": "node test/supabase.test.js"
+    "test:supabase": "node test/supabase.test.js",
+    "test:kn10": "node test/error_handling_kn10.test.js"
   },
   "keywords": [],
   "author": "",

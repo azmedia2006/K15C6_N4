@@ -258,7 +258,7 @@ app.get(
 // KN-62 & KN-11: Lấy danh sách người dùng kèm vai trò
 // Hỗ trợ phân trang, lọc theo vai trò, tìm kiếm
 app.get(
-    "/api/admin/users",
+    ["/api/admin/users", "/api/users"],
     authenticateToken,
     requireRole("administrator"),
     (req, res) => {
@@ -699,6 +699,58 @@ app.get("/frontend/Login.html", (req, res) => {
 });
 app.get("/frontend/:page", (req, res) => {
     res.redirect(301, `/${req.params.page}`);
+});
+
+// KN-49 & KN-50: Các định tuyến mã lỗi chuẩn (Clean Error Routing)
+app.get(["/403", "/error-403"], (req, res) => {
+    res.sendFile(path.join(rootDir, "Error.html"));
+});
+app.get(["/404", "/error-404"], (req, res) => {
+    res.sendFile(path.join(rootDir, "Error.html"));
+});
+app.get(["/500", "/error-500"], (req, res) => {
+    res.sendFile(path.join(rootDir, "Error.html"));
+});
+app.get("/error", (req, res) => {
+    res.sendFile(path.join(rootDir, "Error.html"));
+});
+
+// KN-54: Fallback và chuẩn hóa lỗi cho các API request không tồn tại
+app.use("/api", (req, res) => {
+    res.status(404).json({
+        success: false,
+        code: 404,
+        error: "Endpoint API không tồn tại hoặc đã thay đổi địa chỉ",
+        path: req.originalUrl,
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Fallback cho các đường dẫn trang không tồn tại -> Trả về giao diện 404
+app.use((req, res, next) => {
+    if (req.method === "GET" && !req.originalUrl.startsWith("/api/")) {
+        return res.status(404).sendFile(path.join(rootDir, "Error.html"));
+    }
+    next();
+});
+
+// KN-53 & KN-54: Middleware xử lý lỗi toàn cục, chuẩn hóa tiếng Việt an toàn, không để lộ stack trace
+app.use((err, req, res, next) => {
+    const statusCode = err.status || err.statusCode || 500;
+    const safeMessage = statusCode >= 500
+        ? "Đã xảy ra sự cố trong quá trình xử lý yêu cầu. Dữ liệu của bạn vẫn an toàn."
+        : (err.message || "Yêu cầu không hợp lệ.");
+
+    if (req.originalUrl && req.originalUrl.startsWith("/api/")) {
+        return res.status(statusCode).json({
+            success: false,
+            code: statusCode,
+            error: safeMessage,
+            timestamp: new Date().toISOString()
+        });
+    }
+
+    res.status(statusCode).sendFile(path.join(rootDir, "Error.html"));
 });
 
 // Tự động tải và đồng bộ các tài khoản người dùng từ Supabase vào bộ nhớ

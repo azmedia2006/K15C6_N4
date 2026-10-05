@@ -12,6 +12,10 @@
     { "source": "/Index.html", "destination": "/Dashboard.html" },
     { "source": "/dashboard", "destination": "/Dashboard.html" },
     { "source": "/users", "destination": "/UserManagement.html" },
-    { "source": "/roles", "destination": "/RoleManagement.html" }
+    { "source": "/roles", "destination": "/RoleManagement.html" },
+    { "source": "/403", "destination": "/Error.html?code=403" },
+    { "source": "/404", "destination": "/Error.html?code=404" },
+    { "source": "/500", "destination": "/Error.html?code=500" },
+    { "source": "/error", "destination": "/Error.html" }
   ]
 }
