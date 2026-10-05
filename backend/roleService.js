@@ -485,5 +485,6 @@ module.exports = {
     bumpUserRolesVersion,
     getUserRolesVersion,
     removeAllUserRoles,
-    syncUserRole
+    syncUserRole,
+    getAllUserRolesAssignments: () => userRoles
 };

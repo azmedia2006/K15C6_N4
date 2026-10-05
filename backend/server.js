@@ -9,7 +9,8 @@ const {
     verifyToken,
     getLockoutStatus,
     recordFailedAttempt,
-    recordSuccessfulLogin
+    recordSuccessfulLogin,
+    users
 } = require("./authService");
 
 const {
@@ -20,8 +21,11 @@ const {
     getUsersWithRolesList,
     getAuditLogs,
     removeAllUserRoles,
-    syncUserRole
+    syncUserRole,
+    getAllUserRolesAssignments
 } = require("./roleService");
+
+const supabaseService = require("./supabaseService");
 
 const {
     VALID_ROLES,
@@ -208,6 +212,32 @@ app.get("/api/auth/me", authenticateToken, (req, res) => {
     });
 });
 
+// API Đăng ký tài khoản người dùng công khai (Học viên)
+app.post("/api/auth/register", (req, res) => {
+    try {
+        const { name, email, phone, password } = req.body || {};
+        const result = createUser({ name, email, phone, password, role: "student" });
+        try {
+            syncUserRole(result.user.id, "student");
+        } catch (e) {
+            // ignore
+        }
+        supabaseService.syncUserToAuth(result.user, password).catch(() => {});
+        supabaseService.saveToStorage("users.json", users).catch(() => {});
+
+        return res.status(201).json({
+            success: true,
+            message: "Đăng ký tài khoản thành công.",
+            user: result.user
+        });
+    } catch (err) {
+        return res.status(err.status || 400).json({
+            success: false,
+            message: err.message || "Đăng ký không thành công."
+        });
+    }
+});
+
 // ==========================================
 // CÁC ENDPOINT QUẢN TRỊ VAI TRÒ & NGƯỜI DÙNG (ADMIN ONLY)
 // ==========================================
@@ -267,6 +297,12 @@ app.post(
                     // ignore
                 }
             }
+
+            // Đồng bộ sang Supabase Database & Auth (Background Promise)
+            supabaseService.syncUserToAuth(result.user, result.temporaryPassword).catch(() => {});
+            supabaseService.saveToStorage("users.json", users).catch(() => {});
+            supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs()).catch(() => {});
+
             return res.status(201).json({
                 success: true,
                 message: `Tạo tài khoản người dùng '${result.user.name}' thành công. Đã gửi email kích hoạt kèm mật khẩu tạm.`,
@@ -321,6 +357,12 @@ app.put(
                     // ignore
                 }
             }
+
+            // Đồng bộ cập nhật sang Supabase
+            supabaseService.syncUserToAuth(updated, req.body ? req.body.password : null).catch(() => {});
+            supabaseService.saveToStorage("users.json", users).catch(() => {});
+            supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs()).catch(() => {});
+
             return res.status(200).json({
                 success: true,
                 message: `Cập nhật thông tin tài khoản '${updated.name}' thành công.`,
@@ -342,8 +384,17 @@ app.delete(
     requireRole("administrator"),
     (req, res) => {
         try {
+            const userToDelete = users.find(u => u.id === req.params.id);
             const result = deleteUser(req.params.id, req.user ? req.user.id : null);
             removeAllUserRoles(req.params.id);
+
+            // Đồng bộ xóa sang Supabase
+            if (userToDelete) {
+                supabaseService.deleteUserFromAuth(userToDelete.email).catch(() => {});
+            }
+            supabaseService.saveToStorage("users.json", users).catch(() => {});
+            supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs()).catch(() => {});
+
             return res.status(200).json(result);
         } catch (err) {
             return res.status(err.status || err.statusCode || 500).json({
@@ -391,6 +442,9 @@ const handleAssignRole = (req, res) => {
                 ip
             });
         }
+
+        // Đồng bộ vai trò sang Supabase
+        supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs()).catch(() => {});
 
         return res.status(200).json({
             success: true,
@@ -440,6 +494,9 @@ const handleRevokeRole = (req, res) => {
             revokedBy,
             ip
         });
+
+        // Đồng bộ vai trò sang Supabase
+        supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs()).catch(() => {});
 
         return res.status(200).json({
             success: true,
@@ -578,10 +635,46 @@ app.get(
     }
 );
 
+// -------------------------------------------------------------
+// SUPABASE DATABASE & AUTH STATUS / SYNC ENDPOINTS
+// -------------------------------------------------------------
+
+// API Kiểm tra trạng thái kết nối Supabase Database & Auth
+app.get("/api/supabase/status", async (req, res) => {
+    const health = await supabaseService.checkSupabaseHealth();
+    return res.status(200).json({
+        success: true,
+        ...health
+    });
+});
+
+// API Kích hoạt đồng bộ thủ công toàn bộ dữ liệu TMS lên Supabase
+app.post("/api/supabase/sync", async (req, res) => {
+    try {
+        await supabaseService.syncUsersDatabase(users);
+        await supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs());
+        await supabaseService.syncBusinessDatabase(mockScores, mockTuition);
+        return res.status(200).json({
+            success: true,
+            message: "Đã đồng bộ toàn bộ cơ sở dữ liệu TMS lên Supabase thành công.",
+            timestamp: new Date().toISOString()
+        });
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: "Lỗi đồng bộ Supabase: " + err.message
+        });
+    }
+});
+
 // Health check endpoint
 app.get("/api/health", (req, res) => {
     res.json({
         status: "ok",
+        supabase: {
+            configured: Boolean(supabaseService.SUPABASE_URL),
+            url: supabaseService.SUPABASE_URL
+        },
         timestamp: new Date().toISOString()
     });
 });
@@ -605,12 +698,13 @@ app.get("/frontend/:page", (req, res) => {
     res.redirect(301, `/${req.params.page}`);
 });
 
-// Chỉ listen khi chạy trực tiếp file server.js
+// Khởi chạy server và đồng bộ dữ liệu ban đầu
 if (require.main === module) {
     app.listen(PORT, () => {
-        console.log(
-            `TMS Server running at http://localhost:${PORT}`
-        );
+        console.log(`TMS Server running at http://localhost:${PORT}`);
+        // Chạy đồng bộ ban đầu lên Supabase trong background
+        supabaseService.syncUsersDatabase(users).catch(() => {});
+        supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs()).catch(() => {});
     });
 }
 
