@@ -213,7 +213,7 @@ app.get("/api/auth/me", authenticateToken, (req, res) => {
 });
 
 // API Đăng ký tài khoản người dùng công khai (Học viên)
-app.post("/api/auth/register", (req, res) => {
+app.post("/api/auth/register", async (req, res) => {
     try {
         const { name, email, phone, password } = req.body || {};
         const result = createUser({ name, email, phone, password, role: "student" });
@@ -222,8 +222,8 @@ app.post("/api/auth/register", (req, res) => {
         } catch (e) {
             // ignore
         }
-        supabaseService.syncSingleUser(result.user, password, users).catch(() => {});
-        supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs()).catch(() => {});
+        await supabaseService.syncSingleUser(result.user, password, users);
+        await supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs());
 
         return res.status(201).json({
             success: true,
@@ -287,7 +287,7 @@ app.post(
     "/api/admin/users",
     authenticateToken,
     requireRole("administrator"),
-    (req, res) => {
+    async (req, res) => {
         try {
             const result = createUser(req.body || {});
             if (result.user && result.user.role) {
@@ -299,8 +299,8 @@ app.post(
             }
 
             // Đồng bộ sang tất cả các tầng Supabase (PostgreSQL tables, Auth, Storage)
-            supabaseService.syncSingleUser(result.user, result.temporaryPassword, users).catch(() => {});
-            supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs()).catch(() => {});
+            await supabaseService.syncSingleUser(result.user, result.temporaryPassword, users);
+            await supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs());
 
             return res.status(201).json({
                 success: true,
@@ -346,7 +346,7 @@ app.put(
     "/api/admin/users/:id",
     authenticateToken,
     requireRole("administrator"),
-    (req, res) => {
+    async (req, res) => {
         try {
             const updated = updateUser(req.params.id, req.body || {});
             if (req.body && req.body.role) {
@@ -358,8 +358,8 @@ app.put(
             }
 
             // Đồng bộ cập nhật sang Supabase
-            supabaseService.syncSingleUser(updated, req.body ? req.body.password : null, users).catch(() => {});
-            supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs()).catch(() => {});
+            await supabaseService.syncSingleUser(updated, req.body ? req.body.password : null, users);
+            await supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs());
 
             return res.status(200).json({
                 success: true,
@@ -380,15 +380,15 @@ app.delete(
     "/api/admin/users/:id",
     authenticateToken,
     requireRole("administrator"),
-    (req, res) => {
+    async (req, res) => {
         try {
             const userToDelete = users.find(u => u.id === req.params.id);
             const result = deleteUser(req.params.id, req.user ? req.user.id : null);
             removeAllUserRoles(req.params.id);
 
             // Đồng bộ xóa sang Supabase (PostgreSQL tables, Auth, Storage)
-            supabaseService.deleteSingleUser(req.params.id, userToDelete ? userToDelete.email : null, users).catch(() => {});
-            supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs()).catch(() => {});
+            await supabaseService.deleteSingleUser(req.params.id, userToDelete ? userToDelete.email : null, users);
+            await supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs());
 
             return res.status(200).json(result);
         } catch (err) {
@@ -403,7 +403,7 @@ app.delete(
 // KN-58: Xây dựng API gán vai trò cho người dùng
 // POST /api/admin/users/:userId/roles
 // hoặc /admin/users/:userId/roles
-const handleAssignRole = (req, res) => {
+const handleAssignRole = async (req, res) => {
     const { userId } = req.params;
     const { roleId, roleIds } = req.body || {};
 
@@ -439,7 +439,7 @@ const handleAssignRole = (req, res) => {
         }
 
         // Đồng bộ vai trò sang Supabase
-        supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs()).catch(() => {});
+        await supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs());
 
         return res.status(200).json({
             success: true,
@@ -473,7 +473,7 @@ app.post(
 // KN-59 & KN-56: Xây dựng API thu hồi vai trò của người dùng
 // DELETE /api/admin/users/:userId/roles/:roleId
 // hoặc /admin/users/:userId/roles/:roleId
-const handleRevokeRole = (req, res) => {
+const handleRevokeRole = async (req, res) => {
     const { userId, roleId } = req.params;
     const ip =
         req.ip ||
@@ -491,7 +491,7 @@ const handleRevokeRole = (req, res) => {
         });
 
         // Đồng bộ vai trò sang Supabase
-        supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs()).catch(() => {});
+        await supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs());
 
         return res.status(200).json({
             success: true,

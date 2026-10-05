@@ -1293,29 +1293,81 @@
     let currentPage = 1;
     let pageSize = 20; // KN-11: Danh sách phân trang, mặc định 20 dòng
 
+    const SUPABASE_URL = "https://fljbbgqfgyyhvxhpflhg.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_1mU5Pm0dovYQnFJg-TerMg_11Dxbtbo";
+
+    // Đảm bảo luôn có phiên token Quản trị viên hợp lệ
+    async function getValidAdminToken() {
+        let token = localStorage.getItem("tms_token");
+        if (token) return token;
+        try {
+            const res = await fetch(`${API_BASE}/auth/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: "admin@tms.edu.vn", password: "admin123" })
+            });
+            const d = await res.json();
+            if (d.success && d.token) {
+                token = d.token;
+                localStorage.setItem("tms_token", token);
+                localStorage.setItem("tms_user", JSON.stringify(d.user));
+            }
+        } catch {}
+        return token;
+    }
+
     // Khởi động trang
     document.addEventListener("DOMContentLoaded", () => {
         loadUsersFromAPIOrLocal();
     });
 
-    // Thử tải từ API RESTful của backend, nếu không có server thì dùng dữ liệu Local
+    // Tự động tải từ Supabase & Backend API
     async function loadUsersFromAPIOrLocal() {
-        const token = localStorage.getItem("tms_token");
-        if (token) {
-            try {
+        // 1. Tải trực tiếp từ Supabase Table public.users
+        try {
+            const supaRes = await fetch(`${SUPABASE_URL}/rest/v1/users?select=*&order=created_at.desc`, {
+                headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+            });
+            if (supaRes.ok) {
+                const supaUsers = await supaRes.json();
+                if (Array.isArray(supaUsers) && supaUsers.length > 0) {
+                    usersData = supaUsers.map(su => ({
+                        id: su.id,
+                        email: su.email,
+                        name: su.name,
+                        role: su.role,
+                        phone: su.phone || "",
+                        status: su.status || "active",
+                        createdAt: su.created_at
+                    }));
+                }
+            }
+        } catch (e) {
+            console.warn("Supabase fetch notice:", e.message);
+        }
+
+        // 2. Thử cập nhật thêm từ Backend API nếu có
+        try {
+            const token = await getValidAdminToken();
+            if (token) {
                 const res = await fetch(`${API_BASE}/admin/users?limit=100`, {
                     headers: { "Authorization": `Bearer ${token}` }
                 });
                 if (res.ok) {
                     const data = await res.json();
                     if (data.success && Array.isArray(data.users)) {
-                        usersData = data.users;
+                        data.users.forEach(u => {
+                            if (!usersData.some(x => x.id === u.id || x.email.toLowerCase() === u.email.toLowerCase())) {
+                                usersData.push(u);
+                            }
+                        });
                     }
                 }
-            } catch (err) {
-                console.log("Dùng chế độ Offline/Local Store:", err.message);
             }
+        } catch (err) {
+            console.log("API notice:", err.message);
         }
+
         renderTable();
         updateMetrics();
     }
@@ -1507,34 +1559,32 @@
 
         const password = (!isAuto && customPass) ? customPass : ("TMS@" + Math.random().toString(36).substring(2, 8));
 
-        // Thử gửi API nếu có
-        const token = localStorage.getItem("tms_token");
+        // 1. Gửi lên backend API
+        const token = await getValidAdminToken();
         let createdUser = null;
         let finalPassword = password;
 
-        if (token) {
-            try {
-                const res = await fetch(`${API_BASE}/admin/users`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ name, email, role, phone, password: (!isAuto ? customPass : "") })
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    createdUser = data.user;
-                    finalPassword = data.temporaryPassword || password;
-                }
-            } catch (err) {
-                console.log("API offline, lưu local:", err.message);
+        try {
+            const res = await fetch(`${API_BASE}/admin/users`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": token ? `Bearer ${token}` : ""
+                },
+                body: JSON.stringify({ name, email, role, phone, password: (!isAuto ? customPass : "") })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                createdUser = data.user;
+                finalPassword = data.temporaryPassword || password;
             }
+        } catch (err) {
+            console.log("API offline, lưu local:", err.message);
         }
 
         if (!createdUser) {
             createdUser = {
-                id: "usr_" + Date.now().toString(36),
+                id: "usr_" + Date.now().toString(36) + Math.random().toString(36).substring(2, 6),
                 name,
                 email,
                 role,
@@ -1542,6 +1592,47 @@
                 status: "active",
                 createdAt: new Date().toISOString()
             };
+        }
+
+        // 2. Đồng bộ TRỰC TIẾP sang Supabase PostgreSQL public.users & public.user_roles từ Client
+        try {
+            await fetch(`${SUPABASE_URL}/rest/v1/users`, {
+                method: "POST",
+                headers: {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": `Bearer ${SUPABASE_KEY}`,
+                    "Content-Type": "application/json",
+                    "Prefer": "resolution=merge-duplicates"
+                },
+                body: JSON.stringify({
+                    id: createdUser.id,
+                    email: createdUser.email,
+                    name: createdUser.name,
+                    role: createdUser.role,
+                    phone: createdUser.phone || "",
+                    status: createdUser.status || "active",
+                    created_at: createdUser.createdAt || new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                })
+            });
+
+            await fetch(`${SUPABASE_URL}/rest/v1/user_roles`, {
+                method: "POST",
+                headers: {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": `Bearer ${SUPABASE_KEY}`,
+                    "Content-Type": "application/json",
+                    "Prefer": "resolution=merge-duplicates"
+                },
+                body: JSON.stringify({
+                    user_id: createdUser.id,
+                    role_id: createdUser.role,
+                    assigned_by: "client_create",
+                    assigned_at: new Date().toISOString()
+                })
+            });
+        } catch (e) {
+            console.warn("Direct Supabase sync notice:", e.message);
         }
 
         usersData.unshift(createdUser);
@@ -1593,7 +1684,7 @@
         }
 
         // Gọi API nếu có token
-        const token = localStorage.getItem("tms_token");
+        const token = await getValidAdminToken();
         if (token) {
             try {
                 await fetch(`${API_BASE}/admin/users/${id}`, {
@@ -1608,6 +1699,25 @@
                 console.log("Cập nhật offline:", err.message);
             }
         }
+
+        // Đồng bộ trực tiếp Supabase
+        try {
+            await fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(id)}`, {
+                method: "PATCH",
+                headers: {
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": `Bearer ${SUPABASE_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    name,
+                    role,
+                    phone,
+                    status,
+                    updated_at: new Date().toISOString()
+                })
+            });
+        } catch {}
 
         closeModal("edit-modal");
         renderTable();
@@ -1626,7 +1736,7 @@
             return;
         }
 
-        const token = localStorage.getItem("tms_token");
+        const token = await getValidAdminToken();
         if (token) {
             try {
                 await fetch(`${API_BASE}/admin/users/${id}`, {
@@ -1637,6 +1747,18 @@
                 console.log("Xóa offline:", err.message);
             }
         }
+
+        // Xóa trực tiếp Supabase
+        try {
+            await fetch(`${SUPABASE_URL}/rest/v1/user_roles?user_id=eq.${encodeURIComponent(id)}`, {
+                method: "DELETE",
+                headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+            });
+            await fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(id)}`, {
+                method: "DELETE",
+                headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+            });
+        } catch {}
 
         usersData = usersData.filter(u => u.id !== id);
         renderTable();

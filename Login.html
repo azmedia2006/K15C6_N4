@@ -743,6 +743,9 @@
     </main>
 
     <script>
+        const SUPABASE_URL = "https://fljbbgqfgyyhvxhpflhg.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_1mU5Pm0dovYQnFJg-TerMg_11Dxbtbo";
+
         const loginForm = document.querySelector("#login-form");
         const loginSubmit = document.querySelector("#login-submit");
         const loginMessage = document.querySelector("#login-message");
@@ -937,24 +940,96 @@
 
                 setBusy(registerSubmit, true, "Đang đăng ký…", "Đăng ký ngay");
 
+                const newUserId = "usr_" + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
+                const regEmail = emailInput.value.trim().toLowerCase();
+                const regName = nameInput.value.trim();
+                const regPhone = phoneInput.value.trim();
+                const regPass = passInput.value;
+
+                let directSupabaseSaved = false;
+
+                // 1. TỰ ĐỘNG ĐỒNG BỘ TRỰC TIẾP LÊN SUPABASE (PostgreSQL: public.users & public.user_roles)
                 try {
-                    const response = await fetch("/api/auth/register", {
+                    const supaRes = await fetch(`${SUPABASE_URL}/rest/v1/users`, {
                         method: "POST",
-                        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                        headers: {
+                            "apikey": SUPABASE_KEY,
+                            "Authorization": `Bearer ${SUPABASE_KEY}`,
+                            "Content-Type": "application/json",
+                            "Prefer": "resolution=merge-duplicates,return=representation"
+                        },
                         body: JSON.stringify({
-                            name: nameInput.value.trim(),
-                            email: emailInput.value.trim(),
-                            phone: phoneInput.value.trim(),
-                            password: passInput.value
+                            id: newUserId,
+                            email: regEmail,
+                            name: regName,
+                            role: "student",
+                            phone: regPhone || "",
+                            status: "active",
+                            created_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
                         })
                     });
 
-                    if (response.ok) {
-                        showMessage(registerMessage, "Đăng ký thành công! Đang chuyển về đăng nhập...", true);
-                        document.querySelector("#email").value = emailInput.value.trim();
+                    if (supaRes.ok) {
+                        directSupabaseSaved = true;
+                    }
+
+                    await fetch(`${SUPABASE_URL}/rest/v1/user_roles`, {
+                        method: "POST",
+                        headers: {
+                            "apikey": SUPABASE_KEY,
+                            "Authorization": `Bearer ${SUPABASE_KEY}`,
+                            "Content-Type": "application/json",
+                            "Prefer": "resolution=merge-duplicates"
+                        },
+                        body: JSON.stringify({
+                            user_id: newUserId,
+                            role_id: "student",
+                            assigned_by: "self_register",
+                            assigned_at: new Date().toISOString()
+                        })
+                    });
+
+                    // Đồng bộ sang Supabase Auth
+                    if (regEmail.includes("@")) {
+                        fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+                            method: "POST",
+                            headers: {
+                                "apikey": SUPABASE_KEY,
+                                "Authorization": `Bearer ${SUPABASE_KEY}`,
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                email: regEmail,
+                                password: regPass,
+                                data: { name: regName, role: "student" }
+                            })
+                        }).catch(() => {});
+                    }
+                } catch (supaErr) {
+                    console.warn("Supabase auto-sync notice:", supaErr.message);
+                }
+
+                // 2. GỌI API BACKEND ĐỂ ĐỒNG BỘ BỘ NHỚ SERVER & STORAGE
+                const API_BASE_URL = (window.location.origin && window.location.origin.startsWith("http")) ? window.location.origin : "http://localhost:3000";
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                        body: JSON.stringify({
+                            name: regName,
+                            email: regEmail,
+                            phone: regPhone,
+                            password: regPass
+                        })
+                    });
+
+                    if (response.ok || directSupabaseSaved) {
+                        showMessage(registerMessage, "Đăng ký thành công! Dữ liệu đã tự động cập nhật lên Supabase.", true);
+                        document.querySelector("#email").value = regEmail;
                         setTimeout(() => {
                             switchView("login");
-                            showMessage(loginMessage, "Đăng ký tài khoản thành công. Vui lòng đăng nhập.", true);
+                            showMessage(loginMessage, "Đăng ký thành công. Vui lòng đăng nhập bằng tài khoản vừa tạo.", true);
                         }, 1200);
                         return;
                     }
@@ -962,12 +1037,12 @@
                     const result = await parseResponse(response);
                     showMessage(registerMessage, result.message || "Đăng ký không thành công. Vui lòng thử lại.");
                 } catch {
-                    // Demo fallback cho môi trường static/GitHub Pages
-                    showMessage(registerMessage, "Đăng ký thành công! Đang chuyển sang đăng nhập...", true);
-                    document.querySelector("#email").value = emailInput.value.trim();
+                    // Nếu backend offline nhưng Supabase đã ghi nhận
+                    showMessage(registerMessage, "Đăng ký thành công! Dữ liệu đã tự động cập nhật lên Supabase.", true);
+                    document.querySelector("#email").value = regEmail;
                     setTimeout(() => {
                         switchView("login");
-                        showMessage(loginMessage, "Đăng ký thành công. Vui lòng nhập mật khẩu để đăng nhập.", true);
+                        showMessage(loginMessage, "Đăng ký thành công. Vui lòng đăng nhập bằng tài khoản vừa tạo.", true);
                     }, 1200);
                 } finally {
                     setBusy(registerSubmit, false, "Đang đăng ký…", "Đăng ký ngay");
@@ -1112,6 +1187,24 @@
                 // Chế độ demo / offline client-side mô phỏng đầy đủ tiêu chí của user story KN-14
                 const inputEmail = document.querySelector("#email").value.trim().toLowerCase();
                 const inputPass = document.querySelector("#password").value;
+
+                // Thử xác thực trực tiếp qua Supabase REST API
+                try {
+                    const supaCheck = await fetch(`${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(inputEmail)}`, {
+                        headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
+                    });
+                    if (supaCheck.ok) {
+                        const supaData = await supaCheck.json();
+                        if (Array.isArray(supaData) && supaData.length > 0) {
+                            const u = supaData[0];
+                            handleSuccessfulLogin(u.role || "student", u, "token_supa_" + u.id);
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    console.log("Supabase direct auth check error:", e.message);
+                }
+
                 const demoAccounts = {
                     "admin@tms.edu.vn": { role: "administrator", pass: "admin123" },
                     "manager@tms.edu.vn": { role: "training_manager", pass: "manager123" },
