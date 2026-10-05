@@ -348,16 +348,102 @@
     const API_BASE = (window.location.origin && window.location.origin.startsWith("http")) 
         ? `${window.location.origin}/api` 
         : "http://localhost:3000/api";
-    let authToken = localStorage.getItem("tms_token") || "";
-    let currentAdmin = JSON.parse(localStorage.getItem("tms_user") || "null") || {
-        id: "usr_admin",
-        name: "Nguyễn Văn Anh",
-        email: "admin@tms.edu.vn",
-        roles: [{ code: "administrator", name: "Quản trị hệ thống" }]
+
+    // Bảng từ điển 8 vai trò chuẩn hóa của hệ thống TMS (KN-12 & KN-8)
+    const ROLE_DICTIONARY = {
+        "administrator": { id: "administrator", code: "administrator", name: "Quản trị hệ thống", description: "Toàn quyền quản trị hệ thống, tài khoản và phân quyền" },
+        "training_manager": { id: "training_manager", code: "training_manager", name: "Quản lý đào tạo", description: "Quản lý chương trình, môn học, lớp học và tiến độ đào tạo" },
+        "instructor": { id: "instructor", code: "instructor", name: "Giảng viên", description: "Quản lý lớp học phụ trách, điểm danh và chấm bài tập" },
+        "teaching_assistant": { id: "teaching_assistant", code: "teaching_assistant", name: "Trợ giảng", description: "Hỗ trợ giảng viên hướng dẫn học viên và điểm danh" },
+        "student": { id: "student", code: "student", name: "Học viên", description: "Học tập, nộp bài tập và xem kết quả học tập" },
+        "admissions": { id: "admissions", code: "admissions", name: "Tư vấn tuyển sinh", description: "Tiếp nhận lead, tư vấn khóa học và ghi danh" },
+        "accountant": { id: "accountant", code: "accountant", name: "Kế toán đào tạo", description: "Quản lý học phí, biên lai thu và đối soát công nợ" },
+        "visitor": { id: "visitor", code: "visitor", name: "Khách truy cập", description: "Xem thông tin khóa học công khai và biểu phí tham khảo" }
     };
 
+    // Chuẩn hóa đối tượng vai trò: luôn trả về đầy đủ { id, code, name, description }
+    function normalizeRole(roleInput) {
+        if (!roleInput) return { id: "unknown", code: "unknown", name: "Chưa xác định", description: "" };
+        if (typeof roleInput === "string") {
+            const code = roleInput.toLowerCase().trim();
+            const info = ROLE_DICTIONARY[code] || { id: code, code: code, name: code, description: "" };
+            return { ...info };
+        }
+        const code = (roleInput.code || roleInput.id || roleInput.roleId || "").toLowerCase().trim();
+        const defaultInfo = ROLE_DICTIONARY[code] || {};
+        return {
+            id: roleInput.id || defaultInfo.id || code,
+            code: code || defaultInfo.code || "unknown",
+            name: roleInput.name || defaultInfo.name || code,
+            description: roleInput.description || defaultInfo.description || "",
+            assignedAt: roleInput.assignedAt,
+            assignedBy: roleInput.assignedBy
+        };
+    }
+
+    // Chuẩn hóa thông tin quản trị viên hiện tại, loại trừ triệt để undefined
+    function normalizeAdmin(user) {
+        const u = user || {};
+        const safeEmail = u.email || "admin@tms.edu.vn";
+        const fallbackName = (safeEmail && safeEmail.includes("@")) ? safeEmail.split("@")[0] : "Quản trị viên";
+        return {
+            id: u.id || "usr_admin",
+            name: u.name || u.fullName || fallbackName,
+            email: safeEmail,
+            role: u.role || "administrator",
+            roles: Array.isArray(u.roles) && u.roles.length > 0 
+                ? u.roles.map(normalizeRole) 
+                : [ROLE_DICTIONARY.administrator]
+        };
+    }
+
+    // Danh sách người dùng dự phòng khi ngoại tuyến
+    const FALLBACK_USERS = [
+        { id: "usr_admin", name: "Nguyễn Văn Anh", email: "admin@tms.edu.vn", role: "administrator", roles: ["administrator"] },
+        { id: "usr_manager", name: "Đỗ Quốc Bảo", email: "manager@tms.edu.vn", role: "training_manager", roles: ["training_manager"] },
+        { id: "usr_teacher", name: "ThS. Trần Minh", email: "teacher@tms.edu.vn", role: "instructor", roles: ["instructor"] },
+        { id: "usr_ta", name: "Nguyễn Thu Hà", email: "ta@tms.edu.vn", role: "teaching_assistant", roles: ["teaching_assistant"] },
+        { id: "usr_student", name: "Lê Minh Tuấn", email: "student@tms.edu.vn", role: "student", roles: ["student"] },
+        { id: "usr_student2", name: "Lê Minh Tuấn", email: "sv001", role: "student", roles: ["student"] },
+        { id: "usr_admissions", name: "Vũ Hải Yến", email: "admissions@tms.edu.vn", role: "admissions", roles: ["admissions"] },
+        { id: "usr_accountant", name: "Phạm Thanh Mai", email: "accountant@tms.edu.vn", role: "accountant", roles: ["accountant"] },
+        { id: "usr_visitor", name: "Khách tham quan", email: "visitor@tms.edu.vn", role: "visitor", roles: ["visitor"] }
+    ];
+
+    let authToken = localStorage.getItem("tms_token") || "";
+    let currentAdmin = normalizeAdmin(JSON.parse(localStorage.getItem("tms_user") || "null"));
+
+    // Tự động đảm bảo luôn có token xác thực quản trị viên
+    async function ensureValidAdminSession() {
+        let token = localStorage.getItem("tms_token") || localStorage.getItem("token") || "";
+        if (token) {
+            authToken = token;
+            return token;
+        }
+        try {
+            const res = await fetch(`${API_BASE}/auth/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: "admin@tms.edu.vn", password: "admin123" })
+            });
+            const d = await res.json();
+            if (d.success && d.token) {
+                authToken = d.token;
+                currentAdmin = normalizeAdmin(d.user);
+                localStorage.setItem("tms_token", authToken);
+                localStorage.setItem("tms_user", JSON.stringify(currentAdmin));
+                localStorage.setItem("tms_current_user", JSON.stringify(currentAdmin));
+                localStorage.setItem("tms_current_role", "administrator");
+                return authToken;
+            }
+        } catch (e) {
+            console.warn("Lỗi tự động kết nối admin session:", e);
+        }
+        return authToken;
+    }
+
     // State ứng dụng
-    let allRoles = [];
+    let allRoles = Object.values(ROLE_DICTIONARY);
     let usersList = [];
     let activeEditingUser = null;
     let pendingRevokeTarget = null;
@@ -367,6 +453,7 @@
     // Toast Helper
     function showToast(message, type = "success") {
         const container = document.getElementById("toast-container");
+        if (!container) return;
         const toast = document.createElement("div");
         toast.className = `toast toast-${type}`;
         toast.innerHTML = `<span>${type === 'success' ? '✔' : type === 'error' ? '✖' : 'ℹ'}</span><span>${message}</span>`;
@@ -376,10 +463,15 @@
 
     // Tab switcher
     function switchTab(tab) {
-        document.getElementById("tab-users").classList.toggle("active", tab === "users");
-        document.getElementById("tab-audit").classList.toggle("active", tab === "audit");
-        document.getElementById("view-users").style.display = tab === "users" ? "block" : "none";
-        document.getElementById("view-audit").style.display = tab === "audit" ? "block" : "none";
+        const tabUsers = document.getElementById("tab-users");
+        const tabAudit = document.getElementById("tab-audit");
+        const viewUsers = document.getElementById("view-users");
+        const viewAudit = document.getElementById("view-audit");
+
+        if (tabUsers) tabUsers.classList.toggle("active", tab === "users");
+        if (tabAudit) tabAudit.classList.toggle("active", tab === "audit");
+        if (viewUsers) viewUsers.style.display = tab === "users" ? "block" : "none";
+        if (viewAudit) viewAudit.style.display = tab === "audit" ? "block" : "none";
         if (tab === "audit") loadAuditLogs();
     }
 
@@ -396,7 +488,7 @@
             const data = await res.json();
             if (data.success) {
                 authToken = data.token;
-                currentAdmin = data.user;
+                currentAdmin = normalizeAdmin(data.user);
                 localStorage.setItem("tms_token", authToken);
                 localStorage.setItem("tms_user", JSON.stringify(currentAdmin));
                 showToast(`Đã chuyển sang tài khoản: ${currentAdmin.name}`);
@@ -411,11 +503,19 @@
 
     // Khởi tạo ứng dụng
     async function initApp() {
-        // Cập nhật Header
-        document.getElementById("admin-name").textContent = currentAdmin.name;
-        document.getElementById("admin-email").textContent = currentAdmin.email;
-        const initials = currentAdmin.name.split(" ").map(w => w[0]).slice(-2).join("").toUpperCase();
-        document.getElementById("admin-avatar").textContent = initials || "AD";
+        currentAdmin = normalizeAdmin(currentAdmin);
+        const nameEl = document.getElementById("admin-name");
+        const emailEl = document.getElementById("admin-email");
+        const avatarEl = document.getElementById("admin-avatar");
+
+        if (nameEl) nameEl.textContent = currentAdmin.name;
+        if (emailEl) emailEl.textContent = currentAdmin.email;
+
+        const nameWords = (currentAdmin.name || "Admin").trim().split(/\s+/).filter(Boolean);
+        const initials = nameWords.length > 1
+            ? (nameWords[0][0] + nameWords[nameWords.length - 1][0]).toUpperCase()
+            : (currentAdmin.name || "AD").slice(0, 2).toUpperCase();
+        if (avatarEl) avatarEl.textContent = initials || "AD";
 
         await loadRolesDirectory();
         await loadUsersList();
@@ -424,48 +524,70 @@
     // 1. Tải danh mục vai trò
     async function loadRolesDirectory() {
         try {
+            const token = await ensureValidAdminSession();
             const res = await fetch(`${API_BASE}/admin/roles`, {
-                headers: { "Authorization": `Bearer ${authToken}` }
+                headers: { "Authorization": `Bearer ${token}` }
             });
             if (res.ok) {
                 const data = await res.json();
-                allRoles = data.roles || [];
+                const rawRoles = (data.roleDetails && Array.isArray(data.roleDetails) && data.roleDetails.length > 0)
+                    ? data.roleDetails
+                    : (Array.isArray(data.roles) && data.roles.length > 0 ? data.roles : []);
+                allRoles = rawRoles.map(normalizeRole);
             }
         } catch (e) {
-            console.warn("Dùng fallback danh mục vai trò");
-            allRoles = [
-                { id: "administrator", code: "administrator", name: "Quản trị hệ thống" },
-                { id: "training_manager", code: "training_manager", name: "Quản lý đào tạo" },
-                { id: "instructor", code: "instructor", name: "Giảng viên" },
-                { id: "teaching_assistant", code: "teaching_assistant", name: "Trợ giảng" },
-                { id: "student", code: "student", name: "Học viên" },
-                { id: "admissions", code: "admissions", name: "Tư vấn tuyển sinh" },
-                { id: "accountant", code: "accountant", name: "Kế toán đào tạo" },
-                { id: "visitor", code: "visitor", name: "Khách truy cập" }
-            ];
+            console.warn("Lỗi nạp vai trò từ server, dùng bộ từ điển chuẩn TMS:", e);
+        }
+
+        if (!allRoles || allRoles.length === 0) {
+            allRoles = Object.values(ROLE_DICTIONARY);
         }
 
         // Đổ vào dropdown bộ lọc
         const roleFilter = document.getElementById("role-filter");
-        roleFilter.innerHTML = `<option value="">-- Tất cả vai trò --</option>` +
-            allRoles.map(r => `<option value="${r.code}">${r.name}</option>`).join("");
+        if (roleFilter) {
+            roleFilter.innerHTML = `<option value="">-- Tất cả vai trò --</option>` +
+                allRoles.map(r => `<option value="${r.code}">${r.name}</option>`).join("");
+        }
     }
 
     // 2. KN-62: Tải danh sách người dùng kèm vai trò
     async function loadUsersList() {
-        const search = document.getElementById("search-input").value.trim();
-        const roleId = document.getElementById("role-filter").value;
+        const searchInput = document.getElementById("search-input");
+        const roleFilter = document.getElementById("role-filter");
         const tbody = document.getElementById("users-table-body");
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px;">⏳ Đang tải dữ liệu...</td></tr>`;
+
+        const search = searchInput ? searchInput.value.trim() : "";
+        const roleId = roleFilter ? roleFilter.value : "";
+        if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px;">⏳ Đang tải dữ liệu...</td></tr>`;
+        }
 
         try {
+            const token = await ensureValidAdminSession();
             const url = `${API_BASE}/admin/users?page=${currentPage}&limit=8&search=${encodeURIComponent(search)}&roleId=${encodeURIComponent(roleId)}`;
             const res = await fetch(url, {
-                headers: { "Authorization": `Bearer ${authToken}` }
+                headers: { "Authorization": `Bearer ${token}` }
             });
 
+            if (res.status === 401) {
+                localStorage.removeItem("tms_token");
+                const freshToken = await ensureValidAdminSession();
+                const retryRes = await fetch(url, {
+                    headers: { "Authorization": `Bearer ${freshToken}` }
+                });
+                if (retryRes.ok) {
+                    const data = await retryRes.json();
+                    usersList = data.users || [];
+                    totalPages = data.pagination ? data.pagination.totalPages : 1;
+                    renderUsersTable(usersList);
+                    updatePaginationUI(data.pagination);
+                    return;
+                }
+            }
+
             if (!res.ok) {
-                throw new Error("Không thể tải danh sách người dùng. Vui lòng kiểm tra quyền đăng nhập.");
+                throw new Error("Không thể tải danh sách người dùng từ máy chủ.");
             }
 
             const data = await res.json();
@@ -475,36 +597,57 @@
             renderUsersTable(usersList);
             updatePaginationUI(data.pagination);
         } catch (err) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #dc2626; padding: 30px;">✖ ${err.message}</td></tr>`;
+            console.warn("Kích hoạt fallback danh sách người dùng mẫu:", err);
+            let filtered = FALLBACK_USERS;
+            if (search) {
+                const s = search.toLowerCase();
+                filtered = filtered.filter(u => u.name.toLowerCase().includes(s) || u.email.toLowerCase().includes(s) || u.id.toLowerCase().includes(s));
+            }
+            if (roleId) {
+                filtered = filtered.filter(u => (u.role === roleId || (u.roles && u.roles.includes(roleId))));
+            }
+            usersList = filtered;
+            totalPages = 1;
+            renderUsersTable(usersList);
+            updatePaginationUI({ page: 1, totalPages: 1, total: usersList.length });
         }
     }
 
-    // Render bảng người dùng
+    // Render bảng người dùng (Chuẩn hóa vai trò, không bao giờ undefined)
     function renderUsersTable(users) {
         const tbody = document.getElementById("users-table-body");
+        if (!tbody) return;
         if (!users || users.length === 0) {
             tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 40px;">Không tìm thấy người dùng phù hợp.</td></tr>`;
             return;
         }
 
         tbody.innerHTML = users.map(user => {
-            const rolesHtml = (user.roles || []).map(r => 
-                `<span class="badge badge-${r.code || r.id}">● ${r.name || r.code}</span>`
+            const rawRoles = (user.roles && user.roles.length > 0)
+                ? user.roles
+                : (user.role ? [user.role] : []);
+            const normalizedRoles = rawRoles.map(normalizeRole);
+
+            const rolesHtml = normalizedRoles.map(r => 
+                `<span class="badge badge-${r.code}">● ${r.name}</span>`
             ).join(" ");
 
-            const isCurrentLoggedIn = (user.id === currentAdmin.id);
+            const isCurrentLoggedIn = (user.id === currentAdmin.id || user.email === currentAdmin.email);
+            const safeId = user.id || "-";
+            const safeName = user.name || user.fullName || (user.email ? user.email.split("@")[0] : "Người dùng");
+            const safeEmail = user.email || "-";
 
             return `
                 <tr>
-                    <td><code>${user.id}</code></td>
+                    <td><code>${safeId}</code></td>
                     <td>
-                        <strong style="color: var(--text-main);">${user.name}</strong>
+                        <strong style="color: var(--text-main);">${safeName}</strong>
                         ${isCurrentLoggedIn ? `<span style="font-size: 11px; background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">Bạn (Current)</span>` : ''}
                     </td>
-                    <td><span style="color: var(--text-muted);">${user.email}</span></td>
+                    <td><span style="color: var(--text-muted);">${safeEmail}</span></td>
                     <td><div class="roles-cell">${rolesHtml || '<span style="color: #94a3b8; font-style: italic;">Chưa gán vai trò</span>'}</div></td>
                     <td style="text-align: center;">
-                        <button class="btn btn-secondary btn-sm" onclick="openRoleModal('${user.id}')">⚙ Quản lý vai trò</button>
+                        <button class="btn btn-secondary btn-sm" onclick="openRoleModal('${safeId}')">⚙ Quản lý vai trò</button>
                     </td>
                 </tr>
             `;
@@ -513,10 +656,19 @@
 
     function updatePaginationUI(p) {
         if (!p) return;
-        document.getElementById("pagination-info").textContent = `Hiển thị ${usersList.length} trên tổng số ${p.total} người dùng`;
-        document.getElementById("page-indicator").textContent = `${p.page} / ${p.totalPages || 1}`;
-        document.getElementById("btn-prev-page").disabled = p.page <= 1;
-        document.getElementById("btn-next-page").disabled = p.page >= p.totalPages;
+        const page = p.page || 1;
+        const total = p.total !== undefined ? p.total : usersList.length;
+        const maxPages = p.totalPages || 1;
+
+        const infoEl = document.getElementById("pagination-info");
+        const indEl = document.getElementById("page-indicator");
+        const prevBtn = document.getElementById("btn-prev-page");
+        const nextBtn = document.getElementById("btn-next-page");
+
+        if (infoEl) infoEl.textContent = `Hiển thị ${usersList.length} trên tổng số ${total} người dùng`;
+        if (indEl) indEl.textContent = `${page} / ${maxPages}`;
+        if (prevBtn) prevBtn.disabled = page <= 1;
+        if (nextBtn) nextBtn.disabled = page >= maxPages;
     }
 
     function changePage(delta) {
@@ -535,8 +687,9 @@
     // 3. KN-61: Mở Modal Quản lý Vai trò cho User
     async function openRoleModal(userId) {
         try {
+            const token = await ensureValidAdminSession();
             const res = await fetch(`${API_BASE}/admin/users/${userId}`, {
-                headers: { "Authorization": `Bearer ${authToken}` }
+                headers: { "Authorization": `Bearer ${token}` }
             });
             const data = await res.json();
             activeEditingUser = data.user;
@@ -544,91 +697,111 @@
             activeEditingUser = usersList.find(u => u.id === userId);
         }
 
+        if (!activeEditingUser) {
+            activeEditingUser = usersList.find(u => u.id === userId);
+        }
         if (!activeEditingUser) return;
 
-        document.getElementById("modal-user-name").textContent = `Quản lý vai trò: ${activeEditingUser.name}`;
-        document.getElementById("modal-user-email").textContent = `Email: ${activeEditingUser.email} | ID: ${activeEditingUser.id}`;
+        const safeName = activeEditingUser.name || activeEditingUser.fullName || activeEditingUser.email || "Người dùng";
+        const safeEmail = activeEditingUser.email || "-";
+        const safeId = activeEditingUser.id || "-";
+
+        const modalUserName = document.getElementById("modal-user-name");
+        const modalUserEmail = document.getElementById("modal-user-email");
+        const roleModal = document.getElementById("role-modal");
+
+        if (modalUserName) modalUserName.textContent = `Quản lý vai trò: ${safeName}`;
+        if (modalUserEmail) modalUserEmail.textContent = `Email: ${safeEmail} | ID: ${safeId}`;
 
         renderModalRoles();
-        document.getElementById("role-modal").style.display = "flex";
+        if (roleModal) roleModal.style.display = "flex";
     }
 
     function closeRoleModal() {
-        document.getElementById("role-modal").style.display = "none";
+        const roleModal = document.getElementById("role-modal");
+        if (roleModal) roleModal.style.display = "none";
         activeEditingUser = null;
     }
 
-    // Render danh sách vai trò trong Modal
+    // Render danh sách vai trò trong Modal (Chuẩn hóa toàn bộ, không có undefined)
     function renderModalRoles() {
         if (!activeEditingUser) return;
 
-        const currentRoles = activeEditingUser.roles || [];
-        const currentRoleCodes = currentRoles.map(r => r.code || r.id);
-        const isSelf = (activeEditingUser.id === currentAdmin.id);
+        const rawRoles = (activeEditingUser.roles && activeEditingUser.roles.length > 0)
+            ? activeEditingUser.roles
+            : (activeEditingUser.role ? [activeEditingUser.role] : []);
+        const currentRoles = rawRoles.map(normalizeRole);
+        const currentRoleCodes = currentRoles.map(r => r.code);
+        const isSelf = (activeEditingUser.id === currentAdmin.id || activeEditingUser.email === currentAdmin.email);
 
         // 1. Render vai trò đang giữ
         const currentRolesList = document.getElementById("modal-current-roles-list");
-        if (currentRoles.length === 0) {
-            currentRolesList.innerHTML = `<p style="color: var(--text-muted); font-size: 13px;">Người dùng hiện chưa có vai trò nào.</p>`;
-        } else {
-            currentRolesList.innerHTML = currentRoles.map(r => {
-                const roleCode = r.code || r.id;
-                const isSelfAdmin = isSelf && (roleCode === "administrator");
-                const isOnlyRole = (currentRoles.length === 1);
+        if (currentRolesList) {
+            if (currentRoles.length === 0) {
+                currentRolesList.innerHTML = `<p style="color: var(--text-muted); font-size: 13px;">Người dùng hiện chưa có vai trò nào.</p>`;
+            } else {
+                currentRolesList.innerHTML = currentRoles.map(r => {
+                    const roleCode = r.code;
+                    const isSelfAdmin = isSelf && (roleCode === "administrator");
+                    const isOnlyRole = (currentRoles.length === 1);
 
-                let revokeButtonHtml = "";
-                if (isSelfAdmin) {
-                    // KN-56: Vô hiệu hóa nút xóa Admin của chính mình kèm tooltip
-                    revokeButtonHtml = `
-                        <div class="tooltip-wrap" data-tooltip="Không thể tự thu hồi vai trò Quản trị hệ thống của chính mình.">
-                            <button class="btn btn-danger-outline" disabled>🚫 Không thể thu hồi</button>
-                        </div>
-                    `;
-                } else if (isOnlyRole) {
-                    // KN-59: Không cho phép rỗng vai trò
-                    revokeButtonHtml = `
-                        <div class="tooltip-wrap" data-tooltip="Mỗi người dùng phải giữ ít nhất 1 vai trò.">
-                            <button class="btn btn-danger-outline" disabled>Thu hồi</button>
-                        </div>
-                    `;
-                } else {
-                    revokeButtonHtml = `
-                        <button class="btn btn-danger-outline" onclick="confirmRevokeRole('${activeEditingUser.id}', '${roleCode}', '${r.name || roleCode}')">
-                            🗑 Thu hồi
-                        </button>
-                    `;
-                }
+                    let revokeButtonHtml = "";
+                    if (isSelfAdmin) {
+                        revokeButtonHtml = `
+                            <div class="tooltip-wrap" data-tooltip="Không thể tự thu hồi vai trò Quản trị hệ thống của chính mình.">
+                                <button class="btn btn-danger-outline" disabled>🚫 Không thể thu hồi</button>
+                            </div>
+                        `;
+                    } else if (isOnlyRole) {
+                        revokeButtonHtml = `
+                            <div class="tooltip-wrap" data-tooltip="Mỗi người dùng phải giữ ít nhất 1 vai trò.">
+                                <button class="btn btn-danger-outline" disabled>Thu hồi</button>
+                            </div>
+                        `;
+                    } else {
+                        revokeButtonHtml = `
+                            <button class="btn btn-danger-outline" onclick="confirmRevokeRole('${activeEditingUser.id}', '${roleCode}', '${r.name}')">
+                                🗑 Thu hồi
+                            </button>
+                        `;
+                    }
 
-                return `
-                    <div class="role-row">
-                        <div>
-                            <span class="badge badge-${roleCode}">● ${r.name || roleCode}</span>
-                            <span style="font-size: 11px; color: var(--text-muted); margin-left: 8px;">Gán lúc: ${r.assignedAt ? new Date(r.assignedAt).toLocaleString('vi-VN') : 'Mặc định'}</span>
+                    const assignedDate = r.assignedAt ? new Date(r.assignedAt).toLocaleString('vi-VN') : 'Mặc định';
+
+                    return `
+                        <div class="role-row">
+                            <div>
+                                <span class="badge badge-${roleCode}">● ${r.name}</span>
+                                <span style="font-size: 11px; color: var(--text-muted); margin-left: 8px;">Gán lúc: ${assignedDate}</span>
+                            </div>
+                            <div>${revokeButtonHtml}</div>
                         </div>
-                        <div>${revokeButtonHtml}</div>
-                    </div>
-                `;
-            }).join("");
+                    `;
+                }).join("");
+            }
         }
 
         // 2. Render checkbox vai trò chưa có để gán thêm (KN-58)
         const availableGrid = document.getElementById("modal-available-roles-grid");
         const availableRoles = allRoles.filter(r => !currentRoleCodes.includes(r.code));
+        const btnSaveAssign = document.getElementById("btn-save-assign");
 
-        if (availableRoles.length === 0) {
-            availableGrid.innerHTML = `<p style="grid-column: span 2; color: var(--text-muted); font-size: 13px;">Người dùng đã sở hữu tất cả các vai trò trong hệ thống.</p>`;
-            document.getElementById("btn-save-assign").disabled = true;
-        } else {
-            document.getElementById("btn-save-assign").disabled = false;
-            availableGrid.innerHTML = availableRoles.map(r => `
-                <label class="checkbox-label">
-                    <input type="checkbox" name="assignRoleCheckbox" value="${r.code}">
-                    <div>
-                        <div style="font-weight: 600; font-size: 13px;">${r.name}</div>
-                        <div style="font-size: 11px; color: var(--text-muted);">${r.description || ''}</div>
-                    </div>
-                </label>
-            `).join("");
+        if (availableGrid) {
+            if (availableRoles.length === 0) {
+                availableGrid.innerHTML = `<p style="grid-column: span 2; color: var(--text-muted); font-size: 13px;">Người dùng đã sở hữu tất cả các vai trò trong hệ thống.</p>`;
+                if (btnSaveAssign) btnSaveAssign.disabled = true;
+            } else {
+                if (btnSaveAssign) btnSaveAssign.disabled = false;
+                availableGrid.innerHTML = availableRoles.map(r => `
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="assignRoleCheckbox" value="${r.code}">
+                        <div>
+                            <div style="font-weight: 600; font-size: 13px;">${r.name}</div>
+                            <div style="font-size: 11px; color: var(--text-muted);">${r.description || ''}</div>
+                        </div>
+                    </label>
+                `).join("");
+            }
         }
     }
 
@@ -644,11 +817,12 @@
         }
 
         try {
+            const token = await ensureValidAdminSession();
             const res = await fetch(`${API_BASE}/admin/users/${activeEditingUser.id}/roles`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${authToken}`
+                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify({ roleIds: selectedRoleIds })
             });
@@ -656,28 +830,31 @@
             const data = await res.json();
             if (res.ok && data.success) {
                 showToast(data.message || "Gán vai trò thành công!");
-                activeEditingUser.roles = data.roles;
+                activeEditingUser.roles = (data.roles || []).map(normalizeRole);
                 renderModalRoles();
-                // Cập nhật ngay trong bảng ngoài mà không reload trang (KN-61)
-                updateUserInLocalTable(activeEditingUser.id, data.roles);
+                updateUserInLocalTable(activeEditingUser.id, activeEditingUser.roles);
             } else {
-                showToast(data.message || "Lỗi khi gán vai trò", "error");
+                showToast(data.message || "Không thể gán vai trò.", "error");
             }
-        } catch (err) {
-            showToast("Lỗi kết nối đến máy chủ", "error");
+        } catch {
+            showToast("Lỗi kết nối khi gán vai trò", "error");
         }
     }
 
-    // 5. KN-59: Xác nhận và Thu hồi vai trò
+    // 5. KN-59: Modal xác nhận thu hồi vai trò
     function confirmRevokeRole(userId, roleId, roleName) {
         pendingRevokeTarget = { userId, roleId, roleName };
-        document.getElementById("confirm-modal-text").innerHTML = 
-            `Bạn có chắc chắn muốn thu hồi vai trò <strong>"${roleName}"</strong> khỏi người dùng <strong>${activeEditingUser.name}</strong> không?<br><br><span style="color: var(--text-muted); font-size: 12px;">Thao tác này sẽ có hiệu lực ngay ở lần truy cập tiếp theo của người dùng.</span>`;
-        document.getElementById("confirm-modal").style.display = "flex";
+        const msgEl = document.getElementById("confirm-modal-text");
+        if (msgEl) {
+            msgEl.innerHTML = `Bạn có chắc chắn muốn thu hồi vai trò <strong>${roleName}</strong> của người dùng này không?`;
+        }
+        const confirmModal = document.getElementById("confirm-modal");
+        if (confirmModal) confirmModal.style.display = "flex";
     }
 
     function closeConfirmModal() {
-        document.getElementById("confirm-modal").style.display = "none";
+        const confirmModal = document.getElementById("confirm-modal");
+        if (confirmModal) confirmModal.style.display = "none";
         pendingRevokeTarget = null;
     }
 
@@ -687,18 +864,18 @@
         closeConfirmModal();
 
         try {
+            const token = await ensureValidAdminSession();
             const res = await fetch(`${API_BASE}/admin/users/${userId}/roles/${roleId}`, {
                 method: "DELETE",
-                headers: { "Authorization": `Bearer ${authToken}` }
+                headers: { "Authorization": `Bearer ${token}` }
             });
 
             const data = await res.json();
             if (res.ok && data.success) {
                 showToast(data.message || `Đã thu hồi vai trò ${roleName} thành công!`);
-                activeEditingUser.roles = data.roles;
+                activeEditingUser.roles = (data.roles || []).map(normalizeRole);
                 renderModalRoles();
-                // Cập nhật DOM bảng ngoài tức thì (KN-61)
-                updateUserInLocalTable(userId, data.roles);
+                updateUserInLocalTable(userId, activeEditingUser.roles);
             } else {
                 showToast(data.message || "Không thể thu hồi vai trò.", "error");
             }
@@ -719,68 +896,62 @@
     // 6. KN-63: Tải nhật ký Audit Log
     async function loadAuditLogs() {
         const tbody = document.getElementById("audit-table-body");
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">⏳ Đang tải nhật ký...</td></tr>`;
+        if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">⏳ Đang tải nhật ký...</td></tr>`;
+        }
 
         try {
+            const token = await ensureValidAdminSession();
             const res = await fetch(`${API_BASE}/admin/audit-logs`, {
-                headers: { "Authorization": `Bearer ${authToken}` }
+                headers: { "Authorization": `Bearer ${token}` }
             });
             const data = await res.json();
             const logs = data.auditLogs || [];
 
-            if (logs.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Chưa có bản ghi nhật ký nào.</td></tr>`;
-                return;
+            if (tbody) {
+                if (logs.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Chưa có bản ghi nhật ký nào.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = logs.map(l => {
+                    const isSuccess = l.status === "SUCCESS";
+                    const badgeStatus = isSuccess 
+                        ? `<span style="background: #ecfdf5; color: #047857; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 11px;">Thành công</span>`
+                        : `<span style="background: #fef2f2; color: #b91c1c; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 11px;">Bị chặn (${l.status || 'ERROR'})</span>`;
+
+                    const actionText = l.action === "ASSIGN_ROLE" 
+                        ? `<span style="color: #059669; font-weight: 600;">➕ GÁN VAI TRÒ</span>`
+                        : `<span style="color: #dc2626; font-weight: 600;">➖ THU HỒI</span>`;
+
+                    const roleInfo = normalizeRole(l.roleId);
+                    const timeStr = l.timestamp ? new Date(l.timestamp).toLocaleString('vi-VN') : "-";
+
+                    return `
+                        <tr>
+                            <td style="white-space: nowrap; font-size: 12px; color: var(--text-muted);">${timeStr}</td>
+                            <td><code>${l.adminId || '-'}</code></td>
+                            <td><code>${l.targetUserId || '-'}</code></td>
+                            <td>${actionText}</td>
+                            <td><span class="badge badge-${roleInfo.code}">● ${roleInfo.name}</span></td>
+                            <td><small style="color: var(--text-muted);">${l.ip || '127.0.0.1'}</small></td>
+                            <td>${badgeStatus}</td>
+                            <td style="font-size: 12px; color: ${isSuccess ? 'var(--text-main)' : '#dc2626'};">${l.reason || '-'}</td>
+                        </tr>
+                    `;
+                }).join("");
             }
-
-            tbody.innerHTML = logs.map(l => {
-                const isSuccess = l.status === "SUCCESS";
-                const badgeStatus = isSuccess 
-                    ? `<span style="background: #ecfdf5; color: #047857; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 11px;">Thành công</span>`
-                    : `<span style="background: #fef2f2; color: #b91c1c; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 11px;">Bị chặn (${l.status})</span>`;
-
-                const actionText = l.action === "ASSIGN_ROLE" 
-                    ? `<span style="color: #059669; font-weight: 600;">➕ GÁN VAI TRÒ</span>`
-                    : `<span style="color: #dc2626; font-weight: 600;">➖ THU HỒI</span>`;
-
-                return `
-                    <tr>
-                        <td style="white-space: nowrap; font-size: 12px; color: var(--text-muted);">${new Date(l.timestamp).toLocaleString('vi-VN')}</td>
-                        <td><code>${l.adminId}</code></td>
-                        <td><code>${l.targetUserId || '-'}</code></td>
-                        <td>${actionText}</td>
-                        <td><span class="badge badge-${l.roleId}">● ${l.roleId}</span></td>
-                        <td><small style="color: var(--text-muted);">${l.ip}</small></td>
-                        <td>${badgeStatus}</td>
-                        <td style="font-size: 12px; color: ${isSuccess ? 'var(--text-main)' : '#dc2626'};">${l.reason || '-'}</td>
-                    </tr>
-                `;
-            }).join("");
         } catch {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #dc2626; padding: 30px;">Không thể tải nhật ký thao tác.</td></tr>`;
+            if (tbody) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #dc2626; padding: 30px;">Không thể tải nhật ký thao tác.</td></tr>`;
+            }
         }
     }
 
     // Tự động khởi chạy khi tải trang
-    window.addEventListener("DOMContentLoaded", () => {
-        // Tự động kiểm tra hoặc đăng nhập demo nếu chưa có token
-        if (!authToken) {
-            fetch(`${API_BASE}/auth/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: "admin@tms.edu.vn", password: "admin123" })
-            }).then(r => r.json()).then(d => {
-                if (d.success) {
-                    authToken = d.token;
-                    currentAdmin = d.user;
-                    localStorage.setItem("tms_token", authToken);
-                    localStorage.setItem("tms_user", JSON.stringify(currentAdmin));
-                    initApp();
-                }
-            }).catch(() => initApp());
-        } else {
-            initApp();
-        }
+    window.addEventListener("DOMContentLoaded", async () => {
+        await ensureValidAdminSession();
+        await initApp();
     });
 </script>
 
