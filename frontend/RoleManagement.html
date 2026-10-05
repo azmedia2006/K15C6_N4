@@ -3,353 +3,732 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TMS | Quản lý & Phân quyền Vai trò Người dùng (KN-12)</title>
-    <!-- Client-Side Access Guard (KN-48) -->
+    <title>TMS - Phân quyền người dùng</title>
     <script src="/authGuard.js" data-required="administrator"></script>
-    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #10b981;
-            --primary-hover: #059669;
-            --primary-light: rgba(16, 185, 129, 0.12);
-            --primary-soft: #ecfdf5;
-            --text-main: #0f172a;
+            --bg-page: #f8fafc;
+            --bg-surface: #ffffff;
+            --border-color: #e2e8f0;
+            --border-subtle: #f1f5f9;
+            --text-heading: #0f172a;
+            --text-body: #334155;
             --text-muted: #64748b;
-            --border: #e2e8f0;
-            --bg-body: #f8fafc;
-            --bg-card: #ffffff;
-            --sidebar-bg: #0f172a;
+            --text-light: #94a3b8;
+            --primary: #0f172a;
+            --primary-hover: #1e293b;
+            --accent: #059669;
+            --accent-hover: #047857;
             --radius-sm: 6px;
             --radius-md: 10px;
-            --radius-lg: 16px;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
-            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --radius-lg: 14px;
+            --shadow-subtle: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+            --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         }
 
-        * { box-sizing: border-box; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
-        body { background-color: var(--bg-body); margin: 0; padding: 24px; color: var(--text-main); font-size: 14px; }
-        .container { max-width: 1240px; margin: 0 auto; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
 
-        /* Navigation Header */
-        .top-nav {
-            display: flex; justify-content: space-between; align-items: center;
-            background: var(--bg-card); padding: 16px 24px; border-radius: var(--radius-md);
-            box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 24px;
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-body);
+            font-size: 14px;
+            line-height: 1.5;
+            padding: 24px;
         }
-        .nav-brand { display: flex; align-items: center; gap: 12px; }
-        .nav-logo { width: 36px; height: 36px; background: var(--primary); color: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; }
-        .nav-title h1 { margin: 0; font-size: 18px; font-weight: 700; color: var(--text-main); }
-        .nav-title p { margin: 0; font-size: 12px; color: var(--text-muted); }
-        .current-admin-pill {
-            display: flex; align-items: center; gap: 10px; background: var(--primary-soft);
-            padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(16, 185, 129, 0.2);
-        }
-        .current-admin-pill .avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; }
 
-        /* Main Card */
-        .card {
-            background: var(--bg-card); border-radius: var(--radius-md);
-            border: 1px solid var(--border); box-shadow: var(--shadow-sm); padding: 24px; margin-bottom: 24px;
+        .layout-container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 16px; }
-        .card-title { margin: 0; font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 
-        /* Toolbar Filter */
-        .toolbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
-        .search-box { position: relative; min-width: 280px; }
-        .search-input {
-            width: 100%; padding: 8px 14px 8px 36px; border: 1px solid var(--border);
-            border-radius: var(--radius-sm); font-size: 13px; outline: none; transition: var(--transition);
+        /* Top Bar */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-surface);
+            padding: 16px 24px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-subtle);
+            margin-bottom: 24px;
         }
-        .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
-        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 13px; }
-        .select-filter {
-            padding: 8px 14px; border: 1px solid var(--border); border-radius: var(--radius-sm);
-            font-size: 13px; outline: none; background: #fff; cursor: pointer;
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-badge {
+            background: var(--primary);
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
+            letter-spacing: 0.05em;
+        }
+
+        .header-title h1 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-heading);
+            letter-spacing: -0.01em;
+        }
+
+        .header-title p {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .header-account {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f1f5f9;
+            padding: 6px 12px 6px 8px;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+        }
+
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #cbd5e1;
+            color: var(--text-heading);
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .user-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-heading);
+        }
+
+        .user-email {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Nav Tabs */
+        .navigation-tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+        }
+
+        .nav-tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .nav-tab-btn:hover {
+            color: var(--text-heading);
+        }
+
+        .nav-tab-btn.active {
+            color: var(--text-heading);
+            font-weight: 600;
+            border-bottom-color: var(--primary);
+        }
+
+        /* Main Panel */
+        .content-panel {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-subtle);
+            padding: 24px;
+        }
+
+        .panel-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .panel-heading h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-heading);
+        }
+
+        .panel-heading p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .filter-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .search-field {
+            width: 260px;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            color: var(--text-heading);
+            background: #ffffff;
+            outline: none;
+            transition: border-color 0.15s ease;
+        }
+
+        .search-field:focus {
+            border-color: var(--primary);
+        }
+
+        .select-field {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            color: var(--text-heading);
+            background: #ffffff;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .select-field:focus {
+            border-color: var(--primary);
         }
 
         /* Buttons */
         .btn {
-            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-            padding: 8px 16px; border-radius: var(--radius-sm); font-weight: 600; font-size: 13px;
-            cursor: pointer; border: 1px solid transparent; transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            border: 1px solid transparent;
+            text-decoration: none;
         }
-        .btn-primary { background: var(--primary); color: #fff; }
-        .btn-primary:hover { background: var(--primary-hover); }
-        .btn-secondary { background: #f1f5f9; color: var(--text-main); border-color: var(--border); }
-        .btn-secondary:hover { background: #e2e8f0; }
-        .btn-danger-outline { background: transparent; border-color: #fca5a5; color: #dc2626; padding: 4px 10px; font-size: 12px; border-radius: 4px; }
-        .btn-danger-outline:hover:not(:disabled) { background: #fee2e2; border-color: #ef4444; }
-        .btn-danger-outline:disabled { opacity: 0.45; cursor: not-allowed; border-color: #cbd5e1; color: #94a3b8; }
-        .btn-sm { padding: 6px 12px; font-size: 12px; }
 
-        /* Badges */
-        .badge {
-            display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px;
-            border-radius: 999px; font-size: 11.5px; font-weight: 600; line-height: 1.3;
+        .btn-primary {
+            background: var(--primary);
+            color: #ffffff;
         }
-        .badge-administrator { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-        .badge-training_manager { background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
-        .badge-instructor { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
-        .badge-teaching_assistant { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-        .badge-student { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
-        .badge-admissions { background: #fdf2f8; color: #9d174d; border: 1px solid #fbcfe8; }
-        .badge-accountant { background: #fefce8; color: #854d0e; border: 1px solid #fef08a; }
-        .badge-visitor { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            color: var(--text-body);
+            border-color: var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .btn-destructive-subtle {
+            background: #ffffff;
+            color: #e11d48;
+            border-color: #fecdd3;
+            padding: 4px 10px;
+            font-size: 12px;
+            border-radius: var(--radius-sm);
+        }
+
+        .btn-destructive-subtle:hover:not(:disabled) {
+            background: #fff1f2;
+            border-color: #fda4af;
+        }
+
+        .btn-destructive-subtle:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            color: var(--text-light);
+            border-color: var(--border-color);
+        }
 
         /* Table */
-        .table-responsive { width: 100%; overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); }
-        table { width: 100%; border-collapse: collapse; text-align: left; background: #fff; }
-        th { background: #f8fafc; padding: 12px 16px; font-weight: 600; font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; border-bottom: 1px solid var(--border); }
-        td { padding: 14px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-        tr:last-child td { border-bottom: none; }
-        tr:hover { background-color: #fafbfc; }
-        .roles-cell { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+        }
 
-        /* Modal Styles */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            background: #ffffff;
+        }
+
+        .data-table th {
+            background: #f8fafc;
+            padding: 12px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            vertical-align: middle;
+            font-size: 13px;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tr:hover {
+            background-color: #fafbfc;
+        }
+
+        .code-pill {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 12px;
+            color: var(--text-muted);
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .role-pill-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+
+        /* Minimalist Role Badges */
+        .role-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+
+        .role-tag-administrator { background: #fff1f2; color: #be123c; border-color: #fecdd3; }
+        .role-tag-training_manager { background: #eef2ff; color: #4338ca; border-color: #e0e7ff; }
+        .role-tag-instructor { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+        .role-tag-teaching_assistant { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+        .role-tag-student { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+        .role-tag-admissions { background: #fdf2f8; color: #be185d; border-color: #fbcfe8; }
+        .role-tag-accountant { background: #f0fdfa; color: #0f766e; border-color: #99f6e4; }
+        .role-tag-visitor { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
+
+        /* Pagination */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .pagination-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .page-status {
+            font-weight: 500;
+            color: var(--text-heading);
+            padding: 4px 8px;
+        }
+
+        /* Modal */
         .modal-overlay {
-            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
-            display: none; align-items: center; justify-content: center; z-index: 1000;
-            backdrop-filter: blur(2px);
-        }
-        .modal {
-            background: #fff; border-radius: var(--radius-lg); width: 100%; max-width: 600px;
-            box-shadow: var(--shadow-lg); overflow: hidden; animation: modalPop 0.2s ease-out;
-        }
-        @keyframes modalPop { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .modal-header { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .modal-header h3 { margin: 0; font-size: 17px; font-weight: 700; }
-        .modal-body { padding: 24px; max-height: 75vh; overflow-y: auto; }
-        .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); background: #f8fafc; display: flex; justify-content: flex-end; gap: 10px; }
-        .close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); }
-
-        /* Role item in modal */
-        .role-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 14px; background: #f8fafc; border: 1px solid var(--border);
-            border-radius: var(--radius-sm); margin-bottom: 8px;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(3px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
         }
 
-        /* Checkbox grid for assigning */
-        .assign-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
-        .checkbox-label {
-            display: flex; align-items: center; gap: 8px; padding: 10px 12px;
-            border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition);
+        .modal-card {
+            background: #ffffff;
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 560px;
+            box-shadow: var(--shadow-modal);
+            overflow: hidden;
         }
-        .checkbox-label:hover { background: #f8fafc; border-color: var(--primary); }
 
-        /* Toast notification */
-        .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; }
-        .toast {
-            padding: 12px 18px; border-radius: var(--radius-sm); color: #fff; font-size: 13px; font-weight: 500;
-            box-shadow: var(--shadow-md); display: flex; align-items: center; gap: 8px; animation: slideIn 0.3s ease-out;
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .toast-success { background: #059669; }
-        .toast-error { background: #dc2626; }
-        .toast-info { background: #2563eb; }
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
-        /* Tooltip container */
-        .tooltip-wrap { position: relative; display: inline-block; }
-        .tooltip-wrap:hover::after {
-            content: attr(data-tooltip);
-            position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%);
-            background: #0f172a; color: #fff; font-size: 11px; padding: 6px 10px;
-            border-radius: 4px; white-space: nowrap; pointer-events: none; z-index: 10;
+        .modal-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-heading);
         }
-        
-        /* Tabs */
-        .tabs { display: flex; gap: 8px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
-        .tab-btn {
-            padding: 10px 18px; background: none; border: none; border-bottom: 2px solid transparent;
-            font-weight: 600; color: var(--text-muted); cursor: pointer; transition: var(--transition);
+
+        .modal-close-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: var(--text-light);
+            cursor: pointer;
+            line-height: 1;
+            padding: 4px;
         }
-        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+        .modal-close-btn:hover {
+            color: var(--text-heading);
+        }
+
+        .modal-body {
+            padding: 24px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .modal-section-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .current-roles-wrapper {
+            margin-bottom: 24px;
+        }
+
+        .current-role-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 14px;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+        }
+
+        .role-info-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .role-date-text {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .role-assign-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .role-checkbox-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .role-checkbox-card:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .role-card-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-heading);
+        }
+
+        .role-card-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+            line-height: 1.35;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-color);
+            background: #f8fafc;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* Toast */
+        .toast-shelf {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast-notification {
+            background: #0f172a;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 12px 18px;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-card);
+            display: flex;
+            align-items: center;
+            animation: toastIn 0.2s ease-out;
+        }
+
+        .toast-notification.error {
+            background: #be123c;
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- Top Bar -->
-    <header class="top-nav">
-        <div class="nav-brand">
-            <div class="nav-logo">TMS</div>
-            <div class="nav-title">
-                <h1>Quản trị Người dùng & Phân quyền Đa vai trò (KN-12)</h1>
-                <p>Epic KN-14: Tài khoản, Phân quyền & Hồ sơ năng lực</p>
+<div class="layout-container">
+    <!-- Top Header -->
+    <header class="app-header">
+        <div class="header-brand">
+            <span class="brand-badge">TMS</span>
+            <div class="header-title">
+                <h1>Phân quyền người dùng</h1>
+                <p>Quản lý danh sách tài khoản và phân quyền vai trò trên hệ thống</p>
             </div>
         </div>
-        <div class="current-admin-pill" id="admin-profile-pill">
-            <div class="avatar" id="admin-avatar">AD</div>
-            <div>
-                <div style="font-weight: 600; font-size: 13px;" id="admin-name">Quản trị viên (Admin)</div>
-                <div style="font-size: 11px; color: var(--text-muted);" id="admin-email">admin@tms.edu.vn</div>
+
+        <div class="header-account">
+            <div class="user-chip">
+                <div class="user-avatar" id="admin-avatar">AD</div>
+                <div class="user-details">
+                    <span class="user-name" id="admin-name">Quản trị viên</span>
+                    <span class="user-email" id="admin-email">admin@tms.edu.vn</span>
+                </div>
             </div>
-            <button class="btn btn-secondary btn-sm" onclick="switchAccount()" style="margin-left: 8px;">Đổi tài khoản</button>
-            <a href="Index.html" class="btn btn-secondary btn-sm">Về Dashboard</a>
+            <button class="btn btn-secondary btn-sm" onclick="switchAccount()">Đổi tài khoản</button>
+            <a href="Index.html" class="btn btn-secondary btn-sm">Về trang chủ</a>
         </div>
     </header>
 
-    <!-- Main Navigation Tabs -->
-    <div class="tabs">
-        <button class="tab-btn active" id="tab-users" onclick="switchTab('users')">👥 Danh sách Người dùng & Vai trò</button>
-        <button class="tab-btn" id="tab-audit" onclick="switchTab('audit')">📜 Nhật ký thao tác (Audit Log - KN-63)</button>
+    <!-- Navigation Tabs -->
+    <div class="navigation-tabs">
+        <button class="nav-tab-btn active" id="tab-users" onclick="switchTab('users')">Danh sách tài khoản</button>
+        <button class="nav-tab-btn" id="tab-audit" onclick="switchTab('audit')">Nhật ký phân quyền</button>
     </div>
 
-    <!-- TAB 1: DANH SÁCH NGƯỜI DÙNG & VAI TRÒ (KN-62) -->
-    <section id="view-users" class="card">
-        <div class="card-header">
-            <div>
-                <h2 class="card-title">Danh sách Người dùng trong Hệ thống</h2>
-                <p style="margin: 4px 0 0 0; color: var(--text-muted); font-size: 13px;">
-                    Mỗi người dùng có thể giữ nhiều vai trò đồng thời (Ví dụ: Giảng viên kiêm Quản lý đào tạo).
-                </p>
+    <!-- Tab 1: Danh sách tài khoản -->
+    <section id="view-users" class="content-panel">
+        <div class="panel-topbar">
+            <div class="panel-heading">
+                <h2>Tài khoản và vai trò</h2>
+                <p>Một tài khoản có thể đảm nhiệm nhiều vai trò đồng thời</p>
             </div>
-            <div class="toolbar">
-                <div class="search-box">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" id="search-input" class="search-input" placeholder="Tìm theo tên, email, ID..." oninput="handleFilterChange()">
-                </div>
-                <select id="role-filter" class="select-filter" onchange="handleFilterChange()">
-                    <option value="">-- Tất cả vai trò --</option>
+
+            <div class="filter-controls">
+                <input type="text" id="search-input" class="search-field" placeholder="Tìm theo tên, email, mã..." oninput="handleFilterChange()">
+                <select id="role-filter" class="select-field" onchange="handleFilterChange()">
+                    <option value="">Tất cả vai trò</option>
                 </select>
-                <button class="btn btn-secondary btn-sm" onclick="loadUsersList()">🔄 Tải lại</button>
+                <button class="btn btn-secondary btn-sm" onclick="loadUsersList()">Làm mới</button>
             </div>
         </div>
 
-        <!-- Table -->
-        <div class="table-responsive">
-            <table id="users-table">
+        <div class="table-wrapper">
+            <table class="data-table">
                 <thead>
                     <tr>
-                        <th style="width: 120px;">Mã User</th>
-                        <th>Họ và Tên</th>
-                        <th>Email / Tên đăng nhập</th>
-                        <th>Các vai trò hiện có (Roles)</th>
-                        <th style="width: 150px; text-align: center;">Thao tác</th>
+                        <th style="width: 140px;">Mã người dùng</th>
+                        <th>Họ và tên</th>
+                        <th>Email</th>
+                        <th>Vai trò hiện tại</th>
+                        <th style="width: 130px; text-align: right;">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody id="users-table-body">
-                    <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px;">Đang tải danh sách...</td></tr>
+                    <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 32px;">Đang tải danh sách...</td></tr>
                 </tbody>
             </table>
         </div>
 
-        <!-- Pagination -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; font-size: 13px; color: var(--text-muted);">
-            <div id="pagination-info">Hiển thị 0 - 0 của 0 người dùng</div>
-            <div style="display: flex; gap: 8px;">
-                <button class="btn btn-secondary btn-sm" id="btn-prev-page" onclick="changePage(-1)">← Trang trước</button>
-                <span id="page-indicator" style="padding: 6px 12px; font-weight: 600;">1 / 1</span>
-                <button class="btn btn-secondary btn-sm" id="btn-next-page" onclick="changePage(1)">Trang sau →</button>
+        <div class="pagination-container">
+            <div id="pagination-info">Đang cập nhật...</div>
+            <div class="pagination-nav">
+                <button class="btn btn-secondary btn-sm" id="btn-prev-page" onclick="changePage(-1)">Trước</button>
+                <span class="page-status" id="page-indicator">1 / 1</span>
+                <button class="btn btn-secondary btn-sm" id="btn-next-page" onclick="changePage(1)">Sau</button>
             </div>
         </div>
     </section>
 
-    <!-- TAB 2: NHẬT KÝ THAO TÁC PHÂN QUYỀN (KN-63) -->
-    <section id="view-audit" class="card" style="display: none;">
-        <div class="card-header">
-            <div>
-                <h2 class="card-title">Nhật ký Thao tác Gán & Thu hồi Vai trò (Audit Log)</h2>
-                <p style="margin: 4px 0 0 0; color: var(--text-muted); font-size: 13px;">
-                    Ghi vết toàn bộ hành động phân quyền, người thực hiện, thời gian, IP và các trường hợp bị chặn.
-                </p>
+    <!-- Tab 2: Nhật ký thao tác -->
+    <section id="view-audit" class="content-panel" style="display: none;">
+        <div class="panel-topbar">
+            <div class="panel-heading">
+                <h2>Nhật ký phân quyền</h2>
+                <p>Lịch sử các thao tác gán và thu hồi vai trò trên hệ thống</p>
             </div>
-            <button class="btn btn-secondary btn-sm" onclick="loadAuditLogs()">🔄 Làm mới nhật ký</button>
+            <button class="btn btn-secondary btn-sm" onclick="loadAuditLogs()">Làm mới</button>
         </div>
-        <div class="table-responsive">
-            <table>
+
+        <div class="table-wrapper">
+            <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Thời gian</th>
+                        <th style="width: 160px;">Thời gian</th>
                         <th>Người thực hiện</th>
-                        <th>Người bị tác động</th>
-                        <th>Hành động</th>
+                        <th>Tài khoản nhận</th>
+                        <th>Thao tác</th>
                         <th>Vai trò</th>
-                        <th>IP</th>
+                        <th>Địa chỉ IP</th>
                         <th>Trạng thái</th>
-                        <th>Ghi chú / Lý do</th>
+                        <th>Ghi chú</th>
                     </tr>
                 </thead>
                 <tbody id="audit-table-body">
-                    <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Đang tải nhật ký...</td></tr>
+                    <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 32px;">Đang tải nhật ký...</td></tr>
                 </tbody>
             </table>
         </div>
     </section>
 </div>
 
-<!-- MODAL QUẢN LÝ VAI TRÒ CHO MỘT USER (KN-61, KN-58, KN-59, KN-56) -->
+<!-- Modal Quản lý vai trò -->
 <div class="modal-overlay" id="role-modal">
-    <div class="modal">
+    <div class="modal-card">
         <div class="modal-header">
             <div>
-                <h3 id="modal-user-name">Quản lý vai trò</h3>
-                <span style="font-size: 12px; color: var(--text-muted);" id="modal-user-email">email@tms.edu.vn</span>
+                <h3 id="modal-user-title">Phân quyền tài khoản</h3>
+                <p id="modal-user-subtitle" style="font-size: 12px; color: var(--text-muted); margin-top: 2px;"></p>
             </div>
-            <button class="close-btn" onclick="closeRoleModal()">✕</button>
+            <button class="modal-close-btn" onclick="closeRoleModal()">✕</button>
         </div>
+
         <div class="modal-body">
-            <!-- Phần 1: Các vai trò hiện tại -->
-            <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; color: var(--text-main);">
-                1. Các vai trò đang giữ
-            </h4>
-            <div id="modal-current-roles-list">
-                <!-- Danh sách vai trò hiện có -->
+            <div class="current-roles-wrapper">
+                <div class="modal-section-title">Vai trò đang áp dụng</div>
+                <div id="modal-current-roles-list"></div>
             </div>
 
-            <hr style="border: none; border-top: 1px solid var(--border); margin: 20px 0;">
-
-            <!-- Phần 2: Gán thêm vai trò mới (KN-58) -->
-            <h4 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 700; color: var(--text-main);">
-                2. Gán thêm vai trò mới
-            </h4>
-            <p style="margin: 0 0 12px 0; font-size: 12px; color: var(--text-muted);">
-                Tích chọn một hoặc nhiều vai trò muốn cấp bổ sung cho người dùng:
-            </p>
-            <div class="assign-grid" id="modal-available-roles-grid">
-                <!-- Checkbox danh mục vai trò -->
+            <div>
+                <div class="modal-section-title">Gán thêm vai trò mới</div>
+                <div class="role-assign-grid" id="modal-available-roles-grid"></div>
             </div>
         </div>
+
         <div class="modal-footer">
             <button class="btn btn-secondary" onclick="closeRoleModal()">Đóng</button>
-            <button class="btn btn-primary" id="btn-save-assign" onclick="submitAssignRoles()">+ Gán vai trò đã chọn</button>
+            <button class="btn btn-primary" id="btn-save-assign" onclick="submitAssignRoles()">Lưu vai trò</button>
         </div>
     </div>
 </div>
 
-<!-- HỘP THOẠI XÁC NHẬN THU HỒI (CONFIRM DIALOG) -->
-<div class="modal-overlay" id="confirm-modal" style="z-index: 1100;">
-    <div class="modal" style="max-width: 440px;">
-        <div class="modal-header" style="background: #fef2f2; border-bottom-color: #fee2e2;">
-            <h3 style="color: #991b1b; font-size: 16px;">⚠️ Xác nhận thu hồi vai trò</h3>
-            <button class="close-btn" onclick="closeConfirmModal()">✕</button>
+<!-- Modal Xác nhận thu hồi -->
+<div class="modal-overlay" id="confirm-modal">
+    <div class="modal-card" style="max-width: 440px;">
+        <div class="modal-header">
+            <h3>Xác nhận thu hồi vai trò</h3>
+            <button class="modal-close-btn" onclick="closeConfirmModal()">✕</button>
         </div>
         <div class="modal-body">
-            <p id="confirm-modal-text" style="line-height: 1.5; margin: 0; font-size: 14px;"></p>
+            <p id="confirm-modal-text" style="font-size: 13.5px; color: var(--text-body);"></p>
         </div>
         <div class="modal-footer">
             <button class="btn btn-secondary" onclick="closeConfirmModal()">Hủy bỏ</button>
-            <button class="btn btn-primary" style="background: #dc2626;" id="btn-confirm-revoke" onclick="executeRevokeRole()">Đồng ý thu hồi</button>
+            <button class="btn btn-primary" style="background: #be123c;" onclick="executeRevokeRole()">Xác nhận thu hồi</button>
         </div>
     </div>
 </div>
 
-<!-- Toast Container -->
-<div class="toast-container" id="toast-container"></div>
+<!-- Toast shelf -->
+<div class="toast-shelf" id="toast-container"></div>
 
 <script>
-    // Cấu hình kết nối API linh hoạt (hỗ trợ cả Localhost và Vercel/Production)
     const API_BASE = (window.location.origin && window.location.origin.startsWith("http")) 
         ? `${window.location.origin}/api` 
         : "http://localhost:3000/api";
 
-    // Bảng từ điển 8 vai trò chuẩn hóa của hệ thống TMS (KN-12 & KN-8)
     const ROLE_DICTIONARY = {
         "administrator": { id: "administrator", code: "administrator", name: "Quản trị hệ thống", description: "Toàn quyền quản trị hệ thống, tài khoản và phân quyền" },
         "training_manager": { id: "training_manager", code: "training_manager", name: "Quản lý đào tạo", description: "Quản lý chương trình, môn học, lớp học và tiến độ đào tạo" },
@@ -361,7 +740,6 @@
         "visitor": { id: "visitor", code: "visitor", name: "Khách truy cập", description: "Xem thông tin khóa học công khai và biểu phí tham khảo" }
     };
 
-    // Chuẩn hóa đối tượng vai trò: luôn trả về đầy đủ { id, code, name, description }
     function normalizeRole(roleInput) {
         if (!roleInput) return { id: "unknown", code: "unknown", name: "Chưa xác định", description: "" };
         if (typeof roleInput === "string") {
@@ -381,7 +759,6 @@
         };
     }
 
-    // Chuẩn hóa thông tin quản trị viên hiện tại, loại trừ triệt để undefined
     function normalizeAdmin(user) {
         const u = user || {};
         const safeEmail = u.email || "admin@tms.edu.vn";
@@ -397,7 +774,6 @@
         };
     }
 
-    // Danh sách người dùng dự phòng khi ngoại tuyến
     const FALLBACK_USERS = [
         { id: "usr_admin", name: "Nguyễn Văn Anh", email: "admin@tms.edu.vn", role: "administrator", roles: ["administrator"] },
         { id: "usr_manager", name: "Đỗ Quốc Bảo", email: "manager@tms.edu.vn", role: "training_manager", roles: ["training_manager"] },
@@ -413,7 +789,13 @@
     let authToken = localStorage.getItem("tms_token") || "";
     let currentAdmin = normalizeAdmin(JSON.parse(localStorage.getItem("tms_user") || "null"));
 
-    // Tự động đảm bảo luôn có token xác thực quản trị viên
+    let allRoles = Object.values(ROLE_DICTIONARY);
+    let usersList = [];
+    let activeEditingUser = null;
+    let pendingRevokeTarget = null;
+    let currentPage = 1;
+    let totalPages = 1;
+
     async function ensureValidAdminSession() {
         let token = localStorage.getItem("tms_token") || localStorage.getItem("token") || "";
         if (token) {
@@ -437,31 +819,21 @@
                 return authToken;
             }
         } catch (e) {
-            console.warn("Lỗi tự động kết nối admin session:", e);
+            console.warn("Lỗi kết nối phiên quản trị:", e);
         }
         return authToken;
     }
 
-    // State ứng dụng
-    let allRoles = Object.values(ROLE_DICTIONARY);
-    let usersList = [];
-    let activeEditingUser = null;
-    let pendingRevokeTarget = null;
-    let currentPage = 1;
-    let totalPages = 1;
-
-    // Toast Helper
     function showToast(message, type = "success") {
         const container = document.getElementById("toast-container");
         if (!container) return;
         const toast = document.createElement("div");
-        toast.className = `toast toast-${type}`;
-        toast.innerHTML = `<span>${type === 'success' ? '✔' : type === 'error' ? '✖' : 'ℹ'}</span><span>${message}</span>`;
+        toast.className = `toast-notification ${type === 'error' ? 'error' : ''}`;
+        toast.textContent = message;
         container.appendChild(toast);
-        setTimeout(() => toast.remove(), 4000);
+        setTimeout(() => toast.remove(), 3500);
     }
 
-    // Tab switcher
     function switchTab(tab) {
         const tabUsers = document.getElementById("tab-users");
         const tabAudit = document.getElementById("tab-audit");
@@ -475,9 +847,8 @@
         if (tab === "audit") loadAuditLogs();
     }
 
-    // Đổi tài khoản kiểm thử
     async function switchAccount() {
-        const email = prompt("Nhập email tài khoản muốn đổi (Ví dụ: admin@tms.edu.vn, teacher@tms.edu.vn):", "admin@tms.edu.vn");
+        const email = prompt("Nhập email tài khoản muốn chuyển đổi:", "admin@tms.edu.vn");
         if (!email) return;
         try {
             const res = await fetch(`${API_BASE}/auth/login`, {
@@ -501,7 +872,6 @@
         }
     }
 
-    // Khởi tạo ứng dụng
     async function initApp() {
         currentAdmin = normalizeAdmin(currentAdmin);
         const nameEl = document.getElementById("admin-name");
@@ -521,7 +891,6 @@
         await loadUsersList();
     }
 
-    // 1. Tải danh mục vai trò
     async function loadRolesDirectory() {
         try {
             const token = await ensureValidAdminSession();
@@ -536,22 +905,20 @@
                 allRoles = rawRoles.map(normalizeRole);
             }
         } catch (e) {
-            console.warn("Lỗi nạp vai trò từ server, dùng bộ từ điển chuẩn TMS:", e);
+            console.warn("Nạp vai trò dự phòng:", e);
         }
 
         if (!allRoles || allRoles.length === 0) {
             allRoles = Object.values(ROLE_DICTIONARY);
         }
 
-        // Đổ vào dropdown bộ lọc
         const roleFilter = document.getElementById("role-filter");
         if (roleFilter) {
-            roleFilter.innerHTML = `<option value="">-- Tất cả vai trò --</option>` +
+            roleFilter.innerHTML = `<option value="">Tất cả vai trò</option>` +
                 allRoles.map(r => `<option value="${r.code}">${r.name}</option>`).join("");
         }
     }
 
-    // 2. KN-62: Tải danh sách người dùng kèm vai trò
     async function loadUsersList() {
         const searchInput = document.getElementById("search-input");
         const roleFilter = document.getElementById("role-filter");
@@ -560,7 +927,7 @@
         const search = searchInput ? searchInput.value.trim() : "";
         const roleId = roleFilter ? roleFilter.value : "";
         if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px;">⏳ Đang tải dữ liệu...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 32px;">Đang tải dữ liệu...</td></tr>`;
         }
 
         try {
@@ -587,7 +954,7 @@
             }
 
             if (!res.ok) {
-                throw new Error("Không thể tải danh sách người dùng từ máy chủ.");
+                throw new Error("Không thể tải danh sách người dùng.");
             }
 
             const data = await res.json();
@@ -597,7 +964,6 @@
             renderUsersTable(usersList);
             updatePaginationUI(data.pagination);
         } catch (err) {
-            console.warn("Kích hoạt fallback danh sách người dùng mẫu:", err);
             let filtered = FALLBACK_USERS;
             if (search) {
                 const s = search.toLowerCase();
@@ -613,7 +979,6 @@
         }
     }
 
-    // Render bảng người dùng (Chuẩn hóa vai trò, không bao giờ undefined)
     function renderUsersTable(users) {
         const tbody = document.getElementById("users-table-body");
         if (!tbody) return;
@@ -629,7 +994,7 @@
             const normalizedRoles = rawRoles.map(normalizeRole);
 
             const rolesHtml = normalizedRoles.map(r => 
-                `<span class="badge badge-${r.code}">● ${r.name}</span>`
+                `<span class="role-tag role-tag-${r.code}">${r.name}</span>`
             ).join(" ");
 
             const isCurrentLoggedIn = (user.id === currentAdmin.id || user.email === currentAdmin.email);
@@ -639,15 +1004,15 @@
 
             return `
                 <tr>
-                    <td><code>${safeId}</code></td>
+                    <td><span class="code-pill">${safeId}</span></td>
                     <td>
-                        <strong style="color: var(--text-main);">${safeName}</strong>
-                        ${isCurrentLoggedIn ? `<span style="font-size: 11px; background: #e0f2fe; color: #0284c7; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">Bạn (Current)</span>` : ''}
+                        <strong style="color: var(--text-heading); font-weight: 600;">${safeName}</strong>
+                        ${isCurrentLoggedIn ? `<span style="font-size: 11px; background: #f1f5f9; color: var(--text-muted); padding: 2px 6px; border-radius: 4px; margin-left: 6px;">Tài khoản hiện tại</span>` : ''}
                     </td>
                     <td><span style="color: var(--text-muted);">${safeEmail}</span></td>
-                    <td><div class="roles-cell">${rolesHtml || '<span style="color: #94a3b8; font-style: italic;">Chưa gán vai trò</span>'}</div></td>
-                    <td style="text-align: center;">
-                        <button class="btn btn-secondary btn-sm" onclick="openRoleModal('${safeId}')">⚙ Quản lý vai trò</button>
+                    <td><div class="role-pill-group">${rolesHtml || '<span style="color: var(--text-light);">Chưa gán vai trò</span>'}</div></td>
+                    <td style="text-align: right;">
+                        <button class="btn btn-secondary btn-sm" onclick="openRoleModal('${safeId}')">Phân quyền</button>
                     </td>
                 </tr>
             `;
@@ -665,7 +1030,7 @@
         const prevBtn = document.getElementById("btn-prev-page");
         const nextBtn = document.getElementById("btn-next-page");
 
-        if (infoEl) infoEl.textContent = `Hiển thị ${usersList.length} trên tổng số ${total} người dùng`;
+        if (infoEl) infoEl.textContent = `Hiển thị ${usersList.length} trên ${total} người dùng`;
         if (indEl) indEl.textContent = `${page} / ${maxPages}`;
         if (prevBtn) prevBtn.disabled = page <= 1;
         if (nextBtn) nextBtn.disabled = page >= maxPages;
@@ -684,7 +1049,6 @@
         loadUsersList();
     }
 
-    // 3. KN-61: Mở Modal Quản lý Vai trò cho User
     async function openRoleModal(userId) {
         try {
             const token = await ensureValidAdminSession();
@@ -706,24 +1070,23 @@
         const safeEmail = activeEditingUser.email || "-";
         const safeId = activeEditingUser.id || "-";
 
-        const modalUserName = document.getElementById("modal-user-name");
-        const modalUserEmail = document.getElementById("modal-user-email");
-        const roleModal = document.getElementById("role-modal");
+        const titleEl = document.getElementById("modal-user-title");
+        const subEl = document.getElementById("modal-user-subtitle");
+        const modal = document.getElementById("role-modal");
 
-        if (modalUserName) modalUserName.textContent = `Quản lý vai trò: ${safeName}`;
-        if (modalUserEmail) modalUserEmail.textContent = `Email: ${safeEmail} | ID: ${safeId}`;
+        if (titleEl) titleEl.textContent = `Phân quyền: ${safeName}`;
+        if (subEl) subEl.textContent = `Mã: ${safeId} • Email: ${safeEmail}`;
 
         renderModalRoles();
-        if (roleModal) roleModal.style.display = "flex";
+        if (modal) modal.style.display = "flex";
     }
 
     function closeRoleModal() {
-        const roleModal = document.getElementById("role-modal");
-        if (roleModal) roleModal.style.display = "none";
+        const modal = document.getElementById("role-modal");
+        if (modal) modal.style.display = "none";
         activeEditingUser = null;
     }
 
-    // Render danh sách vai trò trong Modal (Chuẩn hóa toàn bộ, không có undefined)
     function renderModalRoles() {
         if (!activeEditingUser) return;
 
@@ -734,70 +1097,56 @@
         const currentRoleCodes = currentRoles.map(r => r.code);
         const isSelf = (activeEditingUser.id === currentAdmin.id || activeEditingUser.email === currentAdmin.email);
 
-        // 1. Render vai trò đang giữ
         const currentRolesList = document.getElementById("modal-current-roles-list");
         if (currentRolesList) {
             if (currentRoles.length === 0) {
-                currentRolesList.innerHTML = `<p style="color: var(--text-muted); font-size: 13px;">Người dùng hiện chưa có vai trò nào.</p>`;
+                currentRolesList.innerHTML = `<p style="color: var(--text-muted); font-size: 13px;">Chưa có vai trò nào.</p>`;
             } else {
                 currentRolesList.innerHTML = currentRoles.map(r => {
                     const roleCode = r.code;
                     const isSelfAdmin = isSelf && (roleCode === "administrator");
                     const isOnlyRole = (currentRoles.length === 1);
 
-                    let revokeButtonHtml = "";
+                    let actionHtml = "";
                     if (isSelfAdmin) {
-                        revokeButtonHtml = `
-                            <div class="tooltip-wrap" data-tooltip="Không thể tự thu hồi vai trò Quản trị hệ thống của chính mình.">
-                                <button class="btn btn-danger-outline" disabled>🚫 Không thể thu hồi</button>
-                            </div>
-                        `;
+                        actionHtml = `<span style="font-size: 11px; color: var(--text-muted);">Quản trị viên chính</span>`;
                     } else if (isOnlyRole) {
-                        revokeButtonHtml = `
-                            <div class="tooltip-wrap" data-tooltip="Mỗi người dùng phải giữ ít nhất 1 vai trò.">
-                                <button class="btn btn-danger-outline" disabled>Thu hồi</button>
-                            </div>
-                        `;
+                        actionHtml = `<span style="font-size: 11px; color: var(--text-muted);">Vai trò tối thiểu</span>`;
                     } else {
-                        revokeButtonHtml = `
-                            <button class="btn btn-danger-outline" onclick="confirmRevokeRole('${activeEditingUser.id}', '${roleCode}', '${r.name}')">
-                                🗑 Thu hồi
-                            </button>
-                        `;
+                        actionHtml = `<button class="btn-destructive-subtle" onclick="confirmRevokeRole('${activeEditingUser.id}', '${roleCode}', '${r.name}')">Thu hồi</button>`;
                     }
 
-                    const assignedDate = r.assignedAt ? new Date(r.assignedAt).toLocaleString('vi-VN') : 'Mặc định';
+                    const assignedDate = r.assignedAt ? new Date(r.assignedAt).toLocaleDateString('vi-VN') : 'Mặc định';
 
                     return `
-                        <div class="role-row">
-                            <div>
-                                <span class="badge badge-${roleCode}">● ${r.name}</span>
-                                <span style="font-size: 11px; color: var(--text-muted); margin-left: 8px;">Gán lúc: ${assignedDate}</span>
+                        <div class="current-role-item">
+                            <div class="role-info-meta">
+                                <span class="role-tag role-tag-${roleCode}">${r.name}</span>
+                                <span class="role-date-text">Gán ngày ${assignedDate}</span>
                             </div>
-                            <div>${revokeButtonHtml}</div>
+                            <div>${actionHtml}</div>
                         </div>
                     `;
                 }).join("");
             }
         }
 
-        // 2. Render checkbox vai trò chưa có để gán thêm (KN-58)
         const availableGrid = document.getElementById("modal-available-roles-grid");
         const availableRoles = allRoles.filter(r => !currentRoleCodes.includes(r.code));
-        const btnSaveAssign = document.getElementById("btn-save-assign");
+        const btnSave = document.getElementById("btn-save-assign");
 
         if (availableGrid) {
             if (availableRoles.length === 0) {
-                availableGrid.innerHTML = `<p style="grid-column: span 2; color: var(--text-muted); font-size: 13px;">Người dùng đã sở hữu tất cả các vai trò trong hệ thống.</p>`;
-                if (btnSaveAssign) btnSaveAssign.disabled = true;
+                availableGrid.innerHTML = `<p style="grid-column: span 2; color: var(--text-muted); font-size: 13px;">Người dùng đã có tất cả vai trò.</p>`;
+                if (btnSave) btnSave.disabled = true;
             } else {
-                if (btnSaveAssign) btnSaveAssign.disabled = false;
+                if (btnSave) btnSave.disabled = false;
                 availableGrid.innerHTML = availableRoles.map(r => `
-                    <label class="checkbox-label">
-                        <input type="checkbox" name="assignRoleCheckbox" value="${r.code}">
+                    <label class="role-checkbox-card">
+                        <input type="checkbox" name="assignRoleCheckbox" value="${r.code}" style="margin-top: 2px;">
                         <div>
-                            <div style="font-weight: 600; font-size: 13px;">${r.name}</div>
-                            <div style="font-size: 11px; color: var(--text-muted);">${r.description || ''}</div>
+                            <div class="role-card-label">${r.name}</div>
+                            <div class="role-card-desc">${r.description || ''}</div>
                         </div>
                     </label>
                 `).join("");
@@ -805,14 +1154,13 @@
         }
     }
 
-    // 4. KN-58: Gán vai trò mới
     async function submitAssignRoles() {
         if (!activeEditingUser) return;
         const selectedCheckboxes = document.querySelectorAll("input[name='assignRoleCheckbox']:checked");
         const selectedRoleIds = Array.from(selectedCheckboxes).map(cb => cb.value);
 
         if (selectedRoleIds.length === 0) {
-            showToast("Vui lòng tích chọn ít nhất một vai trò cần gán!", "info");
+            showToast("Vui lòng chọn ít nhất một vai trò cần gán", "error");
             return;
         }
 
@@ -829,32 +1177,31 @@
 
             const data = await res.json();
             if (res.ok && data.success) {
-                showToast(data.message || "Gán vai trò thành công!");
+                showToast(data.message || "Cập nhật vai trò thành công");
                 activeEditingUser.roles = (data.roles || []).map(normalizeRole);
                 renderModalRoles();
                 updateUserInLocalTable(activeEditingUser.id, activeEditingUser.roles);
             } else {
-                showToast(data.message || "Không thể gán vai trò.", "error");
+                showToast(data.message || "Không thể gán vai trò", "error");
             }
         } catch {
-            showToast("Lỗi kết nối khi gán vai trò", "error");
+            showToast("Lỗi kết nối khi lưu vai trò", "error");
         }
     }
 
-    // 5. KN-59: Modal xác nhận thu hồi vai trò
     function confirmRevokeRole(userId, roleId, roleName) {
         pendingRevokeTarget = { userId, roleId, roleName };
-        const msgEl = document.getElementById("confirm-modal-text");
-        if (msgEl) {
-            msgEl.innerHTML = `Bạn có chắc chắn muốn thu hồi vai trò <strong>${roleName}</strong> của người dùng này không?`;
+        const textEl = document.getElementById("confirm-modal-text");
+        if (textEl) {
+            textEl.innerHTML = `Bạn có chắc chắn muốn thu hồi vai trò <strong>${roleName}</strong> khỏi tài khoản này không?`;
         }
-        const confirmModal = document.getElementById("confirm-modal");
-        if (confirmModal) confirmModal.style.display = "flex";
+        const modal = document.getElementById("confirm-modal");
+        if (modal) modal.style.display = "flex";
     }
 
     function closeConfirmModal() {
-        const confirmModal = document.getElementById("confirm-modal");
-        if (confirmModal) confirmModal.style.display = "none";
+        const modal = document.getElementById("confirm-modal");
+        if (modal) modal.style.display = "none";
         pendingRevokeTarget = null;
     }
 
@@ -872,19 +1219,18 @@
 
             const data = await res.json();
             if (res.ok && data.success) {
-                showToast(data.message || `Đã thu hồi vai trò ${roleName} thành công!`);
+                showToast(data.message || `Đã thu hồi vai trò ${roleName}`);
                 activeEditingUser.roles = (data.roles || []).map(normalizeRole);
                 renderModalRoles();
                 updateUserInLocalTable(userId, activeEditingUser.roles);
             } else {
-                showToast(data.message || "Không thể thu hồi vai trò.", "error");
+                showToast(data.message || "Không thể thu hồi vai trò", "error");
             }
         } catch {
             showToast("Lỗi kết nối khi thu hồi vai trò", "error");
         }
     }
 
-    // Cập nhật DOM hàng người dùng tức thì không cần tải lại trang (KN-61)
     function updateUserInLocalTable(userId, newRoles) {
         const user = usersList.find(u => u.id === userId);
         if (user) {
@@ -893,11 +1239,10 @@
         }
     }
 
-    // 6. KN-63: Tải nhật ký Audit Log
     async function loadAuditLogs() {
         const tbody = document.getElementById("audit-table-body");
         if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">⏳ Đang tải nhật ký...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 32px;">Đang tải nhật ký...</td></tr>`;
         }
 
         try {
@@ -910,45 +1255,44 @@
 
             if (tbody) {
                 if (logs.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Chưa có bản ghi nhật ký nào.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 32px;">Chưa có bản ghi nhật ký nào.</td></tr>`;
                     return;
                 }
 
                 tbody.innerHTML = logs.map(l => {
                     const isSuccess = l.status === "SUCCESS";
-                    const badgeStatus = isSuccess 
-                        ? `<span style="background: #ecfdf5; color: #047857; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 11px;">Thành công</span>`
-                        : `<span style="background: #fef2f2; color: #b91c1c; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-size: 11px;">Bị chặn (${l.status || 'ERROR'})</span>`;
+                    const statusTag = isSuccess
+                        ? `<span style="color: #047857; font-weight: 500;">Thành công</span>`
+                        : `<span style="color: #be123c; font-weight: 500;">Từ chối (${l.status || 'ERROR'})</span>`;
 
-                    const actionText = l.action === "ASSIGN_ROLE" 
-                        ? `<span style="color: #059669; font-weight: 600;">➕ GÁN VAI TRÒ</span>`
-                        : `<span style="color: #dc2626; font-weight: 600;">➖ THU HỒI</span>`;
+                    const actionTag = l.action === "ASSIGN_ROLE"
+                        ? `<span style="color: #047857; font-weight: 500;">Gán vai trò</span>`
+                        : `<span style="color: #be123c; font-weight: 500;">Thu hồi</span>`;
 
                     const roleInfo = normalizeRole(l.roleId);
                     const timeStr = l.timestamp ? new Date(l.timestamp).toLocaleString('vi-VN') : "-";
 
                     return `
                         <tr>
-                            <td style="white-space: nowrap; font-size: 12px; color: var(--text-muted);">${timeStr}</td>
-                            <td><code>${l.adminId || '-'}</code></td>
-                            <td><code>${l.targetUserId || '-'}</code></td>
-                            <td>${actionText}</td>
-                            <td><span class="badge badge-${roleInfo.code}">● ${roleInfo.name}</span></td>
-                            <td><small style="color: var(--text-muted);">${l.ip || '127.0.0.1'}</small></td>
-                            <td>${badgeStatus}</td>
-                            <td style="font-size: 12px; color: ${isSuccess ? 'var(--text-main)' : '#dc2626'};">${l.reason || '-'}</td>
+                            <td style="white-space: nowrap; color: var(--text-muted); font-size: 12px;">${timeStr}</td>
+                            <td><span class="code-pill">${l.adminId || '-'}</span></td>
+                            <td><span class="code-pill">${l.targetUserId || '-'}</span></td>
+                            <td>${actionTag}</td>
+                            <td><span class="role-tag role-tag-${roleInfo.code}">${roleInfo.name}</span></td>
+                            <td><span style="color: var(--text-muted); font-size: 12px;">${l.ip || '127.0.0.1'}</span></td>
+                            <td>${statusTag}</td>
+                            <td style="font-size: 12px; color: ${isSuccess ? 'var(--text-body)' : '#be123c'};">${l.reason || '-'}</td>
                         </tr>
                     `;
                 }).join("");
             }
         } catch {
             if (tbody) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #dc2626; padding: 30px;">Không thể tải nhật ký thao tác.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #be123c; padding: 32px;">Không thể tải nhật ký thao tác.</td></tr>`;
             }
         }
     }
 
-    // Tự động khởi chạy khi tải trang
     window.addEventListener("DOMContentLoaded", async () => {
         await ensureValidAdminSession();
         await initApp();
