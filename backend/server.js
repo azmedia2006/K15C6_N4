@@ -37,6 +37,19 @@ const {
     unlockUser
 } = require("./userService");
 
+const {
+    leads,
+    createLead,
+    getLeads,
+    getLeadById,
+    updateLeadStatus,
+    deleteLead,
+    getLeadStats,
+    generateAntiSpamChallenge,
+    verifyAntiSpamChallenge,
+    checkSpam
+} = require("./leadService");
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -669,6 +682,138 @@ app.get(
 );
 
 // -------------------------------------------------------------
+// PHÂN HỆ TUYỂN SINH - TIẾP NHẬN LEAD TƯ VẤN (PUBLIC FORM & ADMISSIONS)
+// 1. Biểu mẫu không yêu cầu đăng nhập, có chống spam đa lớp
+// 2. Gửi thành công tạo một lead ở trạng thái Mới
+// 3. Hiển thị lời cảm ơn và cam kết thời gian liên hệ lại
+// -------------------------------------------------------------
+
+// API Sinh câu hỏi / token chống spam (Public - Không yêu cầu đăng nhập)
+app.get(["/api/leads/challenge", "/api/leads/anti-spam-challenge"], (req, res) => {
+    const challenge = generateAntiSpamChallenge();
+    return res.status(200).json({
+        success: true,
+        data: challenge
+    });
+});
+
+// API Tiếp nhận Đăng ký Tư vấn Khóa học (Public - Không yêu cầu đăng nhập, có chống spam)
+app.post(["/api/leads", "/api/admissions/leads", "/api/public/leads"], (req, res) => {
+    const clientIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "127.0.0.1";
+    const leadData = req.body || {};
+
+    const result = createLead(leadData, { ip: clientIp });
+
+    if (!result.success) {
+        const statusCode = (result.code && result.code.includes("RATE_LIMIT")) ? 429
+            : (result.code && result.code.includes("SPAM") ? 400 : 400);
+
+        return res.status(statusCode).json({
+            success: false,
+            code: result.code,
+            message: result.message
+        });
+    }
+
+    // Tự động đồng bộ nhanh vào Supabase storage nếu có cấu hình
+    supabaseService.syncLeadsDatabase(leads).catch(() => {});
+
+    return res.status(201).json({
+        success: true,
+        message: result.message,
+        thankYouMessage: result.thankYouMessage,
+        contactCommitment: result.contactCommitment,
+        commitment: result.commitment,
+        data: result.lead,
+        lead: result.lead
+    });
+});
+
+// API Thống kê số lượng Lead (Quyền: Tư vấn tuyển sinh, Quản lý đào tạo hoặc Quản trị viên)
+app.get("/api/leads/stats",
+    authenticateToken,
+    requireRole("admissions", "training_manager", "administrator"),
+    (req, res) => {
+        const stats = getLeadStats();
+        return res.status(200).json({
+            success: true,
+            data: stats
+        });
+    }
+);
+
+// API Lấy danh sách Lead có phân trang và lọc (Quyền: Tư vấn tuyển sinh, Quản lý đào tạo hoặc Quản trị viên)
+app.get("/api/leads",
+    authenticateToken,
+    requireRole("admissions", "training_manager", "administrator"),
+    (req, res) => {
+        const { page, limit, status, course, search } = req.query;
+        const result = getLeads({ page, limit, status, course, search });
+        return res.status(200).json(result);
+    }
+);
+
+// API Lấy chi tiết Lead theo ID (Quyền: Tư vấn tuyển sinh, Quản lý đào tạo hoặc Quản trị viên)
+app.get("/api/leads/:id",
+    authenticateToken,
+    requireRole("admissions", "training_manager", "administrator"),
+    (req, res) => {
+        const lead = getLeadById(req.params.id);
+        if (!lead) {
+            return res.status(404).json({
+                success: false,
+                message: "Không tìm thấy thông tin hồ sơ Lead."
+            });
+        }
+        return res.status(200).json({
+            success: true,
+            data: lead
+        });
+    }
+);
+
+// API Cập nhật trạng thái Lead (vd: chuyển từ "Mới" sang "Đang tư vấn", "Đã ghi danh", "Hủy")
+app.put("/api/leads/:id/status",
+    authenticateToken,
+    requireRole("admissions", "administrator"),
+    (req, res) => {
+        const { status, counselorNotes, assignedTo } = req.body || {};
+        if (!status) {
+            return res.status(400).json({
+                success: false,
+                message: "Vui lòng cung cấp trạng thái cần cập nhật cho Lead."
+            });
+        }
+
+        const result = updateLeadStatus(req.params.id, status, {
+            counselorNotes,
+            assignedTo: assignedTo || (req.user ? req.user.id : null)
+        });
+
+        if (!result.success) {
+            return res.status(400).json(result);
+        }
+
+        supabaseService.syncLeadsDatabase(leads).catch(() => {});
+        return res.status(200).json(result);
+    }
+);
+
+// API Xóa Lead (Chỉ Quản trị viên)
+app.delete("/api/leads/:id",
+    authenticateToken,
+    requireRole("administrator"),
+    (req, res) => {
+        const result = deleteLead(req.params.id);
+        if (!result.success) {
+            return res.status(404).json(result);
+        }
+        supabaseService.syncLeadsDatabase(leads).catch(() => {});
+        return res.status(200).json(result);
+    }
+);
+
+// -------------------------------------------------------------
 // SUPABASE DATABASE & AUTH STATUS / SYNC ENDPOINTS
 // -------------------------------------------------------------
 
@@ -687,6 +832,7 @@ app.post("/api/supabase/sync", async (req, res) => {
         await supabaseService.syncUsersDatabase(users);
         await supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs());
         await supabaseService.syncBusinessDatabase(mockScores, mockTuition);
+        await supabaseService.syncLeadsDatabase(leads);
         return res.status(200).json({
             success: true,
             message: "Đã đồng bộ toàn bộ cơ sở dữ liệu TMS lên Supabase thành công.",

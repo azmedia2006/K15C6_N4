@@ -72,7 +72,23 @@ CREATE TABLE IF NOT EXISTS public.tuition (
     updated_by VARCHAR(64)
 );
 
--- 7. Insert Standard 8 Roles
+-- 7. Table: leads (Tiếp nhận lead tư vấn từ Landing Page)
+CREATE TABLE IF NOT EXISTS public.leads (
+    id VARCHAR(64) PRIMARY KEY,
+    code VARCHAR(32),
+    full_name VARCHAR(255) NOT NULL,
+    phone VARCHAR(32) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    course VARCHAR(255),
+    notes TEXT,
+    status VARCHAR(32) NOT NULL DEFAULT 'Mới',
+    source VARCHAR(255) DEFAULT 'Website (Biểu mẫu công khai)',
+    ip VARCHAR(64),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 8. Insert Standard 8 Roles
 INSERT INTO public.roles (id, code, name, description) VALUES
 ('administrator', 'administrator', 'Quản trị hệ thống', 'Toàn quyền quản trị hệ thống, tài khoản và phân quyền'),
 ('training_manager', 'training_manager', 'Quản lý đào tạo', 'Quản lý chương trình, môn học, lớp học và tiến độ đào tạo'),
@@ -84,18 +100,21 @@ INSERT INTO public.roles (id, code, name, description) VALUES
 ('visitor', 'visitor', 'Khách truy cập', 'Xem thông tin khóa học công khai và biểu phí tham khảo')
 ON CONFLICT (id) DO NOTHING;
 
--- 8. Enable Row Level Security (RLS)
+-- 9. Enable Row Level Security (RLS)
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.roles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.scores ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tuition ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.leads ENABLE ROW LEVEL SECURITY;
 
--- 9. Read policies for public and authenticated
+-- 10. Read/Write policies for public and authenticated
 CREATE POLICY "Public read for roles" ON public.roles FOR SELECT USING (true);
+CREATE POLICY "Public insert leads" ON public.leads FOR INSERT WITH CHECK (true);
 CREATE POLICY "Service role full access users" ON public.users FOR ALL USING (true);
 CREATE POLICY "Service role full access user_roles" ON public.user_roles FOR ALL USING (true);
 CREATE POLICY "Service role full access audit_logs" ON public.audit_logs FOR ALL USING (true);
 CREATE POLICY "Service role full access scores" ON public.scores FOR ALL USING (true);
 CREATE POLICY "Service role full access tuition" ON public.tuition FOR ALL USING (true);
+CREATE POLICY "Service role full access leads" ON public.leads FOR ALL USING (true);

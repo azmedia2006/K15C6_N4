@@ -433,6 +433,25 @@ async function checkSupabaseHealth() {
     return health;
 }
 
+async function syncLeadsDatabase(leadsList) {
+    if (!Array.isArray(leadsList)) return;
+    try {
+        await saveToStorage("leads.json", leadsList);
+        for (const lead of leadsList.slice(0, 5)) {
+            await tryPostgrestUpsert("leads", {
+                id: lead.id,
+                full_name: lead.fullName,
+                phone: lead.phone,
+                email: lead.email,
+                course: lead.course,
+                notes: lead.notes,
+                status: lead.status,
+                created_at: lead.createdAt
+            });
+        }
+    } catch {}
+}
+
 module.exports = {
     SUPABASE_URL,
     SUPABASE_PUBLISHABLE_KEY,
@@ -449,5 +468,6 @@ module.exports = {
     syncUsersDatabase,
     syncRolesDatabase,
     syncBusinessDatabase,
+    syncLeadsDatabase,
     checkSupabaseHealth
 };
