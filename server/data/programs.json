@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "code": "FE-01",
+    "name": "Lập trình Frontend",
+    "description": "React, TypeScript, HTML, CSS và xây dựng giao diện web hiện đại.",
+    "duration": 120,
+    "fee": 8500000,
+    "status": "ACTIVE",
+    "activeClasses": 2
+  },
+  {
+    "id": 2,
+    "code": "BE-01",
+    "name": "Lập trình Backend",
+    "description": "REST API, Node.js, PostgreSQL, bảo mật và triển khai hệ thống.",
+    "duration": 140,
+    "fee": 9500000,
+    "status": "ACTIVE",
+    "activeClasses": 1
+  },
+  {
+    "id": 3,
+    "code": "FS-01",
+    "name": "Fullstack Web Developer",
+    "description": "Lộ trình toàn diện từ Frontend đến Backend và triển khai ứng dụng.",
+    "duration": 220,
+    "fee": 15000000,
+    "status": "ACTIVE",
+    "activeClasses": 0
+  },
+  {
+    "id": 4,
+    "code": "UIUX-01",
+    "name": "UI/UX Design",
+    "description": "Nghiên cứu người dùng, wireframe, prototype và thiết kế giao diện.",
+    "duration": 90,
+    "fee": 6500000,
+    "status": "INACTIVE",
+    "activeClasses": 0
+  }
+]
