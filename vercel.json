@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "redirects": [
+    { "source": "/frontend/Login.html", "destination": "/", "permanent": true },
+    { "source": "/frontend/Index.html", "destination": "/Dashboard.html", "permanent": true },
+    { "source": "/frontend/:path*", "destination": "/:path*", "permanent": true }
+  ],
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index.js" },
+    { "source": "/login", "destination": "/index.html" },
+    { "source": "/Login.html", "destination": "/index.html" },
+    { "source": "/Index.html", "destination": "/Dashboard.html" },
+    { "source": "/dashboard", "destination": "/Dashboard.html" },
+    { "source": "/users", "destination": "/UserManagement.html" },
+    { "source": "/roles", "destination": "/RoleManagement.html" },
+    { "source": "/403", "destination": "/Error.html?code=403" },
+    { "source": "/404", "destination": "/Error.html?code=404" },
+    { "source": "/500", "destination": "/Error.html?code=500" },
+    { "source": "/error", "destination": "/Error.html" }
+  ]
+}

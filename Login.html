@@ -766,29 +766,22 @@
         const recoveryForm = document.querySelector("#recovery-form");
         const recoverySubmit = document.querySelector("#recovery-submit");
         const recoveryMessage = document.querySelector("#recovery-message");
-       const roleHome = {
-    visitor: "/frontend/Index.html?role=visitor",
-
-    student: "/frontend/Index.html?role=student",
-    learner: "/frontend/Index.html?role=student",
-
-    instructor: "/frontend/Index.html?role=instructor",
-
-    assistant: "/frontend/Index.html?role=teaching_assistant",
-    teaching_assistant: "/frontend/Index.html?role=teaching_assistant",
-
-    admissions: "/frontend/Index.html?role=admissions",
-    admissions_counselor: "/frontend/Index.html?role=admissions",
-
-    accountant: "/frontend/Index.html?role=accountant",
-
-    training_manager: "/frontend/Index.html?role=training_manager",
-    training_management: "/frontend/Index.html?role=training_manager",
-
-    administrator: "/frontend/Index.html?role=administrator",
-    system_administrator: "/frontend/Index.html?role=administrator",
-    admin: "/frontend/Index.html?role=administrator"
-};
+        const roleHome = {
+            visitor: "./Index.html?role=visitor",
+            student: "./Index.html?role=student",
+            learner: "./Index.html?role=student",
+            instructor: "./Index.html?role=instructor",
+            assistant: "./Index.html?role=teaching_assistant",
+            teaching_assistant: "./Index.html?role=teaching_assistant",
+            admissions: "./Index.html?role=admissions",
+            admissions_counselor: "./Index.html?role=admissions",
+            accountant: "./Index.html?role=accountant",
+            training_manager: "./Index.html?role=training_manager",
+            training_management: "./Index.html?role=training_manager",
+            administrator: "./Index.html?role=administrator",
+            system_administrator: "./Index.html?role=administrator",
+            admin: "./Index.html?role=administrator"
+        };
 
         function setBusy(button, busy, busyLabel, idleLabel) {
             button.disabled = busy;
@@ -1098,22 +1091,7 @@
         loginMessage.addEventListener("dblclick", () => unlockAccount());
 
         // Khởi động kiểm tra khóa
-        const authRedirectReason =
-    sessionStorage.getItem("tms_auth_redirect_reason");
-
-if (authRedirectReason === "ACCOUNT_LOCKED") {
-    sessionStorage.removeItem("tms_auth_redirect_reason");
-
-    localStorage.removeItem("tms_login_lockout_until");
-    localStorage.setItem("tms_login_fail_count", "0");
-
-    showMessage(
-        loginMessage,
-        "Tài khoản đã bị khóa bởi Quản trị viên. Vui lòng liên hệ quản trị viên."
-    );
-} else {
-    checkAndApplyLockout();
-}
+        checkAndApplyLockout();
 
         function handleFailedAttempt() {
             let failCount = Number(localStorage.getItem("tms_login_fail_count") || 0) + 1;
@@ -1179,45 +1157,13 @@ if (authRedirectReason === "ACCOUNT_LOCKED") {
                 });
                 const result = await parseResponse(response);
 
-              if (response.status === 423 && result.code === "ACCOUNT_LOCKED") {
-    // KN-13: tài khoản bị Quản trị viên khóa
-    localStorage.removeItem("tms_login_lockout_until");
-    localStorage.setItem("tms_login_fail_count", "0");
+                if (response.status === 423 || response.status === 429) {
+                    const seconds = Math.max(1, Number(result.retryAfterSeconds) || 900);
+                    localStorage.setItem("tms_login_lockout_until", String(Date.now() + seconds * 1000));
+                    checkAndApplyLockout();
+                    return;
+                }
 
-    showMessage(
-        loginMessage,
-        result.message || "Tài khoản đã bị khóa bởi Quản trị viên. Vui lòng liên hệ quản trị viên."
-    );
-
-    return;
-    }
-
-    if (response.status === 423 && result.code === "ACCOUNT_LOCKED") {
-    localStorage.removeItem("tms_login_lockout_until");
-    localStorage.setItem("tms_login_fail_count", "0");
-
-    showMessage(
-        loginMessage,
-        result.message || "Tài khoản đã bị khóa bởi Quản trị viên. Vui lòng liên hệ quản trị viên."
-    );
-
-    return;
-}
-
-if (response.status === 423 || response.status === 429) {
-    const seconds = Math.max(
-        1,
-        Number(result.retryAfterSeconds) || 900
-    );
-
-    localStorage.setItem(
-        "tms_login_lockout_until",
-        String(Date.now() + seconds * 1000)
-    );
-
-    checkAndApplyLockout();
-    return;
-}
                 if (!response.ok) {
                     handleFailedAttempt();
                     return;

@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông Báo Hệ Thống - Hệ Thống Đào Tạo TMS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        try {
+            const savedTheme = localStorage.getItem("tms_theme");
+            if (savedTheme) {
+                document.documentElement.setAttribute("data-theme", savedTheme);
+            }
+        } catch (e) {}
+    </script>
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --primary-soft: #ecfdf5;
+            --primary-border: #a7f3d0;
+            --bg-body: #f8fafc;
+            --bg-surface: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --radius-md: 10px;
+            --radius-lg: 16px;
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #0b1120;
+            --bg-surface: #1e293b;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --primary-soft: rgba(16, 185, 129, 0.15);
+            --primary-border: #059669;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Top Header */
+        .top-navbar {
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            padding: 14px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            backdrop-filter: blur(8px);
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .brand-badge {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, #10b981, #047857);
+            color: white;
+            font-weight: 800;
+            font-size: 1.125rem;
+            display: grid;
+            place-items: center;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+        }
+
+        .brand-name {
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: var(--text-main);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: 1px solid var(--border);
+            width: 38px;
+            height: 38px;
+            border-radius: var(--radius-md);
+            display: grid;
+            place-items: center;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .icon-btn:hover {
+            color: var(--text-main);
+            border-color: var(--primary);
+            background-color: var(--primary-soft);
+        }
+
+        /* Main Container */
+        .error-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .error-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            max-width: 620px;
+            width: 100%;
+            padding: 48px 36px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInCard 0.4s ease-out;
+        }
+
+        @keyframes fadeInCard {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .error-top-decorator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #f59e0b, #ef4444, #10b981);
+        }
+
+        /* Illustration & Status Badge */
+        .icon-circle-wrapper {
+            width: 96px;
+            height: 96px;
+            margin: 0 auto 24px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            position: relative;
+            box-shadow: var(--shadow-md);
+        }
+
+        .icon-circle-wrapper.forbidden {
+            background: linear-gradient(135deg, #fef2f2, #fee2e2);
+            color: #dc2626;
+            border: 2px solid #fecaca;
+        }
+
+        .icon-circle-wrapper.not-found {
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            color: #2563eb;
+            border: 2px solid #bfdbfe;
+        }
+
+        .icon-circle-wrapper.server-error {
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+            color: #d97706;
+            border: 2px solid #fde68a;
+        }
+
+        .badge-status-code {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 14px;
+            border-radius: 99px;
+            font-size: 0.8125rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .badge-status-code.forbidden {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .badge-status-code.not-found {
+            background-color: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .badge-status-code.server-error {
+            background-color: #fef3c7;
+            color: #b45309;
+        }
+
+        .jira-tag {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: #ede9fe;
+            color: #7c3aed;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 6px;
+        }
+
+        .error-title {
+            font-size: 1.625rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+            color: var(--text-main);
+        }
+
+        .error-desc {
+            font-size: 0.9375rem;
+            color: var(--text-muted);
+            margin-bottom: 28px;
+            line-height: 1.6;
+        }
+
+        /* Context Box (Thông tin chi tiết) */
+        .context-box {
+            background: var(--bg-body);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-bottom: 32px;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+
+        .context-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 0;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .context-row:last-child {
+            border-bottom: none;
+        }
+
+        .context-label {
+            color: var(--text-muted);
+            font-size: 0.8125rem;
+        }
+
+        .context-value {
+            font-weight: 600;
+            color: var(--text-main);
+            font-family: monospace;
+            word-break: break-all;
+        }
+
+        /* Action Buttons */
+        .action-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        @media (min-width: 480px) {
+            .action-group {
+                flex-direction: row;
+                justify-content: center;
+            }
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 22px;
+            border-radius: var(--radius-md);
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-surface);
+            color: var(--text-main);
+            border-color: var(--border);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--primary-soft);
+            border-color: var(--primary-border);
+            color: var(--primary);
+        }
+
+        .btn-ghost {
+            background: none;
+            color: var(--text-muted);
+        }
+
+        .btn-ghost:hover {
+            color: var(--text-main);
+            text-decoration: underline;
+        }
+
+        /* Footer */
+        .page-footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+            background: var(--bg-surface);
+        }
+
+        .support-hint {
+            margin-top: 24px;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .support-hint a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .support-hint a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Top Navigation Bar (Dùng chung nhận diện TMS) -->
+    <header class="top-navbar">
+        <a href="/" class="brand-container">
+            <div class="brand-badge">T</div>
+            <span class="brand-name">HỆ THỐNG ĐÀO TẠO TMS</span>
+        </a>
+
+        <div class="nav-actions">
+            <button class="icon-btn" id="theme-toggle" title="Chuyển chế độ Sáng / Tối" aria-label="Toggle theme">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+            </button>
+            <a href="/Login.html" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.8125rem;">
+                Đăng nhập
+            </a>
+        </div>
+    </header>
+
+    <!-- Error Content Card -->
+    <main class="error-wrapper">
+        <div class="error-card" id="error-card">
+            <div class="error-top-decorator"></div>
+
+            <!-- Dynamic Illustration Icon -->
+            <div class="icon-circle-wrapper forbidden" id="error-icon-wrapper">
+                <!-- SVG Icon will be set dynamically -->
+                <svg id="error-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+            </div>
+
+            <!-- Status Code Badge -->
+            <div>
+                <span class="badge-status-code forbidden" id="status-badge">
+                    <span id="badge-code">HTTP 403</span> • <span id="badge-label">Truy Cập Bị Từ Chối</span>
+                </span>
+                <span class="jira-tag">KN-10 • Trải nghiệm người dùng</span>
+            </div>
+
+            <h1 class="error-title" id="error-title">Khu Vực Hạn Chế Quyền Truy Cập</h1>
+            <p class="error-desc" id="error-desc">
+                Rất tiếc, tài khoản hiện tại của bạn không có đủ thẩm quyền để truy cập vào phân hệ này. Vui lòng kiểm tra lại vai trò được cấp hoặc đăng nhập bằng tài khoản có thẩm quyền tương ứng.
+            </p>
+
+            <!-- Technical Context (Thông tin chuẩn hóa, không lộ dữ liệu nhạy cảm - KN-53) -->
+            <div class="context-box" id="context-box">
+                <div class="context-row">
+                    <span class="context-label">Tài nguyên yêu cầu:</span>
+                    <span class="context-value" id="ctx-path">/UserManagement.html</span>
+                </div>
+                <div class="context-row">
+                    <span class="context-label">Tài khoản hiện tại:</span>
+                    <span class="context-value" id="ctx-user">Khách vãng lai</span>
+                </div>
+                <div class="context-row">
+                    <span class="context-label">Vai trò yêu cầu:</span>
+                    <span class="context-value" id="ctx-required">Quản trị viên (Administrator)</span>
+                </div>
+                <div class="context-row">
+                    <span class="context-label">Thời điểm ghi nhận:</span>
+                    <span class="context-value" id="ctx-time">--</span>
+                </div>
+            </div>
+
+            <!-- Context-Aware Action Buttons (KN-51: Gợi ý hành động tiếp theo) -->
+            <div class="action-group">
+                <a href="/Dashboard.html" class="btn btn-primary" id="btn-primary-action">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    <span id="btn-primary-text">Về Trang Chủ Của Bạn</span>
+                </a>
+
+                <a href="/Login.html" class="btn btn-secondary" id="btn-secondary-action">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                        <polyline points="10 17 15 12 10 7"/>
+                        <line x1="15" y1="12" x2="3" y2="12"/>
+                    </svg>
+                    <span>Đổi Tài Khoản Khác</span>
+                </a>
+
+                <button class="btn btn-ghost" onclick="window.history.back()">
+                    <span>← Quay lại trang trước</span>
+                </button>
+            </div>
+
+            <div class="support-hint">
+                Nếu bạn cho rằng đây là sự nhầm lẫn, vui lòng liên hệ Ban Đào tạo: 
+                <a href="mailto:admin@tms.edu.vn">admin@tms.edu.vn</a> hoặc Hotline <strong>0912.345.678</strong>.
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="page-footer">
+        © 2026 Hệ Thống Quản Lý Đào Tạo TMS (Training Management System). Bản quyền thuộc về Nhóm dự án K15C6_N4.
+    </footer>
+
+    <script>
+        // Cấu hình nhãn vai trò thân thiện
+        const roleLabels = {
+            "administrator": "Quản trị viên hệ thống (Admin)",
+            "admin": "Quản trị viên hệ thống (Admin)",
+            "training_manager": "Quản lý đào tạo",
+            "instructor": "Giảng viên",
+            "teaching_assistant": "Trợ giảng",
+            "student": "Học viên",
+            "admissions": "Cán bộ tuyển sinh",
+            "accountant": "Kế toán đào tạo",
+            "visitor": "Khách tham quan"
+        };
+
+        const roleHomeMap = {
+            "administrator": "/Dashboard.html?role=administrator",
+            "admin": "/Dashboard.html?role=administrator",
+            "training_manager": "/Dashboard.html?role=training_manager",
+            "instructor": "/Dashboard.html?role=instructor#attendance",
+            "teaching_assistant": "/Dashboard.html?role=teaching_assistant#attendance",
+            "student": "/Dashboard.html?role=student#scores",
+            "admissions": "/Dashboard.html?role=admissions",
+            "accountant": "/Dashboard.html?role=accountant#tuition",
+            "visitor": "/"
+        };
+
+        // Đọc các tham số từ Query String & LocalStorage
+        function initErrorView() {
+            const params = new URLSearchParams(window.location.search);
+            const code = (params.get("code") || params.get("status") || "403").trim();
+            const fromPath = params.get("from") || params.get("path") || window.location.pathname;
+            const requiredRole = params.get("required") || "administrator";
+
+            // Lấy thông tin user đăng nhập hiện tại
+            let currentUser = null;
+            let currentRole = "visitor";
+            try {
+                const userRaw = localStorage.getItem("tms_current_user") || localStorage.getItem("tms_user");
+                if (userRaw) currentUser = JSON.parse(userRaw);
+                currentRole = (localStorage.getItem("tms_current_role") || (currentUser && currentUser.role) || "visitor").toLowerCase();
+            } catch {}
+
+            document.getElementById("ctx-time").textContent = new Date().toLocaleString("vi-VN");
+            document.getElementById("ctx-path").textContent = fromPath;
+            document.getElementById("ctx-user").textContent = currentUser ? `${currentUser.name || currentUser.email} (${roleLabels[currentRole] || currentRole})` : "Chưa đăng nhập (Khách)";
+            document.getElementById("ctx-required").textContent = roleLabels[requiredRole] || requiredRole;
+
+            // Tùy biến nút hành động thông minh theo vai trò người dùng (KN-51)
+            const primaryBtn = document.getElementById("btn-primary-action");
+            const primaryText = document.getElementById("btn-primary-text");
+            const targetHome = roleHomeMap[currentRole] || "/Dashboard.html";
+
+            primaryBtn.href = targetHome;
+            if (currentRole === "student") {
+                primaryText.textContent = "Về Bảng Điểm & Học Tập Của Bạn";
+            } else if (currentRole === "instructor" || currentRole === "teaching_assistant") {
+                primaryText.textContent = "Về Lớp Học & Điểm Danh";
+            } else if (currentRole === "accountant") {
+                primaryText.textContent = "Về Quản Lý Học Phí & Công Nợ";
+            } else if (currentRole === "administrator" || currentRole === "admin") {
+                primaryText.textContent = "Về Tổng Quan Quản Trị Hệ Thống";
+            } else {
+                primaryText.textContent = "Về Trang Chủ Hệ Thống";
+            }
+
+            // Tùy biến giao diện theo từng mã lỗi (KN-49 & KN-50)
+            const iconWrapper = document.getElementById("error-icon-wrapper");
+            const statusBadge = document.getElementById("status-badge");
+            const badgeCode = document.getElementById("badge-code");
+            const badgeLabel = document.getElementById("badge-label");
+            const titleEl = document.getElementById("error-title");
+            const descEl = document.getElementById("error-desc");
+            const errorIcon = document.getElementById("error-icon");
+
+            if (code === "404") {
+                // Trường hợp 404 - Không tìm thấy trang
+                document.title = "404 Không Tìm Thấy Trang - TMS";
+                iconWrapper.className = "icon-circle-wrapper not-found";
+                statusBadge.className = "badge-status-code not-found";
+                badgeCode.textContent = "HTTP 404";
+                badgeLabel.textContent = "Không Tìm Thấy Trang";
+                titleEl.textContent = "Trang Này Không Tồn Tại Hoặc Đã Bị Di Chuyển";
+                descEl.textContent = "Đường dẫn bạn vừa truy cập không có trên hệ thống hoặc đã được cập nhật sang địa chỉ mới. Vui lòng kiểm tra lại liên kết hoặc quay về trang chủ.";
+                errorIcon.innerHTML = `
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                `;
+            } else if (code === "500" || code === "502" || code === "503") {
+                // Trường hợp 500 - Lỗi máy chủ
+                document.title = "500 Sự Cố Xử Lý - TMS";
+                iconWrapper.className = "icon-circle-wrapper server-error";
+                statusBadge.className = "badge-status-code server-error";
+                badgeCode.textContent = `HTTP ${code}`;
+                badgeLabel.textContent = "Lỗi Máy Chủ";
+                titleEl.textContent = "Hệ Thống Đang Xử Lý Hoặc Tạm Gián Đoạn";
+                descEl.textContent = "Yêu cầu của bạn chưa thể hoàn tất do máy chủ đang bận hoặc đang bảo trì định kỳ. Dữ liệu của bạn được bảo toàn nguyên vẹn, vui lòng thử lại sau ít phút.";
+                errorIcon.innerHTML = `
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                `;
+            } else {
+                // Mặc định 403 - Bị từ chối quyền truy cập (KN-50)
+                document.title = "403 Truy Cập Bị Từ Chối - TMS";
+                iconWrapper.className = "icon-circle-wrapper forbidden";
+                statusBadge.className = "badge-status-code forbidden";
+                badgeCode.textContent = "HTTP 403";
+                badgeLabel.textContent = "Không Đủ Thẩm Quyền";
+                titleEl.textContent = "Khu Vực Hạn Chế Quyền Truy Cập";
+                descEl.innerHTML = `Tài khoản <strong>${currentUser ? (roleLabels[currentRole] || currentRole) : 'Khách'}</strong> không có quyền truy cập vào chức năng này. Tính năng yêu cầu vai trò <strong>${roleLabels[requiredRole] || requiredRole}</strong>.`;
+                errorIcon.innerHTML = `
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                `;
+            }
+        }
+
+        // Chuyển đổi giao diện Sáng / Tối
+        const themeToggle = document.getElementById("theme-toggle");
+        if (themeToggle) {
+            themeToggle.addEventListener("click", () => {
+                const currentTheme = document.documentElement.getAttribute("data-theme");
+                const nextTheme = currentTheme === "dark" ? "light" : "dark";
+                document.documentElement.setAttribute("data-theme", nextTheme);
+                localStorage.setItem("tms_theme", nextTheme);
+            });
+
+            // Khôi phục theme lưu trữ
+            const savedTheme = localStorage.getItem("tms_theme");
+            if (savedTheme) {
+                document.documentElement.setAttribute("data-theme", savedTheme);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", initErrorView);
+    </script>
+</body>
+
+</html>

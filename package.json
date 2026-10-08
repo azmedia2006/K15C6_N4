@@ -1,0 +1,20 @@
+{
+  "name": "ttcs-tms",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Training Management System (TMS) - Hệ thống Quản lý Đào tạo",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "test": "cd backend && npm test",
+    "test:auth": "cd backend && npm run test:auth",
+    "test:user": "cd backend && npm run test:user",
+    "test:role": "cd backend && npm run test:role",
+    "test:kn8": "cd backend && npm run test:kn8",
+    "test:supabase": "cd backend && npm run test:supabase"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1"
+  }
+}

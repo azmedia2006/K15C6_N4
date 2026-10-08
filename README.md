@@ -54,8 +54,4 @@ Dưới đây là danh sách tài khoản được phân quyền theo 8 vai trò
 | 7 | **Kế toán đào tạo (Accountant)** | `accountant@tms.edu.vn` | `accountant123` | `frontend/Index.html?role=accountant` |
 | 8 | **Khách truy cập (Visitor)** | `visitor@tms.edu.vn` | `visitor123` | `frontend/Index.html?role=visitor` |
 
-> **Ghi chú trải nghiệm:**
-> - Trang đăng nhập: [frontend/Login.html](file:///d:/du_an/K15C6_N4/frontend/Login.html)
-> - Trang đăng ký: [frontend/Register.html](file:///d:/du_an/K15C6_N4/frontend/Register.html) (hoặc `frontend/Login.html#register`)
-> - Dashboard tổng quan: [frontend/Index.html](file:///d:/du_an/K15C6_N4/frontend/Index.html)
-> - Khi chạy môi trường demo tĩnh (chưa mở backend), hệ thống đã tích hợp sẵn cơ chế kiểm tra tài khoản offline để trải nghiệm mượt mà không bị lỗi mạng.
+>
