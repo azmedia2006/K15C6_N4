@@ -7,6 +7,11 @@ const {
     loginAttempts
 } = require("./authService");
 
+const {
+    sendActivationEmail,
+    sentEmails
+} = require("./emailService");
+
 // 8 vai trò hợp lệ trong hệ thống TMS
 const VALID_ROLES = [
     "administrator",
@@ -61,22 +66,7 @@ function isValidEmail(email) {
     return re.test(email.trim());
 }
 
-// Hàng đợi email kích hoạt (Email Queue / Audit Log cho KN-11)
-const sentEmails = [];
 
-function sendActivationEmail({ to, name, temporaryPassword }) {
-    const emailRecord = {
-        id: "mail_" + Date.now().toString(36) + Math.random().toString(36).substring(2, 6),
-        to,
-        subject: "[TMS] Thông tin tài khoản nhân sự mới và mật khẩu tạm thời",
-        name,
-        temporaryPassword,
-        sentAt: new Date().toISOString(),
-        status: "SENT"
-    };
-    sentEmails.push(emailRecord);
-    return emailRecord;
-}
 
 // Lấy danh sách người dùng có hỗ trợ lọc, tìm kiếm và phân trang (mặc định 20 dòng theo KN-11)
 function getUsers({ query = "", role = "", status = "", page = 1, limit = 20 } = {}) {
@@ -194,11 +184,12 @@ function createUser({ email, name, role, phone = "", password = "" }) {
 
     users.push(newUser);
 
-    // KN-11: Gửi email kích hoạt kèm mật khẩu tạm thời cho nhân sự mới
+    // KN-11 & KN-86: Gửi email kích hoạt qua SMTP thật kèm mật khẩu tạm thời cho nhân sự mới
     const emailResult = sendActivationEmail({
         to: newUser.email,
         name: newUser.name,
-        temporaryPassword: rawPassword
+        temporaryPassword: rawPassword,
+        role: newUser.role
     });
 
     return {

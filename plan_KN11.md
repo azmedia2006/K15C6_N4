@@ -34,6 +34,7 @@
   - Cơ chế tìm kiếm không phân biệt chữ hoa/thường theo họ tên, email và số điện thoại.
   - Bộ lọc theo vai trò (`role`) và trạng thái hoạt động (`status`).
   - Tự động sinh mật khẩu tạm thời an toàn (`TMS@...`) khi cấp tài khoản mới cho nhân sự.
+  - Tích hợp dịch vụ gửi email SMTP thực tế (`emailService.js`) qua máy chủ BKNS với tên hiển thị "Đào tạo TMS", tự động gửi email bàn giao thông tin đăng nhập và mật khẩu tạm thời tới hòm thư nhân sự mới.
   - Mã hóa mật khẩu chuẩn PBKDF2 với salt ngẫu nhiên tương thích tuyệt đối với dịch vụ xác thực `authService.js`.
   - Kiểm tra tính duy nhất (Unique) của email, ngăn chặn trùng lặp tài khoản.
   - Bảo vệ quản trị viên: Chặn tự xóa tài khoản của chính mình và ngăn xóa Quản trị viên duy nhất của hệ thống.

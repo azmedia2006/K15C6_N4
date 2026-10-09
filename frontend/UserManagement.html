@@ -1370,6 +1370,11 @@
                     <span id="cred-role" style="font-weight: 600; color: var(--primary);">-</span>
                 </div>
             </div>
+
+            <div style="display: flex; align-items: center; gap: 8px; margin-top: 14px; background: #ecfdf5; color: #065f46; padding: 10px 14px; border-radius: var(--radius-md); font-size: 0.8125rem; font-weight: 500; border: 1px solid #a7f3d0;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink: 0;"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Hệ thống đã gửi email kích hoạt tự động qua <strong>Đào tạo TMS</strong> (<span id="cred-email-target" style="font-weight: 600;">-</span>).</span>
+            </div>
         </div>
         <div class="modal-footer">
             <button class="btn btn-secondary" onclick="closeModal('credential-modal')">Đóng</button>
@@ -1848,10 +1853,12 @@
 
         document.getElementById("cred-name").textContent = createdUser.name;
         document.getElementById("cred-email").textContent = createdUser.email;
+        const targetEmailElem = document.getElementById("cred-email-target");
+        if (targetEmailElem) targetEmailElem.textContent = createdUser.email;
         document.getElementById("cred-pass").textContent = password;
         document.getElementById("cred-role").textContent = roleLabels[createdUser.role]?.name || createdUser.role;
         document.getElementById("credential-modal").classList.add("open");
-        showToast(`Đã tạo tài khoản cho ${createdUser.name}!`, "success");
+        showToast(`Đã tạo tài khoản cho ${createdUser.name} & gửi email kích hoạt!`, "success");
 
         // 2. Chạy ngầm đồng bộ
         (async () => {

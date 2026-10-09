@@ -1,6 +1,15 @@
 const path = require("path");
+require("dotenv").config({
+    path: [path.join(__dirname, ".env"), path.join(__dirname, "../.env")]
+});
 const express = require("express");
 const cors = require("cors");
+const {
+    verifySmtp,
+    SMTP_CONFIG,
+    sentEmails,
+    sendActivationEmail
+} = require("./emailService");
 const {
     findUserByEmail,
     hashPassword,
@@ -847,16 +856,74 @@ app.post("/api/supabase/sync", async (req, res) => {
 });
 
 // Health check endpoint
-app.get("/api/health", (req, res) => {
+app.get("/api/health", async (req, res) => {
+    const smtpCheck = await verifySmtp();
     res.json({
         status: "ok",
         supabase: {
             configured: Boolean(supabaseService.SUPABASE_URL),
             url: supabaseService.SUPABASE_URL
         },
+        smtp: {
+            configured: Boolean(SMTP_CONFIG.host),
+            host: SMTP_CONFIG.host,
+            port: SMTP_CONFIG.port,
+            user: SMTP_CONFIG.user,
+            from: SMTP_CONFIG.fromEmail,
+            connected: smtpCheck.success
+        },
         timestamp: new Date().toISOString()
     });
 });
+
+// KN-11 & KN-86: API Kiểm tra trạng thái SMTP và gửi email thử nghiệm (Chỉ Quản trị viên)
+app.get("/api/admin/smtp/status",
+    authenticateToken,
+    requireRole("administrator"),
+    async (req, res) => {
+        const smtpStatus = await verifySmtp();
+        return res.status(200).json({
+            success: true,
+            smtp: {
+                host: SMTP_CONFIG.host,
+                port: SMTP_CONFIG.port,
+                user: SMTP_CONFIG.user,
+                fromEmail: SMTP_CONFIG.fromEmail,
+                fromName: SMTP_CONFIG.fromName,
+                secure: SMTP_CONFIG.secure,
+                connected: smtpStatus.success,
+                error: smtpStatus.error || null,
+                totalSentEmails: sentEmails.length
+            }
+        });
+    }
+);
+
+app.post("/api/admin/smtp/test",
+    authenticateToken,
+    requireRole("administrator"),
+    async (req, res) => {
+        const targetEmail = (req.body && req.body.to) ? req.body.to : (req.user ? req.user.email : SMTP_CONFIG.user);
+        try {
+            const emailResult = sendActivationEmail({
+                to: targetEmail,
+                name: req.body?.name || "Quản trị viên Thử nghiệm",
+                temporaryPassword: "TMS@" + Math.random().toString(36).substring(2, 8),
+                role: "administrator"
+            });
+            return res.status(200).json({
+                success: true,
+                message: `Đã gửi email kích hoạt thử nghiệm tới ${targetEmail} thành công!`,
+                emailRecord: emailResult
+            });
+        } catch (err) {
+            return res.status(500).json({
+                success: false,
+                message: "Gửi email thử nghiệm thất bại: " + err.message
+            });
+        }
+    }
+);
 
 // Phục vụ giao diện Frontend tĩnh & Clean URLs
 const frontendDir = path.join(__dirname, "../frontend");

@@ -13,23 +13,26 @@ export class EmailService {
 
   constructor() {
     this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      host: process.env.SMTP_HOST || 'smtp81196.bkns.com.vn',
       port: parseInt(process.env.SMTP_PORT || '587', 10),
       secure: process.env.SMTP_SECURE === 'true',
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        user: process.env.SMTP_USER || 'support_it@quanit206.id.vn',
+        pass: process.env.SMTP_PASSWORD || process.env.SMTP_PASS || 'Duong2006@',
+      },
+      tls: {
+        rejectUnauthorized: false,
       },
     });
   }
 
   /**
-   * Gửi email đặt lại mật khẩu
+   * Gửi email đặt lại mật khẩu (KN-42)
    * @param to - Địa chỉ email người nhận
    * @param resetToken - Token gốc (KHÔNG ĐƯỢC log)
    */
   async sendPasswordResetEmail(to: string, resetToken: string): Promise<void> {
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5500/FE';
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const resetLink = `${frontendUrl}/ResetPassword.html?token=${encodeURIComponent(resetToken)}`;
     const expiryMinutes = parseInt(
       process.env.PASSWORD_RESET_EXPIRY_MINUTES || '30',
@@ -42,13 +45,41 @@ export class EmailService {
     );
 
     await this.transporter.sendMail({
-      from: process.env.SMTP_FROM || '"TMS" <noreply@tms.vn>',
+      from: process.env.SMTP_FROM || '"Đào tạo TMS" <support_it@quanit206.id.vn>',
       to,
       subject,
       html,
     });
 
-    // Log gửi email thành công — KHÔNG log token hay nội dung email
     console.log(`[EmailService] Đã gửi email đặt lại mật khẩu tới ${to}`);
+  }
+
+  /**
+   * KN-11 & KN-86: Gửi email kích hoạt tài khoản kèm mật khẩu tạm thời cho nhân sự mới
+   * @param to - Địa chỉ email người nhận
+   * @param name - Họ tên nhân sự mới
+   * @param tempPassword - Mật khẩu tạm thời
+   * @param role - Vai trò đảm nhiệm
+   */
+  async sendActivationEmail(
+    to: string,
+    name: string,
+    tempPassword: string,
+    role: string = 'instructor',
+  ): Promise<void> {
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const loginUrl = `${frontendUrl}/Login.html`;
+
+    const subject = `[TMS] Thông tin tài khoản nhân sự mới và mật khẩu tạm thời - ${name}`;
+    const text = `Kính gửi ${name},\n\nTài khoản của bạn đã được khởi tạo trên Hệ thống Quản lý Đào tạo TMS.\nEmail đăng nhập: ${to}\nVai trò: ${role}\nMật khẩu tạm thời: ${tempPassword}\nĐịa chỉ đăng nhập: ${loginUrl}\n\nVui lòng đăng nhập và đổi mật khẩu trong lần đầu tiên sử dụng.\n\nTrân trọng,\nĐào tạo TMS`;
+
+    await this.transporter.sendMail({
+      from: process.env.SMTP_FROM || '"Đào tạo TMS" <support_it@quanit206.id.vn>',
+      to,
+      subject,
+      text,
+    });
+
+    console.log(`[EmailService] Đã gửi email kích hoạt tài khoản tới ${to}`);
   }
 }
