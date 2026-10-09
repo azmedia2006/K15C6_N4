@@ -145,6 +145,172 @@ function recordSuccessfulLogin(email) {
     loginAttempts.delete(normalized);
 }
 
+// =========================================================================
+// KN-39, KN-40, KN-42, KN-43, KN-45: XỬ LÝ QUÊN VÀ ĐẶT LẠI MẬT KHẨU
+// =========================================================================
+
+// Lưu trữ token đặt lại mật khẩu trong bộ nhớ: token -> { email, userId, expiresAt, used, createdAt }
+const passwordResetTokens = new Map();
+
+// Quản lý tần suất yêu cầu đặt lại mật khẩu (Rate limit: tối đa 5 lần / giờ)
+const forgotRateLimits = new Map(); // key: ip hoặc email, value: Array<timestamp>
+const FORGOT_RATE_LIMIT_MAX = 5;
+const FORGOT_RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 giờ
+const TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 60 phút
+
+/**
+ * Kiểm tra giới hạn tần suất yêu cầu quên mật khẩu (Rate limit 5 lần/giờ)
+ */
+function checkForgotRateLimit(key) {
+    const now = Date.now();
+    const timestamps = (forgotRateLimits.get(key) || []).filter(ts => now - ts < FORGOT_RATE_LIMIT_WINDOW_MS);
+    if (timestamps.length >= FORGOT_RATE_LIMIT_MAX) {
+        const oldest = timestamps[0];
+        const retryAfterSeconds = Math.ceil((oldest + FORGOT_RATE_LIMIT_WINDOW_MS - now) / 1000);
+        return { limited: true, retryAfterSeconds };
+    }
+    timestamps.push(now);
+    forgotRateLimits.set(key, timestamps);
+    return { limited: false };
+}
+
+/**
+ * Tạo token đặt lại mật khẩu CSPRNG an toàn
+ */
+function createPasswordResetToken(email, clientIp = "") {
+    const normalized = String(email || "").trim().toLowerCase();
+
+    // Kiểm tra rate limit theo email và theo IP
+    const emailLimit = checkForgotRateLimit(`email:${normalized}`);
+    if (emailLimit.limited) {
+        return { rateLimited: true, retryAfterSeconds: emailLimit.retryAfterSeconds };
+    }
+    if (clientIp) {
+        const ipLimit = checkForgotRateLimit(`ip:${clientIp}`);
+        if (ipLimit.limited) {
+            return { rateLimited: true, retryAfterSeconds: ipLimit.retryAfterSeconds };
+        }
+    }
+
+    const user = findUserByEmail(normalized);
+    if (!user) {
+        // KN-39: Không tìm thấy người dùng vẫn trả về kết quả giả lập an toàn để chống User Enumeration
+        return {
+            rateLimited: false,
+            userFound: false
+        };
+    }
+
+    // Sinh token an toàn 32 bytes URL-safe base64
+    const token = crypto.randomBytes(32).toString("base64url");
+    const expiresAt = Date.now() + TOKEN_EXPIRY_MS;
+
+    passwordResetTokens.set(token, {
+        token,
+        userId: user.id,
+        email: user.email,
+        name: user.name,
+        expiresAt,
+        used: false,
+        createdAt: Date.now()
+    });
+
+    return {
+        rateLimited: false,
+        userFound: true,
+        token,
+        expiresAt,
+        user
+    };
+}
+
+/**
+ * Xác thực token đặt lại mật khẩu có hợp lệ và còn hạn hay không
+ */
+function verifyPasswordResetToken(token) {
+    if (!token || typeof token !== "string") {
+        return { valid: false, error: "Mã xác thực token không hợp lệ." };
+    }
+
+    const entry = passwordResetTokens.get(token);
+    if (!entry) {
+        return { valid: false, error: "Liên kết đặt lại mật khẩu không tồn tại hoặc đã hết hạn." };
+    }
+
+    if (entry.used) {
+        return { valid: false, error: "Liên kết này đã được sử dụng trước đó. Vui lòng yêu cầu liên kết mới." };
+    }
+
+    if (Date.now() > entry.expiresAt) {
+        return { valid: false, error: "Liên kết đặt lại mật khẩu đã hết hạn sau 60 phút. Vui lòng gửi lại yêu cầu." };
+    }
+
+    // Che bớt email hiển thị an toàn (VD: a***n@tms.edu.vn)
+    const [local, domain] = entry.email.split("@");
+    const maskedEmail = local.length > 2
+        ? `${local[0]}***${local[local.length - 1]}@${domain}`
+        : `${local}***@${domain}`;
+
+    return {
+        valid: true,
+        userId: entry.userId,
+        email: entry.email,
+        maskedEmail
+    };
+}
+
+/**
+ * Đặt lại mật khẩu mới cho tài khoản bằng token
+ */
+function resetPasswordWithToken(token, newPassword) {
+    const verification = verifyPasswordResetToken(token);
+    if (!verification.valid) {
+        throw { status: 400, message: verification.error };
+    }
+
+    // Kiểm tra độ mạnh mật khẩu (KN-45)
+    // Tối thiểu 8 ký tự, gồm ít nhất chữ hoa, chữ thường và chữ số
+    if (!newPassword || typeof newPassword !== "string" || newPassword.length < 8) {
+        throw { status: 400, message: "Mật khẩu mới phải có tối thiểu 8 ký tự." };
+    }
+    if (!/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+        throw { status: 400, message: "Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường và 1 số." };
+    }
+
+    const user = users.find(u => u.id === verification.userId || u.email.toLowerCase() === verification.email.toLowerCase());
+    if (!user) {
+        throw { status: 404, message: "Không tìm thấy thông tin tài khoản người dùng tương ứng." };
+    }
+
+    // Sinh salt mới và băm mật khẩu
+    const newSalt = generateSalt();
+    const newPasswordHash = hashPassword(newPassword, newSalt);
+
+    user.salt = newSalt;
+    user.passwordHash = newPasswordHash;
+    user.updatedAt = new Date().toISOString();
+
+    // Đánh dấu token đã được sử dụng (ngăn chặn replay attack)
+    const entry = passwordResetTokens.get(token);
+    if (entry) {
+        entry.used = true;
+    }
+
+    // Xóa trạng thái khóa và số lần đăng nhập sai nếu có
+    recordSuccessfulLogin(user.email);
+
+    return {
+        success: true,
+        message: "Đặt lại mật khẩu thành công! Bạn có thể sử dụng mật khẩu mới để đăng nhập.",
+        user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role
+        }
+    };
+}
+
 module.exports = {
     findUserByEmail,
     hashPassword,
@@ -158,5 +324,11 @@ module.exports = {
     loginAttempts,
     LOCK_DURATION_MS,
     MAX_FAILED_ATTEMPTS,
-    users
+    users,
+    // KN-39 / KN-43:
+    passwordResetTokens,
+    createPasswordResetToken,
+    verifyPasswordResetToken,
+    resetPasswordWithToken
 };
+

@@ -8,7 +8,8 @@ const {
     verifySmtp,
     SMTP_CONFIG,
     sentEmails,
-    sendActivationEmail
+    sendActivationEmail,
+    sendPasswordResetEmail
 } = require("./emailService");
 const {
     findUserByEmail,
@@ -19,7 +20,10 @@ const {
     getLockoutStatus,
     recordFailedAttempt,
     recordSuccessfulLogin,
-    users
+    users,
+    createPasswordResetToken,
+    verifyPasswordResetToken,
+    resetPasswordWithToken
 } = require("./authService");
 
 const {
@@ -265,6 +269,130 @@ app.get("/api/auth/me", authenticateToken, (req, res) => {
         success: true,
         user: req.user
     });
+});
+
+// =========================================================================
+// KN-39, KN-40, KN-42, KN-43: BỘ API QUÊN VÀ ĐẶT LẠI MẬT KHẨU
+// Hỗ trợ cả tiền tố /api/auth/* và /auth/*
+// =========================================================================
+
+// KN-39 & KN-42: API Yêu cầu quên mật khẩu và phát hành liên kết gửi qua Email
+app.post(["/api/auth/forgot-password", "/auth/forgot-password"], async (req, res) => {
+    const { email } = req.body || {};
+
+    if (!email || !String(email).trim()) {
+        return res.status(400).json({
+            success: false,
+            code: 400,
+            message: "Vui lòng nhập địa chỉ email liên kết với tài khoản."
+        });
+    }
+
+    const clientIp = req.ip || req.headers["x-forwarded-for"] || (req.socket && req.socket.remoteAddress) || "127.0.0.1";
+    const result = createPasswordResetToken(email, clientIp);
+
+    // Rate Limit: Quá 5 lần / giờ (KN-39)
+    if (result.rateLimited) {
+        return res.status(429).json({
+            success: false,
+            code: 429,
+            message: "Bạn đã yêu cầu đặt lại mật khẩu quá nhiều lần (tối đa 5 lần/giờ). Vui lòng thử lại sau.",
+            retryAfterSeconds: result.retryAfterSeconds
+        });
+    }
+
+    // Nếu tài khoản tồn tại: Gửi email bất đồng bộ qua SMTP (Fire and forget, không làm chậm response)
+    if (result.userFound && result.token) {
+        const hostHeader = req.get("host") || "localhost:3000";
+        const protocol = req.protocol || "http";
+        const defaultBaseUrl = `${protocol}://${hostHeader}`;
+        const frontendUrl = process.env.FRONTEND_URL || defaultBaseUrl;
+        const resetUrl = `${frontendUrl.replace(/\/$/, "")}/ResetPassword.html?token=${result.token}`;
+
+        try {
+            sendPasswordResetEmail({
+                to: result.user.email,
+                name: result.user.name,
+                resetToken: result.token,
+                resetUrl
+            });
+        } catch (mailErr) {
+            console.warn("[Server] Gửi email đặt lại mật khẩu thất bại:", mailErr.message);
+        }
+    }
+
+    // KN-39: Luôn trả về 200 kèm thông báo bảo mật chung (chống rò rỉ sự tồn tại của email)
+    return res.status(200).json({
+        success: true,
+        code: 200,
+        message: "Nếu email thuộc tài khoản hợp lệ, hướng dẫn khôi phục sẽ được gửi đến hộp thư của bạn."
+    });
+});
+
+// KN-43: API Xác thực tính hợp lệ của token đặt lại mật khẩu
+app.get(["/api/auth/verify-reset-token", "/auth/verify-reset-token"], (req, res) => {
+    const token = req.query.token;
+
+    if (!token) {
+        return res.status(400).json({
+            success: false,
+            valid: false,
+            code: 400,
+            message: "Yêu cầu cung cấp mã xác thực token."
+        });
+    }
+
+    const check = verifyPasswordResetToken(token);
+    if (!check.valid) {
+        return res.status(400).json({
+            success: false,
+            valid: false,
+            code: 400,
+            message: check.error || "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn."
+        });
+    }
+
+    return res.status(200).json({
+        success: true,
+        valid: true,
+        maskedEmail: check.maskedEmail
+    });
+});
+
+// KN-43 & KN-45: API Thiết lập mật khẩu mới bằng token đã xác nhận
+app.post(["/api/auth/reset-password", "/auth/reset-password"], async (req, res) => {
+    const { token, newPassword } = req.body || {};
+
+    if (!token || !newPassword) {
+        return res.status(400).json({
+            success: false,
+            code: 400,
+            message: "Vui lòng cung cấp mã token và mật khẩu mới."
+        });
+    }
+
+    try {
+        const resetResult = resetPasswordWithToken(token, newPassword);
+
+        // Đồng bộ dữ liệu người dùng sang Supabase
+        try {
+            await supabaseService.syncUsersDatabase(users);
+        } catch (syncErr) {
+            // Không chặn tiến trình nếu offline
+        }
+
+        return res.status(200).json({
+            success: true,
+            code: 200,
+            message: resetResult.message || "Đặt lại mật khẩu thành công! Bạn có thể sử dụng mật khẩu mới để đăng nhập."
+        });
+    } catch (err) {
+        return res.status(err.status || 400).json({
+            success: false,
+            code: err.status || 400,
+            message: err.message || "Không thể đặt lại mật khẩu."
+        });
+    }
 });
 
 // API Đăng ký tài khoản người dùng công khai (Học viên)
@@ -1306,13 +1434,16 @@ async function hydrateUsersFromSupabase() {
                 if (idx === -1) {
                     users.push(ru);
                 } else {
-                    users[idx] = { ...users[idx], ...ru };
+                    // Giữ lại các thay đổi cục bộ hiện thời nếu có (mật khẩu mới, avatar mới, ...)
+                    users[idx] = { ...ru, ...users[idx] };
                 }
             });
         }
     } catch {}
 }
-hydrateUsersFromSupabase().catch(() => {});
+if (process.env.NODE_ENV !== "test") {
+    hydrateUsersFromSupabase().catch(() => {});
+}
 
 // Khởi chạy server và đồng bộ dữ liệu ban đầu
 if (require.main === module) {

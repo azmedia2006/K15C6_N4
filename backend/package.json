@@ -16,7 +16,8 @@
     "test:lead": "node test/lead_consultation.test.js",
     "test:kn66": "node test/user_import_kn66.test.js",
     "test:import": "node test/user_import_kn66.test.js",
-    "test:kn68": "node test/avatar_kn68.test.js"
+    "test:kn68": "node test/avatar_kn68.test.js",
+    "test:forgot": "node test/forgot_password.test.js"
   },
   "keywords": [],
   "author": "",

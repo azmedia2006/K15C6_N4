@@ -7,8 +7,11 @@
   ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.js" },
+    { "source": "/auth/(.*)", "destination": "/api/index.js" },
     { "source": "/login", "destination": "/index.html" },
     { "source": "/Login.html", "destination": "/index.html" },
+    { "source": "/reset-password", "destination": "/ResetPassword.html" },
+    { "source": "/ResetPassword.html", "destination": "/ResetPassword.html" },
     { "source": "/Index.html", "destination": "/Dashboard.html" },
     { "source": "/dashboard", "destination": "/Dashboard.html" },
     { "source": "/users", "destination": "/UserManagement.html" },

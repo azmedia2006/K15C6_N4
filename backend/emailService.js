@@ -239,6 +239,142 @@ function sendActivationEmail({ to, name, temporaryPassword, role = "instructor",
 }
 
 /**
+ * KN-42: Tạo mẫu HTML email đặt lại mật khẩu TMS chuyên nghiệp
+ */
+function buildPasswordResetEmailHtml({ name, email, resetUrl }) {
+    const currentYear = new Date().getFullYear();
+
+    return `
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yêu cầu đặt lại mật khẩu TMS</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b; line-height: 1.6;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f1f5f9; padding: 32px 16px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0;">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 32px 36px; text-align: left; border-bottom: 3px solid #10b981;">
+                            <div style="display: inline-block; background-color: #10b981; color: #ffffff; font-weight: 800; font-size: 13px; letter-spacing: 1px; padding: 4px 10px; border-radius: 6px; margin-bottom: 12px;">TMS EDUCATION</div>
+                            <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 700; line-height: 1.3;">Hệ Thống Quản Lý Đào Tạo TMS</h1>
+                            <p style="margin: 6px 0 0 0; color: #94a3b8; font-size: 13px;">${SMTP_CONFIG.fromName} &bull; Khôi phục quyền truy cập</p>
+                        </td>
+                    </tr>
+
+                    <!-- Body -->
+                    <tr>
+                        <td style="padding: 36px 36px 28px 36px;">
+                            <p style="margin: 0 0 16px 0; font-size: 15px; color: #334155;">
+                                Kính gửi <strong>${name || email}</strong>,
+                            </p>
+                            <p style="margin: 0 0 20px 0; font-size: 14px; color: #475569; line-height: 1.6;">
+                                Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản liên kết với địa chỉ email <strong>${email}</strong> trên hệ thống Đào tạo TMS.
+                            </p>
+                            <p style="margin: 0 0 24px 0; font-size: 14px; color: #475569; line-height: 1.6;">
+                                Vui lòng bấm vào nút bên dưới để tiến hành thiết lập mật khẩu mới:
+                            </p>
+
+                            <!-- CTA Button -->
+                            <div style="text-align: center; margin: 30px 0;">
+                                <a href="${resetUrl}" target="_blank" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-size: 15px; font-weight: 700; text-decoration: none; padding: 14px 32px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.4); letter-spacing: 0.5px;">
+                                    ĐẶT LẠI MẬT KHẨU NGAY
+                                </a>
+                            </div>
+
+                            <!-- Warning Notice -->
+                            <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 14px 18px; margin: 24px 0; font-size: 13px; color: #991b1b; line-height: 1.5;">
+                                <strong>Lưu ý bảo mật quan trọng:</strong>
+                                <ul style="margin: 6px 0 0 0; padding-left: 20px;">
+                                    <li>Liên kết này chỉ có hiệu lực trong vòng <strong>60 phút</strong> và sử dụng được <strong>một lần duy nhất</strong>.</li>
+                                    <li>Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email. Mật khẩu hiện tại của bạn vẫn được bảo mật an toàn.</li>
+                                </ul>
+                            </div>
+
+                            <p style="margin: 20px 0 8px 0; font-size: 12px; color: #64748b;">
+                                Hoặc sao chép và dán liên kết sau vào trình duyệt:
+                            </p>
+                            <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; word-break: break-all; font-family: monospace; font-size: 12px; color: #0284c7;">
+                                ${resetUrl}
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8fafc; padding: 20px 36px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 12px; color: #94a3b8;">
+                            <p style="margin: 0 0 6px 0;">&copy; ${currentYear} Hệ Thống Quản Lý Đào Tạo TMS. All rights reserved.</p>
+                            <p style="margin: 0;">Email tự động, vui lòng không trả lời trực tiếp thư này.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+    `;
+}
+
+/**
+ * KN-42: Gửi email đặt lại mật khẩu chứa token qua SMTP thật
+ */
+function sendPasswordResetEmail({ to, name, resetToken, resetUrl = "" }) {
+    const frontendUrl = resetUrl || process.env.FRONTEND_URL || "https://k15c6n4.vercel.app";
+    const fullResetUrl = resetUrl && resetUrl.includes("token=")
+        ? resetUrl
+        : `${frontendUrl.replace(/\/$/, "")}/ResetPassword.html?token=${resetToken}`;
+
+    const subject = `[TMS] Hướng dẫn đặt lại mật khẩu tài khoản TMS`;
+
+    const emailRecord = {
+        id: "reset_mail_" + Date.now().toString(36) + Math.random().toString(36).substring(2, 6),
+        to,
+        subject,
+        name: name || to,
+        resetToken,
+        resetUrl: fullResetUrl,
+        sentAt: new Date().toISOString(),
+        status: "SENT",
+        provider: "BKNS_SMTP"
+    };
+
+    sentEmails.push(emailRecord);
+
+    if (transporter) {
+        const mailOptions = {
+            from: `"${SMTP_CONFIG.fromName}" <${SMTP_CONFIG.fromEmail}>`,
+            to,
+            subject,
+            text: `Kính gửi ${name || to},\n\nChúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản ${to}.\nVui lòng truy cập liên kết sau trong vòng 60 phút để đặt lại mật khẩu:\n${fullResetUrl}\n\nNếu bạn không yêu cầu, vui lòng bỏ qua email này.\n\nTrân trọng,\n${SMTP_CONFIG.fromName}`,
+            html: buildPasswordResetEmailHtml({
+                name: name || to,
+                email: to,
+                resetUrl: fullResetUrl
+            })
+        };
+
+        transporter.sendMail(mailOptions)
+            .then(info => {
+                emailRecord.status = "DELIVERED";
+                emailRecord.messageId = info.messageId;
+                emailRecord.response = info.response;
+                console.log(`[EmailService] ✔ Đã gửi email khôi phục mật khẩu thành công tới: ${to} (MessageID: ${info.messageId})`);
+            })
+            .catch(err => {
+                emailRecord.deliveryError = err.message;
+                console.warn(`[EmailService] ⚠ Gửi email khôi phục mật khẩu tới ${to} gặp sự cố:`, err.message);
+            });
+    }
+
+    return emailRecord;
+}
+
+/**
  * Kiểm tra kết nối SMTP
  */
 async function verifySmtp() {
@@ -260,7 +396,10 @@ module.exports = {
     SMTP_CONFIG,
     ROLE_NAMES,
     sendActivationEmail,
+    sendPasswordResetEmail,
     sentEmails,
     verifySmtp,
-    buildActivationEmailHtml
+    buildActivationEmailHtml,
+    buildPasswordResetEmailHtml
 };
+
