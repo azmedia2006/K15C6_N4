@@ -13,7 +13,8 @@
     "test:kn8": "cd backend && npm run test:kn8",
     "test:supabase": "cd backend && npm run test:supabase",
     "test:kn10": "cd backend && npm run test:kn10",
-    "test:lead": "cd backend && npm run test:lead"
+    "test:lead": "cd backend && npm run test:lead",
+    "test:kn68": "cd backend && npm run test:kn68"
   },
   "dependencies": {
     "cors": "^2.8.6",

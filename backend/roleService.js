@@ -175,7 +175,9 @@ function getUserWithRoles(userId) {
         name: user.name,
         role: primaryRole, // Tương thích ngược với các module cũ
         roles: roles,      // Danh sách đầy đủ vai trò mới (N-N)
-        rolesVersion: getUserRolesVersion(user.id)
+        rolesVersion: getUserRolesVersion(user.id),
+        avatar: user.avatar || "",
+        thumbnail: user.thumbnail || ""
     };
 }
 

@@ -1228,6 +1228,279 @@
                 margin-bottom: 24px !important;
             }
         }
+
+        /* =========================================================================
+           KN-68: STYLES CHO TẢI LÊN ẢNH ĐẠI DIỆN, CẮT VUÔNG & ĐIỂM DANH LỚP ĐÔNG
+           ========================================================================= */
+        .user-avatar-wrap {
+            position: relative;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .user-avatar-wrap:hover .avatar-edit-badge {
+            background: var(--primary-hover);
+            transform: scale(1.1);
+        }
+        .user-avatar-wrap:hover .user-avatar {
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+        .avatar-edit-badge {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 18px;
+            height: 18px;
+            background: var(--primary);
+            color: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--bg-white, #ffffff);
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+        .user-avatar img.user-avatar-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Modal Avatar KN-68 */
+        .avatar-modal-card {
+            background: #ffffff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 520px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        [data-theme="dark"] .avatar-modal-card {
+            background: #1e293b;
+            color: #f8fafc;
+        }
+        .avatar-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 22px;
+            border-bottom: 1px solid var(--border, #e2e8f0);
+        }
+        .avatar-modal-header h3 {
+            margin: 0;
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-main, #0f172a);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        [data-theme="dark"] .avatar-modal-header h3 {
+            color: #f8fafc;
+        }
+        .avatar-modal-body {
+            padding: 22px;
+        }
+        .avatar-dropzone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #f8fafc;
+            transition: all 0.2s;
+        }
+        [data-theme="dark"] .avatar-dropzone {
+            border-color: #475569;
+            background: #0f172a;
+        }
+        .avatar-dropzone:hover, .avatar-dropzone.dragover {
+            border-color: var(--primary, #10b981);
+            background: rgba(16, 185, 129, 0.05);
+        }
+        .avatar-dropzone-icon {
+            width: 44px;
+            height: 44px;
+            color: var(--primary, #10b981);
+            margin: 0 auto 10px;
+        }
+        .avatar-dropzone-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .avatar-dropzone-hint {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        /* Crop & Preview Stage */
+        .crop-stage {
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .crop-preview-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            background: #f8fafc;
+            padding: 18px;
+            border-radius: 12px;
+        }
+        [data-theme="dark"] .crop-preview-container {
+            background: #0f172a;
+        }
+        .preview-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .preview-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .preview-circle-large {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid var(--primary, #10b981);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            background: #e2e8f0;
+        }
+        .preview-circle-thumb {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid var(--primary, #10b981);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: #e2e8f0;
+        }
+        .crop-zoom-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 8px;
+        }
+        .crop-zoom-control label {
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .crop-zoom-slider {
+            flex: 1;
+            accent-color: var(--primary, #10b981);
+        }
+        .avatar-error-msg {
+            display: none;
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-top: 14px;
+            align-items: center;
+            gap: 8px;
+        }
+        [data-theme="dark"] .avatar-error-msg {
+            background: rgba(220, 38, 38, 0.2);
+            border-color: #dc2626;
+            color: #fca5a5;
+        }
+        .avatar-modal-footer {
+            padding: 14px 22px;
+            border-top: 1px solid var(--border, #e2e8f0);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        /* Sổ điểm danh - Nhận diện khuôn mặt học viên (KN-68) */
+        .attendance-face-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .attendance-thumbnail {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #10b981;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            background: #e2e8f0;
+        }
+        .attendance-thumbnail:hover {
+            transform: scale(1.15);
+            box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+        }
+        .attendance-face-tooltip {
+            position: absolute;
+            bottom: 46px;
+            left: 50%;
+            transform: translateX(-50%) translateY(6px);
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+            border: 1px solid #e2e8f0;
+            padding: 8px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            z-index: 100;
+            width: 130px;
+            pointer-events: none;
+            transition: all 0.2s ease;
+        }
+        [data-theme="dark"] .attendance-face-tooltip {
+            background: #1e293b;
+            border-color: #334155;
+            color: #f8fafc;
+        }
+        .attendance-face-wrapper:hover .attendance-face-tooltip {
+            display: flex;
+            transform: translateX(-50%) translateY(0);
+        }
+        .attendance-face-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 2px solid #10b981;
+        }
+        .face-tooltip-meta {
+            text-align: center;
+            font-size: 11px;
+            line-height: 1.3;
+        }
+        .face-tooltip-meta strong {
+            display: block;
+            color: #0f172a;
+            font-size: 12px;
+        }
+        [data-theme="dark"] .face-tooltip-meta strong {
+            color: #ffffff;
+        }
+        .face-tooltip-meta small {
+            color: #10b981;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -1340,7 +1613,12 @@
             </nav>
 
             <div class="sidebar-user">
-                <div class="user-avatar" id="avatar-letters">NA</div>
+                <div class="user-avatar-wrap" onclick="openAvatarModal()" title="Bấm để đổi ảnh đại diện (KN-68)">
+                    <div class="user-avatar" id="avatar-letters">NA</div>
+                    <div class="avatar-edit-badge" title="Đổi ảnh đại diện">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                    </div>
+                </div>
                 <div class="user-info">
                     <div class="user-name" id="display-user-name">Nguyễn Văn Anh</div>
                     <div class="user-role" id="display-user-role">Quản trị viên (Admin)</div>
@@ -1808,34 +2086,78 @@
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Mã SV</th>
+                                    <th style="width: 80px;">Mã SV</th>
+                                    <th style="width: 95px; text-align: center;">Ảnh nhận diện</th>
                                     <th>Họ và Tên</th>
                                     <th>Lớp</th>
                                     <th>Tỷ lệ chuyên cần</th>
                                     <th>Trạng thái hôm nay</th>
+                                    <th style="text-align: center; width: 100px;">Thao tác</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
+                            <tbody id="attendance-students-tbody">
+                                <tr data-student-id="usr_student">
                                     <td><strong>SV001</strong></td>
-                                    <td>Lê Minh Tuấn</td>
+                                    <td style="text-align: center;">
+                                        <div class="attendance-face-wrapper" title="Xem ảnh khuôn mặt điểm danh">
+                                            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='50' fill='%2310b981'/><circle cx='50' cy='38' r='20' fill='%23ffffff'/><path d='M20 85 C20 62 35 56 50 56 C65 56 80 62 80 85 Z' fill='%23ffffff'/></svg>" class="attendance-thumbnail" id="attendance-thumb-sv001" alt="SV001" />
+                                            <div class="attendance-face-tooltip">
+                                                <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='50' fill='%2310b981'/><circle cx='50' cy='38' r='20' fill='%23ffffff'/><path d='M20 85 C20 62 35 56 50 56 C65 56 80 62 80 85 Z' fill='%23ffffff'/></svg>" class="attendance-face-large" id="attendance-large-sv001" alt="Lê Minh Tuấn" />
+                                                <div class="face-tooltip-meta">
+                                                    <strong>Lê Minh Tuấn</strong>
+                                                    <span>SV001 • K15-PM01</span>
+                                                    <small>Nhận diện khuôn mặt</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><strong>Lê Minh Tuấn</strong></td>
                                     <td>K15-PM01</td>
                                     <td><strong style="color:var(--primary);">92%</strong></td>
                                     <td><button class="btn btn-primary" style="padding:4px 10px; font-size:12px;" onclick="toggleCheckin(this)">Có mặt</button></td>
+                                    <td style="text-align: center;"><button class="btn btn-secondary" style="padding:3px 8px; font-size:11px;" onclick="openAvatarModal('usr_student')">Đổi ảnh</button></td>
                                 </tr>
-                                <tr>
+                                <tr data-student-id="usr_sv002">
                                     <td><strong>SV002</strong></td>
-                                    <td>Hoàng Thùy Linh</td>
+                                    <td style="text-align: center;">
+                                        <div class="attendance-face-wrapper" title="Xem ảnh khuôn mặt điểm danh">
+                                            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='50' fill='%236366f1'/><circle cx='50' cy='38' r='20' fill='%23ffffff'/><path d='M20 85 C20 62 35 56 50 56 C65 56 80 62 80 85 Z' fill='%23ffffff'/></svg>" class="attendance-thumbnail" id="attendance-thumb-sv002" alt="SV002" />
+                                            <div class="attendance-face-tooltip">
+                                                <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='50' fill='%236366f1'/><circle cx='50' cy='38' r='20' fill='%23ffffff'/><path d='M20 85 C20 62 35 56 50 56 C65 56 80 62 80 85 Z' fill='%23ffffff'/></svg>" class="attendance-face-large" id="attendance-large-sv002" alt="Hoàng Thùy Linh" />
+                                                <div class="face-tooltip-meta">
+                                                    <strong>Hoàng Thùy Linh</strong>
+                                                    <span>SV002 • K15-PM01</span>
+                                                    <small>Nhận diện khuôn mặt</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><strong>Hoàng Thùy Linh</strong></td>
                                     <td>K15-PM01</td>
                                     <td><strong style="color:var(--primary);">88%</strong></td>
                                     <td><button class="btn btn-primary" style="padding:4px 10px; font-size:12px;" onclick="toggleCheckin(this)">Có mặt</button></td>
+                                    <td style="text-align: center;"><button class="btn btn-secondary" style="padding:3px 8px; font-size:11px;" onclick="openAvatarModal('usr_sv002')">Đổi ảnh</button></td>
                                 </tr>
-                                <tr>
+                                <tr data-student-id="usr_sv003">
                                     <td><strong>SV003</strong></td>
-                                    <td>Trần Đình Trọng</td>
+                                    <td style="text-align: center;">
+                                        <div class="attendance-face-wrapper" title="Xem ảnh khuôn mặt điểm danh">
+                                            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='50' fill='%23f59e0b'/><circle cx='50' cy='38' r='20' fill='%23ffffff'/><path d='M20 85 C20 62 35 56 50 56 C65 56 80 62 80 85 Z' fill='%23ffffff'/></svg>" class="attendance-thumbnail" id="attendance-thumb-sv003" alt="SV003" />
+                                            <div class="attendance-face-tooltip">
+                                                <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='50' fill='%23f59e0b'/><circle cx='50' cy='38' r='20' fill='%23ffffff'/><path d='M20 85 C20 62 35 56 50 56 C65 56 80 62 80 85 Z' fill='%23ffffff'/></svg>" class="attendance-face-large" id="attendance-large-sv003" alt="Trần Đình Trọng" />
+                                                <div class="face-tooltip-meta">
+                                                    <strong>Trần Đình Trọng</strong>
+                                                    <span>SV003 • K15-PM01</span>
+                                                    <small>Nhận diện khuôn mặt</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><strong>Trần Đình Trọng</strong></td>
                                     <td>K15-PM01</td>
                                     <td><strong style="color:var(--amber);">74% (Cảnh báo)</strong></td>
                                     <td><button class="btn btn-secondary" style="padding:4px 10px; font-size:12px; color:var(--red);" onclick="toggleCheckin(this)">Vắng mặt</button></td>
+                                    <td style="text-align: center;"><button class="btn btn-secondary" style="padding:3px 8px; font-size:11px;" onclick="openAvatarModal('usr_sv003')">Đổi ảnh</button></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -2260,6 +2582,77 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeReportModal()">Đóng cửa sổ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- KN-68: Avatar Upload & Square Crop Modal -->
+    <div class="modal-overlay" id="avatar-modal">
+        <div class="avatar-modal-card">
+            <div class="avatar-modal-header">
+                <h3>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary);"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                    Cập nhật ảnh đại diện
+                </h3>
+                <button class="modal-close-btn" onclick="closeAvatarModal()" title="Đóng">&times;</button>
+            </div>
+            <div class="avatar-modal-body">
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+                    Tải lên ảnh chân dung rõ mặt để giảng viên dễ dàng nhận diện và điểm danh trong lớp đông (KN-68).
+                </p>
+
+                <!-- Dropzone Stage (Initial) -->
+                <div class="avatar-dropzone" id="avatar-dropzone" onclick="document.getElementById('avatar-file-input').click()">
+                    <svg class="avatar-dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    <div class="avatar-dropzone-title">Kéo thả ảnh vào đây hoặc bấm để chọn</div>
+                    <div class="avatar-dropzone-hint">Định dạng JPG, PNG • Kích thước tối đa 2MB</div>
+                    <input type="file" id="avatar-file-input" accept="image/jpeg,image/png" style="display:none;" onchange="handleAvatarFileSelect(this.files)">
+                </div>
+
+                <!-- Crop & Preview Stage (After selecting valid file) -->
+                <div class="crop-stage" id="crop-stage">
+                    <div class="crop-preview-container">
+                        <div class="preview-box">
+                            <span class="preview-label">Ảnh đại diện (Vuông/Tròn)</span>
+                            <div class="preview-circle-large" id="preview-large-box">
+                                <canvas id="avatar-crop-canvas" width="400" height="400" style="width:100%; height:100%; display:block;"></canvas>
+                            </div>
+                        </div>
+                        <div class="preview-box">
+                            <span class="preview-label">Bản thu nhỏ điểm danh</span>
+                            <div class="preview-circle-thumb" id="preview-thumb-box">
+                                <canvas id="avatar-thumb-canvas" width="96" height="96" style="width:100%; height:100%; display:block;"></canvas>
+                            </div>
+                            <small style="font-size: 10px; color: var(--primary); font-weight: 600;">Thumbnail 40px</small>
+                        </div>
+                    </div>
+
+                    <div class="crop-zoom-control">
+                        <label for="crop-zoom-slider">Thu phóng:</label>
+                        <input type="range" id="crop-zoom-slider" class="crop-zoom-slider" min="1" max="3" step="0.05" value="1" oninput="handleZoomChange(this.value)">
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <button type="button" class="btn btn-secondary" style="font-size: 12px; padding: 6px 12px;" onclick="resetAvatarSelection()">
+                            ↺ Chọn ảnh khác
+                        </button>
+                        <span id="avatar-file-size-indicator" style="font-size: 11px; color: var(--text-muted);"></span>
+                    </div>
+                </div>
+
+                <!-- Error message banner -->
+                <div class="avatar-error-msg" id="avatar-error-banner">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <span id="avatar-error-text">Lỗi khi chọn file</span>
+                </div>
+            </div>
+            <div class="avatar-modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeAvatarModal()">Hủy bỏ</button>
+                <button type="button" class="btn btn-primary" id="btn-save-avatar" onclick="submitAvatarUpload()" disabled>
+                    Cắt vuông & Lưu ảnh
+                </button>
             </div>
         </div>
     </div>
@@ -3398,6 +3791,279 @@ document.querySelectorAll(".nav-label").forEach(label => {
                 switchView(h);
             }
         });
+
+        // =========================================================================
+        // KN-68: XỬ LÝ TẢI LÊN ẢNH ĐẠI DIỆN, CẮT VUÔNG & TẠO THUMBNAIL CHO HỌC VIÊN
+        // =========================================================================
+        let currentAvatarTargetId = null;
+        let currentSourceImage = null;
+        let currentZoomScale = 1;
+
+        function openAvatarModal(targetId = null) {
+            currentAvatarTargetId = targetId || (currentUser ? currentUser.id : "usr_student");
+            resetAvatarSelection();
+            const modal = document.getElementById("avatar-modal");
+            if (modal) modal.classList.add("active");
+        }
+        window.openAvatarModal = openAvatarModal;
+
+        function closeAvatarModal() {
+            const modal = document.getElementById("avatar-modal");
+            if (modal) modal.classList.remove("active");
+            resetAvatarSelection();
+        }
+        window.closeAvatarModal = closeAvatarModal;
+
+        function showAvatarError(msg) {
+            const banner = document.getElementById("avatar-error-banner");
+            const txt = document.getElementById("avatar-error-text");
+            if (banner && txt) {
+                txt.textContent = msg;
+                banner.style.display = "flex";
+            }
+        }
+
+        function clearAvatarError() {
+            const banner = document.getElementById("avatar-error-banner");
+            if (banner) banner.style.display = "none";
+        }
+
+        function resetAvatarSelection() {
+            clearAvatarError();
+            currentSourceImage = null;
+            currentZoomScale = 1;
+            const dropzone = document.getElementById("avatar-dropzone");
+            const cropStage = document.getElementById("crop-stage");
+            const saveBtn = document.getElementById("btn-save-avatar");
+            const fileInput = document.getElementById("avatar-file-input");
+            const slider = document.getElementById("crop-zoom-slider");
+
+            if (dropzone) dropzone.style.display = "block";
+            if (cropStage) cropStage.style.display = "none";
+            if (saveBtn) saveBtn.disabled = true;
+            if (fileInput) fileInput.value = "";
+            if (slider) slider.value = "1";
+        }
+        window.resetAvatarSelection = resetAvatarSelection;
+
+        // Thiết lập Drag and Drop
+        const dropzoneEl = document.getElementById("avatar-dropzone");
+        if (dropzoneEl) {
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzoneEl.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzoneEl.classList.add('dragover');
+                }, false);
+            });
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzoneEl.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzoneEl.classList.remove('dragover');
+                }, false);
+            });
+            dropzoneEl.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleAvatarFileSelect(files);
+            });
+        }
+
+        function handleAvatarFileSelect(files) {
+            clearAvatarError();
+            if (!files || files.length === 0) return;
+            const file = files[0];
+
+            // 1. Kiểm tra định dạng (Chỉ chấp nhận JPG/PNG theo KN-68)
+            const validTypes = ["image/jpeg", "image/png", "image/jpg"];
+            const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+            const validExts = [".jpg", ".jpeg", ".png"];
+
+            if (!validTypes.includes(file.type) && !validExts.includes(ext)) {
+                showAvatarError("Định dạng tệp không hợp lệ! Hệ thống chỉ chấp nhận ảnh định dạng JPG hoặc PNG theo yêu cầu KN-68.");
+                return;
+            }
+
+            // 2. Kiểm tra dung lượng (Tối đa 2MB theo KN-68)
+            const maxSizeBytes = 2 * 1024 * 1024; // 2MB
+            if (file.size > maxSizeBytes) {
+                const mb = (file.size / (1024 * 1024)).toFixed(2);
+                showAvatarError(`Dung lượng ảnh vượt quá giới hạn 2MB (Kích thước hiện tại: ${mb}MB). Vui lòng chọn ảnh nhỏ hơn.`);
+                return;
+            }
+
+            // Hiển thị kích thước file
+            const sizeInd = document.getElementById("avatar-file-size-indicator");
+            if (sizeInd) sizeInd.textContent = `${file.name} (${(file.size / 1024).toFixed(0)} KB)`;
+
+            // Đọc ảnh và vẽ lên Canvas cắt vuông
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    currentSourceImage = img;
+                    currentZoomScale = 1;
+                    renderCroppedCanvas();
+
+                    document.getElementById("avatar-dropzone").style.display = "none";
+                    document.getElementById("crop-stage").style.display = "flex";
+                    document.getElementById("btn-save-avatar").disabled = false;
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        window.handleAvatarFileSelect = handleAvatarFileSelect;
+
+        function handleZoomChange(val) {
+            currentZoomScale = parseFloat(val) || 1;
+            renderCroppedCanvas();
+        }
+        window.handleZoomChange = handleZoomChange;
+
+        // Cắt vuông 1:1 tâm và tạo ảnh thu nhỏ (Thumbnail)
+        function renderCroppedCanvas() {
+            if (!currentSourceImage) return;
+
+            const largeCanvas = document.getElementById("avatar-crop-canvas");
+            const thumbCanvas = document.getElementById("avatar-thumb-canvas");
+            if (!largeCanvas || !thumbCanvas) return;
+
+            const ctxLarge = largeCanvas.getContext("2d");
+            const ctxThumb = thumbCanvas.getContext("2d");
+
+            const img = currentSourceImage;
+            const minDim = Math.min(img.width, img.height);
+            const cropSize = minDim / currentZoomScale;
+
+            const cropX = (img.width - cropSize) / 2;
+            const cropY = (img.height - cropSize) / 2;
+
+            // Vẽ ảnh vuông 400x400
+            ctxLarge.clearRect(0, 0, 400, 400);
+            ctxLarge.drawImage(img, cropX, cropY, cropSize, cropSize, 0, 0, 400, 400);
+
+            // Vẽ ảnh thumbnail thu nhỏ 96x96
+            ctxThumb.clearRect(0, 0, 96, 96);
+            ctxThumb.drawImage(img, cropX, cropY, cropSize, cropSize, 0, 0, 96, 96);
+        }
+
+        // Lưu ảnh đại diện và cập nhật giao diện
+        async function submitAvatarUpload() {
+            if (!currentSourceImage) return;
+
+            const saveBtn = document.getElementById("btn-save-avatar");
+            const originalText = saveBtn.textContent;
+            saveBtn.disabled = true;
+            saveBtn.textContent = "Đang lưu...";
+
+            const largeCanvas = document.getElementById("avatar-crop-canvas");
+            const thumbCanvas = document.getElementById("avatar-thumb-canvas");
+
+            const avatarDataUrl = largeCanvas.toDataURL("image/jpeg", 0.9);
+            const thumbDataUrl = thumbCanvas.toDataURL("image/jpeg", 0.85);
+
+            const targetId = currentAvatarTargetId || (currentUser ? currentUser.id : "usr_student");
+
+            try {
+                const token = localStorage.getItem("tms_token");
+                const headers = { "Content-Type": "application/json" };
+                if (token) headers["Authorization"] = `Bearer ${token}`;
+
+                const res = await fetch(`/api/users/${targetId}/avatar`, {
+                    method: "POST",
+                    headers,
+                    body: JSON.stringify({
+                        avatarData: avatarDataUrl,
+                        thumbnailData: thumbDataUrl,
+                        mimeType: "image/jpeg"
+                    })
+                });
+
+                const resData = await res.json();
+                if (!res.ok) {
+                    throw new Error(resData.error || resData.message || "Không thể cập nhật ảnh");
+                }
+
+                // Cập nhật DOM trực tiếp
+                applyAvatarToUI(targetId, avatarDataUrl, thumbDataUrl);
+                showToast("✅ Đã cập nhật ảnh đại diện và tạo bản thu nhỏ nhận diện khuôn mặt thành công!");
+                closeAvatarModal();
+
+            } catch (err) {
+                console.warn("Lưu lên server có lỗi, kích hoạt lưu dự phòng offline:", err);
+                // Fallback lưu local demo
+                localStorage.setItem(`tms_avatar_${targetId}`, avatarDataUrl);
+                localStorage.setItem(`tms_thumb_${targetId}`, thumbDataUrl);
+
+                applyAvatarToUI(targetId, avatarDataUrl, thumbDataUrl);
+                showToast("✅ Đã cập nhật ảnh đại diện thành công (Chế độ Demo)");
+                closeAvatarModal();
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = originalText;
+            }
+        }
+        window.submitAvatarUpload = submitAvatarUpload;
+
+        function applyAvatarToUI(userId, avatarUrl, thumbUrl) {
+            // 1. Cập nhật Sidebar avatar nếu là tài khoản hiện tại
+            const isMe = !currentAvatarTargetId || currentAvatarTargetId === (currentUser && currentUser.id) || userId === "usr_student";
+            if (isMe) {
+                const avatarContainer = document.getElementById("avatar-letters");
+                if (avatarContainer) {
+                    avatarContainer.innerHTML = `<img src="${avatarUrl}" class="user-avatar-img" alt="Avatar" />`;
+                    avatarContainer.style.background = "transparent";
+                    avatarContainer.style.padding = "0";
+                }
+            }
+
+            // 2. Cập nhật sổ điểm danh
+            if (userId === "usr_student" || userId === "sv001") {
+                const thumbImg = document.getElementById("attendance-thumb-sv001");
+                const largeImg = document.getElementById("attendance-large-sv001");
+                if (thumbImg) thumbImg.src = thumbUrl || avatarUrl;
+                if (largeImg) largeImg.src = avatarUrl;
+            } else if (userId === "usr_sv002") {
+                const thumbImg = document.getElementById("attendance-thumb-sv002");
+                const largeImg = document.getElementById("attendance-large-sv002");
+                if (thumbImg) thumbImg.src = thumbUrl || avatarUrl;
+                if (largeImg) largeImg.src = avatarUrl;
+            } else if (userId === "usr_sv003") {
+                const thumbImg = document.getElementById("attendance-thumb-sv003");
+                const largeImg = document.getElementById("attendance-large-sv003");
+                if (thumbImg) thumbImg.src = thumbUrl || avatarUrl;
+                if (largeImg) largeImg.src = avatarUrl;
+            }
+        }
+        window.applyAvatarToUI = applyAvatarToUI;
+
+        // Khởi tạo tải ảnh avatar học viên và tài khoản
+        setTimeout(() => {
+            if (currentUser && currentUser.avatar) {
+                applyAvatarToUI(currentUser.id, currentUser.avatar, currentUser.thumbnail);
+            } else {
+                const savedAvatar = localStorage.getItem(`tms_avatar_${currentUser ? currentUser.id : 'usr_student'}`);
+                if (savedAvatar) {
+                    applyAvatarToUI(currentUser ? currentUser.id : 'usr_student', savedAvatar, savedAvatar);
+                }
+            }
+
+            // Đồng bộ dữ liệu điểm danh học viên
+            fetch("/api/attendance/students").then(r => r.json()).then(res => {
+                if (res.success && Array.isArray(res.data)) {
+                    res.data.forEach(s => {
+                        if (s.studentCode === "SV001" && s.thumbnail) {
+                            const thumb = document.getElementById("attendance-thumb-sv001");
+                            const large = document.getElementById("attendance-large-sv001");
+                            if (thumb) thumb.src = s.thumbnail;
+                            if (large) large.src = s.avatar || s.thumbnail;
+                        }
+                    });
+                }
+            }).catch(() => {});
+        }, 150);
     </script>
     <!-- Mobile Sidebar Backdrop Overlay -->
     <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleMobileSidebar(false)"></div>

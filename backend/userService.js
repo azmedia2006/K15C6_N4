@@ -32,9 +32,17 @@ const defaultPhones = {
     "usr_visitor": "0922334455"
 };
 
+// Dữ liệu ảnh đại diện & avatar thu nhỏ mặc định cho học viên (phục vụ giảng viên nhận diện khuôn mặt KN-68)
+const defaultAvatars = {
+    "usr_student": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='50' fill='%2310b981'/><circle cx='50' cy='38' r='20' fill='%23ffffff'/><path d='M20 85 C20 62 35 56 50 56 C65 56 80 62 80 85 Z' fill='%23ffffff'/></svg>",
+    "usr_student2": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='50' fill='%2310b981'/><circle cx='50' cy='38' r='20' fill='%23ffffff'/><path d='M20 85 C20 62 35 56 50 56 C65 56 80 62 80 85 Z' fill='%23ffffff'/></svg>"
+};
+
 users.forEach(u => {
     if (!u.status) u.status = "active";
     if (!u.phone) u.phone = defaultPhones[u.id] || "0900000000";
+    if (!u.avatar) u.avatar = defaultAvatars[u.id] || "";
+    if (!u.thumbnail) u.thumbnail = defaultAvatars[u.id] || "";
     if (!u.createdAt) u.createdAt = new Date("2026-01-15T08:00:00Z").toISOString();
     if (!u.updatedAt) u.updatedAt = new Date("2026-01-15T08:00:00Z").toISOString();
 });
@@ -119,6 +127,8 @@ function getUsers({ query = "", role = "", status = "", page = 1, limit = 20 } =
         role: u.role,
         phone: u.phone,
         status: u.status,
+        avatar: u.avatar || "",
+        thumbnail: u.thumbnail || "",
         createdAt: u.createdAt,
         updatedAt: u.updatedAt
     }));
@@ -143,6 +153,8 @@ function getUserById(id) {
         role: user.role,
         phone: user.phone,
         status: user.status,
+        avatar: user.avatar || "",
+        thumbnail: user.thumbnail || "",
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
     };
@@ -311,8 +323,115 @@ function deleteUser(id, currentAdminId = null) {
     return { success: true, message: `Đã xóa tài khoản '${targetUser.name}' (${targetUser.email}) thành công.` };
 }
 
+// =========================================================================
+// KN-68: Quản lý và xử lý tải lên ảnh đại diện & bản thu nhỏ (Thumbnail)
+// Tiêu chí chấp nhận:
+// 1. Chấp nhận định dạng JPG/PNG tối đa 2MB (2,097,152 bytes)
+// 2. Cắt vuông và tạo bản thu nhỏ (thumbnail) phục vụ điểm danh nhận diện khuôn mặt
+// =========================================================================
+
+const MAX_AVATAR_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
+const ALLOWED_MIME_TYPES = ["image/jpeg", "image/jpg", "image/png"];
+
+function validateAndProcessAvatar({ avatarData, thumbnailData, mimeType, sizeBytes }) {
+    if (!avatarData || typeof avatarData !== "string") {
+        throw { status: 400, message: "Dữ liệu ảnh đại diện không được để trống." };
+    }
+
+    // 1. Kiểm tra định dạng tệp (MIME type)
+    let detectedMime = mimeType ? String(mimeType).toLowerCase().trim() : "";
+    if (avatarData.startsWith("data:")) {
+        const match = avatarData.match(/^data:([^;]+);base64,/);
+        if (match) {
+            detectedMime = match[1].toLowerCase().trim();
+        }
+    }
+
+    if (!detectedMime || !ALLOWED_MIME_TYPES.includes(detectedMime)) {
+        throw {
+            status: 400,
+            message: "Định dạng tệp không hợp lệ. Chỉ chấp nhận tệp ảnh JPG hoặc PNG theo tiêu chí KN-68."
+        };
+    }
+
+    // 2. Kiểm tra dung lượng tệp (Tối đa 2MB)
+    let calculatedSize = sizeBytes;
+    if (!calculatedSize && avatarData.startsWith("data:")) {
+        const base64Str = avatarData.split(",")[1] || "";
+        calculatedSize = Math.floor((base64Str.length * 3) / 4);
+    }
+
+    if (calculatedSize && calculatedSize > MAX_AVATAR_SIZE_BYTES) {
+        const sizeMb = (calculatedSize / (1024 * 1024)).toFixed(2);
+        throw {
+            status: 400,
+            message: `Dung lượng tệp ảnh quá lớn (${sizeMb}MB). Giới hạn tối đa là 2MB.`
+        };
+    }
+
+    // Bản thu nhỏ (thumbnail): Nếu client chưa gửi bản thu nhỏ riêng, dùng chính avatar vuông
+    const effectiveThumbnail = thumbnailData && typeof thumbnailData === "string"
+        ? thumbnailData
+        : avatarData;
+
+    return {
+        avatar: avatarData,
+        thumbnail: effectiveThumbnail,
+        mimeType: detectedMime,
+        sizeBytes: calculatedSize || 0
+    };
+}
+
+function updateUserAvatar(userId, avatarPayload) {
+    const userIndex = users.findIndex(u => u.id === userId || u.email.toLowerCase() === String(userId).toLowerCase());
+    if (userIndex === -1) {
+        throw { status: 404, message: "Không tìm thấy người dùng để cập nhật ảnh đại diện." };
+    }
+
+    const processed = validateAndProcessAvatar(avatarPayload);
+    const targetUser = users[userIndex];
+    targetUser.avatar = processed.avatar;
+    targetUser.thumbnail = processed.thumbnail;
+    targetUser.updatedAt = new Date().toISOString();
+
+    return {
+        id: targetUser.id,
+        name: targetUser.name,
+        email: targetUser.email,
+        role: targetUser.role,
+        avatar: targetUser.avatar,
+        thumbnail: targetUser.thumbnail,
+        updatedAt: targetUser.updatedAt
+    };
+}
+
+function deleteUserAvatar(userId) {
+    const userIndex = users.findIndex(u => u.id === userId || u.email.toLowerCase() === String(userId).toLowerCase());
+    if (userIndex === -1) {
+        throw { status: 404, message: "Không tìm thấy người dùng." };
+    }
+
+    const targetUser = users[userIndex];
+    targetUser.avatar = "";
+    targetUser.thumbnail = "";
+    targetUser.updatedAt = new Date().toISOString();
+
+    return {
+        id: targetUser.id,
+        name: targetUser.name,
+        avatar: "",
+        thumbnail: "",
+        message: "Đã xóa ảnh đại diện thành công."
+    };
+}
+
 module.exports = {
     VALID_ROLES,
+    MAX_AVATAR_SIZE_BYTES,
+    ALLOWED_MIME_TYPES,
+    validateAndProcessAvatar,
+    updateUserAvatar,
+    deleteUserAvatar,
     getUsers,
     getUserById,
     createUser,
