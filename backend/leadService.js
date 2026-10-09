@@ -219,6 +219,18 @@ function checkSpam(options = {}) {
 }
 
 /**
+ * Chuẩn hóa số điện thoại (bỏ ký tự thừa, quy đổi +84 về 0)
+ */
+function normalizePhone(phone) {
+    if (!phone || typeof phone !== "string") return "";
+    let clean = phone.replace(/[\s\.\-\(\)]/g, "");
+    if (clean.startsWith("+84")) {
+        clean = "0" + clean.slice(3);
+    }
+    return clean;
+}
+
+/**
  * Kiểm tra định dạng số điện thoại Việt Nam
  */
 function isValidPhone(phone) {
@@ -234,6 +246,40 @@ function isValidPhone(phone) {
 function isValidEmail(email) {
     if (!email || typeof email !== "string") return false;
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+}
+
+/**
+ * KN-74: Kiểm tra trùng số điện thoại với các lead đã có trong hệ thống
+ * @param {string} phone - Số điện thoại cần kiểm tra
+ * @param {string|null} excludeLeadId - ID hoặc mã Lead cần bỏ qua (khi sửa chính lead đó)
+ * @returns {{ isDuplicate: boolean, duplicateLead: object|null, message: string }}
+ */
+function checkDuplicatePhone(phone, excludeLeadId = null) {
+    const cleanTarget = normalizePhone(phone);
+    if (!cleanTarget) {
+        return { isDuplicate: false, duplicateLead: null, message: "" };
+    }
+
+    const duplicateLead = leads.find(l => {
+        if (excludeLeadId && (l.id === excludeLeadId || l.code === excludeLeadId)) {
+            return false;
+        }
+        return normalizePhone(l.phone) === cleanTarget;
+    });
+
+    if (duplicateLead) {
+        return {
+            isDuplicate: true,
+            duplicateLead: duplicateLead,
+            message: `Cảnh báo: Số điện thoại này đã tồn tại trong hồ sơ của khách hàng "${duplicateLead.fullName || duplicateLead.name}" (Mã: ${duplicateLead.code}, Trạng thái: ${duplicateLead.status}).`
+        };
+    }
+
+    return {
+        isDuplicate: false,
+        duplicateLead: null,
+        message: "Số điện thoại hợp lệ, chưa bị trùng lặp."
+    };
 }
 
 /**
@@ -330,10 +376,24 @@ function createLead(leadData = {}, clientMeta = {}) {
         };
     }
 
-    const leadCourse = (course || "").trim() || "Chưa chọn khóa học cụ thể";
+    const leadCourse = (course || leadData.program || "").trim() || "Chưa chọn khóa học cụ thể";
     const leadNotes = (notes || message || "").trim();
+    const leadSource = (leadData.source || "").trim() || "Website (Biểu mẫu công khai)";
+    const leadInitialStatus = (leadData.status || "").trim() || "Mới";
 
-    // 3. Khởi tạo đối tượng Lead với trạng thái "Mới" (Theo đặc tả nghiệp vụ)
+    // KN-74: Cảnh báo khi số điện thoại trùng với lead đã có
+    const dupCheck = checkDuplicatePhone(leadPhone);
+    const isDuplicatePhone = dupCheck.isDuplicate;
+    const duplicateWarning = dupCheck.isDuplicate ? dupCheck.message : null;
+    const duplicateLead = dupCheck.duplicateLead ? {
+        id: dupCheck.duplicateLead.id,
+        code: dupCheck.duplicateLead.code,
+        fullName: dupCheck.duplicateLead.fullName || dupCheck.duplicateLead.name,
+        phone: dupCheck.duplicateLead.phone,
+        status: dupCheck.duplicateLead.status
+    } : null;
+
+    // 3. Khởi tạo đối tượng Lead với trạng thái "Mới" (hoặc trạng thái chỉ định)
     const nowIso = new Date().toISOString();
     const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
     const leadCode = `LD-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, "0")}-${randomSuffix}`;
@@ -351,18 +411,21 @@ function createLead(leadData = {}, clientMeta = {}) {
         phone: leadPhone,
         email: leadEmail,
         course: leadCourse,
+        program: leadCourse, // alias
         notes: leadNotes,
         message: leadNotes, // alias
-        status: "Mới", // TIÊU CHÍ CỐT LÕI: Gửi thành công tạo một lead ở trạng thái Mới
-        statusCode: "NEW",
-        source: "Website (Biểu mẫu công khai)",
+        status: leadInitialStatus,
+        statusCode: leadInitialStatus === "Mới" ? "NEW" : leadInitialStatus.toUpperCase(),
+        source: leadSource,
         ip: ip,
         createdAt: nowIso,
         updatedAt: nowIso,
-        assignedTo: null,
-        counselorNotes: "",
+        assignedTo: leadData.assignedTo || null,
+        counselorNotes: leadData.counselorNotes || "",
         thankYouMessage: thankYouMessage,
-        contactCommitment: contactCommitment
+        contactCommitment: contactCommitment,
+        isDuplicatePhone: isDuplicatePhone,
+        duplicateWarning: duplicateWarning
     };
 
     // Đưa lead mới lên đầu danh sách (LIFO để tuyển sinh thấy ngay)
@@ -371,10 +434,13 @@ function createLead(leadData = {}, clientMeta = {}) {
     return {
         success: true,
         code: "LEAD_CREATED",
-        message: "Đăng ký tư vấn thành công!",
+        message: duplicateWarning ? `Tạo lead thành công (${duplicateWarning})` : "Đăng ký tư vấn thành công!",
         thankYouMessage: thankYouMessage,
         contactCommitment: contactCommitment,
         commitment: contactCommitment,
+        isDuplicatePhone: isDuplicatePhone,
+        duplicateWarning: duplicateWarning,
+        duplicateLead: duplicateLead,
         lead: newLead
     };
 }
@@ -483,7 +549,150 @@ function updateLeadStatus(id, newStatus, meta = {}) {
 }
 
 /**
- * Xóa một Lead (Dành cho Quản trị viên)
+ * KN-74: Cập nhật thông tin chi tiết Lead (Họ tên, SĐT, Email, Nguồn, Chương trình quan tâm, Ghi chú, Trạng thái)
+ * Cảnh báo khi số điện thoại trùng với lead đã có trong hệ thống
+ */
+function updateLead(id, updateData = {}, user = null) {
+    const lead = getLeadById(id);
+    if (!lead) {
+        return {
+            success: false,
+            code: "LEAD_NOT_FOUND",
+            message: "Không tìm thấy hồ sơ Lead trong hệ thống."
+        };
+    }
+
+    // Họ tên
+    if (updateData.fullName !== undefined || updateData.name !== undefined) {
+        const newName = (updateData.fullName || updateData.name || "").trim();
+        if (!newName || newName.length < 2) {
+            return {
+                success: false,
+                code: "INVALID_NAME",
+                message: "Vui lòng nhập họ và tên hợp lệ (tối thiểu 2 ký tự)."
+            };
+        }
+        lead.fullName = newName;
+        lead.name = newName;
+    }
+
+    // Số điện thoại & Cảnh báo trùng lặp
+    let duplicateWarning = null;
+    let isDuplicatePhone = false;
+    let duplicateLead = null;
+
+    if (updateData.phone !== undefined) {
+        const newPhone = String(updateData.phone).trim();
+        if (!newPhone) {
+            return {
+                success: false,
+                code: "MISSING_PHONE",
+                message: "Vui lòng cung cấp số điện thoại liên hệ."
+            };
+        }
+        if (!isValidPhone(newPhone)) {
+            return {
+                success: false,
+                code: "INVALID_PHONE",
+                message: "Số điện thoại không đúng định dạng. Vui lòng nhập số điện thoại Việt Nam hợp lệ."
+            };
+        }
+
+        const dupCheck = checkDuplicatePhone(newPhone, lead.id);
+        if (dupCheck.isDuplicate) {
+            isDuplicatePhone = true;
+            duplicateLead = {
+                id: dupCheck.duplicateLead.id,
+                code: dupCheck.duplicateLead.code,
+                fullName: dupCheck.duplicateLead.fullName || dupCheck.duplicateLead.name,
+                phone: dupCheck.duplicateLead.phone,
+                status: dupCheck.duplicateLead.status
+            };
+            duplicateWarning = `Cảnh báo: Số điện thoại ${newPhone} đã trùng với khách hàng "${duplicateLead.fullName}" (Mã: ${duplicateLead.code}, Trạng thái: ${duplicateLead.status}).`;
+        }
+
+        lead.phone = newPhone;
+    }
+
+    // Email
+    if (updateData.email !== undefined) {
+        const newEmail = String(updateData.email).trim().toLowerCase();
+        if (!newEmail) {
+            return {
+                success: false,
+                code: "MISSING_EMAIL",
+                message: "Vui lòng cung cấp địa chỉ email."
+            };
+        }
+        if (!isValidEmail(newEmail)) {
+            return {
+                success: false,
+                code: "INVALID_EMAIL",
+                message: "Địa chỉ email không đúng định dạng."
+            };
+        }
+        lead.email = newEmail;
+    }
+
+    // Nguồn khách hàng (Source)
+    if (updateData.source !== undefined) {
+        lead.source = String(updateData.source).trim() || lead.source;
+    }
+
+    // Chương trình / Khóa học quan tâm
+    if (updateData.course !== undefined || updateData.program !== undefined) {
+        const newCourse = String(updateData.course || updateData.program || "").trim();
+        if (newCourse) {
+            lead.course = newCourse;
+            lead.program = newCourse;
+        }
+    }
+
+    // Ghi chú
+    if (updateData.notes !== undefined || updateData.message !== undefined) {
+        lead.notes = String(updateData.notes || updateData.message || "").trim();
+        lead.message = lead.notes;
+    }
+
+    // Ghi chú của tư vấn viên
+    if (updateData.counselorNotes !== undefined) {
+        lead.counselorNotes = String(updateData.counselorNotes || "").trim();
+    }
+
+    // Phân công tư vấn viên
+    if (updateData.assignedTo !== undefined) {
+        lead.assignedTo = updateData.assignedTo;
+    }
+
+    // Trạng thái hồ sơ
+    if (updateData.status !== undefined) {
+        const validStatuses = ["Mới", "Đang tư vấn", "Đã ghi danh", "Không liên lạc được", "Hủy"];
+        if (!validStatuses.includes(updateData.status)) {
+            return {
+                success: false,
+                code: "INVALID_STATUS",
+                message: `Trạng thái không hợp lệ. Các trạng thái hợp lệ: ${validStatuses.join(", ")}`
+            };
+        }
+        lead.status = updateData.status;
+    }
+
+    lead.updatedAt = new Date().toISOString();
+    lead.isDuplicatePhone = isDuplicatePhone;
+    lead.duplicateWarning = duplicateWarning;
+
+    return {
+        success: true,
+        message: duplicateWarning ? `Cập nhật lead thành công (${duplicateWarning})` : "Cập nhật thông tin khách hàng tiềm năng thành công.",
+        lead: lead,
+        isDuplicatePhone: isDuplicatePhone,
+        duplicateWarning: duplicateWarning,
+        duplicateLead: duplicateLead
+    };
+}
+
+/**
+ * Xóa một Lead (Dành cho Quản lý đào tạo và Quản trị viên)
  */
 function deleteLead(id) {
     const index = leads.findIndex(l => l.id === id || l.code === id);
@@ -555,6 +764,7 @@ function resetLeadsForTesting() {
 module.exports = {
     leads,
     createLead,
+    updateLead,
     getLeads,
     getLeadById,
     updateLeadStatus,
@@ -565,5 +775,7 @@ module.exports = {
     checkSpam,
     isValidPhone,
     isValidEmail,
+    normalizePhone,
+    checkDuplicatePhone,
     resetLeadsForTesting
 };

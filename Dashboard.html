@@ -1965,28 +1965,33 @@
                         <div>
                             <h2>Quản lý Lead Tuyển sinh</h2>
                             <p style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 2px;">
-                                Tiếp nhận từ Biểu mẫu Landing Page công khai. Lead mới gửi tự động ở trạng thái <strong>Mới</strong> kèm cam kết phản hồi 24h.
+                                Tiếp nhận và quản lý khách hàng tiềm năng. Kiểm tra cảnh báo trùng số điện thoại theo thời gian thực (KN-74).
                             </p>
                         </div>
-                        <div style="display: flex; gap: 8px; align-items: center;">
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <button class="btn btn-primary" onclick="openLeadModal()" style="font-size: 0.8125rem; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                <span>+ Thêm Lead Mới</span>
+                            </button>
                             <a href="./LeadForm.html" target="_blank" class="btn btn-secondary" style="font-size: 0.8125rem; display: flex; align-items: center; gap: 6px; text-decoration: none;">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                                <span>Mở Biểu Mẫu Công Khai</span>
+                                <span>Biểu Mẫu Public</span>
                             </a>
-                            <button class="btn btn-primary" onclick="loadDashboardLeads()" style="font-size: 0.8125rem;">
-                                <span>Làm mới dữ liệu</span>
+                            <button class="btn btn-secondary" onclick="loadDashboardLeads()" style="font-size: 0.8125rem;">
+                                <span>Làm mới</span>
                             </button>
                         </div>
                     </div>
 
                     <!-- Search & Filter Controls -->
                     <div style="display: flex; gap: 12px; margin-bottom: 1rem; flex-wrap: wrap;">
-                        <input type="text" id="lead-search-input" placeholder="Tìm theo tên, SĐT, email, mã hồ sơ..." oninput="filterLeadsTable()" style="flex: 1; min-width: 200px; padding: 6px 12px; font-size: 0.875rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-card); color: var(--text-main);">
+                        <input type="text" id="lead-search-input" placeholder="Tìm theo tên, SĐT, email, mã hồ sơ, nguồn..." oninput="filterLeadsTable()" style="flex: 1; min-width: 200px; padding: 6px 12px; font-size: 0.875rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-card); color: var(--text-main);">
                         <select id="lead-status-filter" onchange="filterLeadsTable()" style="padding: 6px 12px; font-size: 0.875rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-card); color: var(--text-main);">
                             <option value="">Tất cả trạng thái</option>
                             <option value="Mới">Trạng thái: Mới</option>
                             <option value="Đang tư vấn">Trạng thái: Đang tư vấn</option>
                             <option value="Đã ghi danh">Trạng thái: Đã ghi danh</option>
+                            <option value="Không liên lạc được">Trạng thái: Không liên lạc được</option>
                             <option value="Hủy">Trạng thái: Hủy</option>
                         </select>
                     </div>
@@ -1999,14 +2004,15 @@
                                     <th>Họ và Tên</th>
                                     <th>Số điện thoại</th>
                                     <th>Email</th>
-                                    <th>Khóa học quan tâm</th>
+                                    <th>Nguồn</th>
+                                    <th>Chương trình quan tâm</th>
                                     <th>Trạng thái</th>
                                     <th>Thời gian gửi</th>
                                     <th>Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody id="leads-table-body">
-                                <tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">Đang tải dữ liệu hồ sơ Lead...</td></tr>
+                                <tr><td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-muted);">Đang tải dữ liệu hồ sơ Lead...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -2221,6 +2227,117 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeReportModal()">Đóng cửa sổ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- KN-74: Lead Create & Edit Modal -->
+    <div class="modal-overlay" id="lead-modal" style="display: none;">
+        <div class="modal-card" style="max-width: 600px;">
+            <div class="modal-header">
+                <div>
+                    <h3 id="lead-modal-title">Thêm Khách Hàng Tiềm Năng (Lead)</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;" id="lead-modal-subtitle">Tiếp nhận thông tin khách hàng để không bỏ sót người để lại số điện thoại</p>
+                </div>
+                <button onclick="closeLeadModal()" style="font-size: 24px; color: var(--text-muted); line-height: 1;">&times;</button>
+            </div>
+            <div class="modal-body" style="max-height: 520px; overflow-y: auto;">
+                <form id="lead-modal-form" onsubmit="event.preventDefault(); saveLeadFromModal();">
+                    <input type="hidden" id="modal-lead-id" value="">
+
+                    <!-- Cảnh báo trùng số điện thoại theo thời gian thực (KN-74) -->
+                    <div id="modal-phone-duplicate-alert" style="display: none; background: #fffbeb; border: 1px solid #f59e0b; color: #b45309; padding: 10px 14px; border-radius: var(--radius-md); font-size: 0.8125rem; margin-bottom: 14px; align-items: flex-start; gap: 8px;">
+                        <span style="font-size: 16px; line-height: 1.2;">⚠️</span>
+                        <div id="modal-phone-duplicate-alert-text" style="line-height: 1.4;"></div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 4px;">Họ và Tên <span style="color: var(--red);">*</span></label>
+                            <input type="text" class="form-control" id="modal-lead-name" placeholder="Nguyễn Văn A" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.875rem; background: var(--bg-card); color: var(--text-main);">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 4px;">Số điện thoại <span style="color: var(--red);">*</span></label>
+                            <input type="tel" class="form-control" id="modal-lead-phone" placeholder="0912345678" oninput="handlePhoneInput(this.value)" onblur="handlePhoneInput(this.value)" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.875rem; background: var(--bg-card); color: var(--text-main);">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 4px;">Email <span style="color: var(--red);">*</span></label>
+                            <input type="email" class="form-control" id="modal-lead-email" placeholder="example@gmail.com" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.875rem; background: var(--bg-card); color: var(--text-main);">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 4px;">Nguồn khách hàng</label>
+                            <select id="modal-lead-source" class="form-control" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.875rem; background: var(--bg-card); color: var(--text-main);">
+                                <option value="Website (Biểu mẫu công khai)">Website (Biểu mẫu công khai)</option>
+                                <option value="Facebook Fanpage">Facebook Fanpage</option>
+                                <option value="Zalo OA / Chat">Zalo OA / Chat</option>
+                                <option value="Hotline tư vấn">Hotline tư vấn</option>
+                                <option value="Giới thiệu (Referral)">Giới thiệu (Referral)</option>
+                                <option value="Sự kiện / Workshop">Sự kiện / Workshop</option>
+                                <option value="Trực tiếp tại trung tâm">Trực tiếp tại trung tâm</option>
+                                <option value="Nguồn khác">Nguồn khác</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 4px;">Chương trình quan tâm</label>
+                            <select id="modal-lead-course" class="form-control" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.875rem; background: var(--bg-card); color: var(--text-main);">
+                                <option value="Lập trình Web Fullstack (NodeJS & React)">Lập trình Web Fullstack (NodeJS & React)</option>
+                                <option value="Lập trình Java Spring Boot Doanh nghiệp">Lập trình Java Spring Boot Doanh nghiệp</option>
+                                <option value="Trí tuệ Nhân tạo & Ứng dụng Python (AI/ML)">Trí tuệ Nhân tạo & Ứng dụng Python (AI/ML)</option>
+                                <option value="Quản trị dự án PMP Quốc tế">Quản trị dự án PMP Quốc tế</option>
+                                <option value="Phân tích dữ liệu & BI Dashboard">Phân tích dữ liệu & BI Dashboard</option>
+                                <option value="Khác">Khóa đào tạo khác</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 4px;">Trạng thái hồ sơ</label>
+                            <select id="modal-lead-status" class="form-control" style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.875rem; background: var(--bg-card); color: var(--text-main);">
+                                <option value="Mới">Mới (Chờ liên hệ)</option>
+                                <option value="Đang tư vấn">Đang tư vấn</option>
+                                <option value="Đã ghi danh">Đã ghi danh</option>
+                                <option value="Không liên lạc được">Không liên lạc được</option>
+                                <option value="Hủy">Hủy tư vấn</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label style="display: block; font-size: 0.8125rem; font-weight: 600; margin-bottom: 4px;">Ghi chú tư vấn / Nhu cầu khách hàng</label>
+                        <textarea id="modal-lead-notes" rows="3" class="form-control" placeholder="Ghi nhận nhu cầu, thời gian học mong muốn, lịch hẹn tư vấn..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.875rem; background: var(--bg-card); color: var(--text-main); resize: vertical;"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn btn-secondary" onclick="closeLeadModal()">Hủy bỏ</button>
+                <button class="btn btn-primary" id="btn-save-lead-modal" onclick="saveLeadFromModal()">Lưu hồ sơ Lead</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- KN-74: Confirm Delete Lead Modal -->
+    <div class="modal-overlay" id="lead-delete-modal" style="display: none;">
+        <div class="modal-card" style="max-width: 480px;">
+            <div class="modal-header">
+                <div>
+                    <h3 style="color: var(--red);">Xác nhận Xóa Hồ Sơ Lead</h3>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Chỉ Quản lý đào tạo mới có quyền thực hiện thao tác này</p>
+                </div>
+                <button onclick="closeDeleteLeadModal()" style="font-size: 24px; color: var(--text-muted); line-height: 1;">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 0.875rem; color: var(--text-main); margin-bottom: 12px;" id="lead-delete-confirm-text">
+                    Bạn có chắc chắn muốn xóa hồ sơ khách hàng tiềm năng này không? Thao tác này không thể hoàn tác.
+                </p>
+                <input type="hidden" id="lead-delete-target-id" value="">
+            </div>
+            <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn btn-secondary" onclick="closeDeleteLeadModal()">Hủy</button>
+                <button class="btn" style="background: var(--red); color: white; padding: 8px 16px; border-radius: var(--radius-md);" onclick="executeDeleteLead()">Xóa hồ sơ</button>
             </div>
         </div>
     </div>
@@ -2662,14 +2779,280 @@
             ]);
         }
 
+        // =====================================================================
+        // KN-74: QUẢN LÝ LEAD DÀNH CHO TƯ VẤN VIÊN & QUẢN LÝ ĐÀO TẠO
+        // 1. Tạo và sửa lead: họ tên, SĐT, email, nguồn, chương trình
+        // 2. Cảnh báo khi số điện thoại trùng với lead đã có
+        // 3. Chỉ Quản lý đào tạo được xoá lead
+        // =====================================================================
+
+        let phoneCheckTimeout = null;
+
+        function openLeadModal(leadData = null) {
+            const modal = document.getElementById("lead-modal");
+            if (!modal) return;
+
+            const titleEl = document.getElementById("lead-modal-title");
+            const form = document.getElementById("lead-modal-form");
+            const alertDiv = document.getElementById("modal-phone-duplicate-alert");
+
+            if (alertDiv) alertDiv.style.display = "none";
+            if (form) form.reset();
+
+            if (leadData) {
+                // Chế độ Sửa Lead (Edit)
+                titleEl.textContent = "Chỉnh Sửa Hồ Sơ Lead (KN-74)";
+                document.getElementById("modal-lead-id").value = leadData.id || "";
+                document.getElementById("modal-lead-name").value = leadData.fullName || leadData.name || "";
+                document.getElementById("modal-lead-phone").value = leadData.phone || "";
+                document.getElementById("modal-lead-email").value = leadData.email || "";
+                document.getElementById("modal-lead-source").value = leadData.source || "Website (Biểu mẫu công khai)";
+                document.getElementById("modal-lead-course").value = leadData.course || leadData.program || "Lập trình Web Fullstack (NodeJS & React)";
+                document.getElementById("modal-lead-status").value = leadData.status || "Mới";
+                document.getElementById("modal-lead-notes").value = leadData.notes || leadData.message || leadData.counselorNotes || "";
+
+                // Kiểm tra trùng SĐT nếu đã có cảnh báo trước đó
+                if (leadData.isDuplicatePhone || leadData.duplicateWarning) {
+                    showPhoneDuplicateAlert(leadData.duplicateWarning || "Số điện thoại này đã trùng với một khách hàng khác trên hệ thống.");
+                }
+            } else {
+                // Chế độ Tạo Lead Mới (Create)
+                titleEl.textContent = "Thêm Khách Hàng Tiềm Năng Mới (KN-74)";
+                document.getElementById("modal-lead-id").value = "";
+                document.getElementById("modal-lead-status").value = "Mới";
+                document.getElementById("modal-lead-source").value = "Website (Biểu mẫu công khai)";
+                document.getElementById("modal-lead-course").value = "Lập trình Web Fullstack (NodeJS & React)";
+            }
+
+            modal.style.display = "flex";
+            document.body.style.overflow = "hidden";
+            setTimeout(() => document.getElementById("modal-lead-name")?.focus(), 100);
+        }
+
+        function closeLeadModal() {
+            const modal = document.getElementById("lead-modal");
+            if (modal) modal.style.display = "none";
+            document.body.style.overflow = "";
+        }
+
+        function showPhoneDuplicateAlert(message) {
+            const alertDiv = document.getElementById("modal-phone-duplicate-alert");
+            const alertText = document.getElementById("modal-phone-duplicate-alert-text");
+            if (alertDiv && alertText) {
+                alertText.innerHTML = `<strong>Cảnh báo trùng số điện thoại:</strong> ${message}`;
+                alertDiv.style.display = "flex";
+            }
+        }
+
+        function hidePhoneDuplicateAlert() {
+            const alertDiv = document.getElementById("modal-phone-duplicate-alert");
+            if (alertDiv) alertDiv.style.display = "none";
+        }
+
+        async function handlePhoneInput(phoneValue) {
+            clearTimeout(phoneCheckTimeout);
+            const cleanPhone = (phoneValue || "").trim();
+            if (!cleanPhone || cleanPhone.length < 8) {
+                hidePhoneDuplicateAlert();
+                return;
+            }
+
+            phoneCheckTimeout = setTimeout(async () => {
+                const currentId = document.getElementById("modal-lead-id")?.value || "";
+                const token = localStorage.getItem("tms_token");
+
+                // Thử kiểm tra trùng qua local state trước
+                const localDuplicate = allDashboardLeads.find(l => {
+                    if (currentId && (l.id === currentId || l.code === currentId)) return false;
+                    const p1 = (l.phone || "").replace(/[\s\.\-\(\)]/g, "").replace(/^\+84/, "0");
+                    const p2 = cleanPhone.replace(/[\s\.\-\(\)]/g, "").replace(/^\+84/, "0");
+                    return p1 === p2;
+                });
+
+                if (localDuplicate) {
+                    showPhoneDuplicateAlert(`Số điện thoại <strong>${cleanPhone}</strong> đã trùng với hồ sơ của khách hàng <strong>"${localDuplicate.fullName || localDuplicate.name}"</strong> (Mã: ${localDuplicate.code || localDuplicate.id} - Trạng thái: ${localDuplicate.status}).`);
+                    return;
+                }
+
+                // Nếu không thấy local, gọi API kiểm tra từ server
+                try {
+                    const res = await fetch(`/api/leads/check-phone?phone=${encodeURIComponent(cleanPhone)}${currentId ? `&excludeId=${encodeURIComponent(currentId)}` : ""}`, {
+                        headers: token ? { "Authorization": `Bearer ${token}` } : {}
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.isDuplicate && data.duplicateLead) {
+                            showPhoneDuplicateAlert(`Số điện thoại <strong>${cleanPhone}</strong> đã trùng với khách hàng <strong>"${data.duplicateLead.fullName}"</strong> (Mã: ${data.duplicateLead.code} - Trạng thái: ${data.duplicateLead.status}).`);
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    console.log("Check phone network check:", e);
+                }
+
+                hidePhoneDuplicateAlert();
+            }, 300);
+        }
+
+        async function saveLeadFromModal() {
+            const leadId = document.getElementById("modal-lead-id")?.value || "";
+            const fullName = document.getElementById("modal-lead-name")?.value.trim();
+            const phone = document.getElementById("modal-lead-phone")?.value.trim();
+            const email = document.getElementById("modal-lead-email")?.value.trim();
+            const source = document.getElementById("modal-lead-source")?.value;
+            const course = document.getElementById("modal-lead-course")?.value;
+            const status = document.getElementById("modal-lead-status")?.value;
+            const notes = document.getElementById("modal-lead-notes")?.value.trim();
+
+            if (!fullName || fullName.length < 2) {
+                showToast("Vui lòng nhập họ và tên khách hàng (tối thiểu 2 ký tự)", "warning");
+                document.getElementById("modal-lead-name")?.focus();
+                return;
+            }
+            if (!phone) {
+                showToast("Vui lòng cung cấp số điện thoại liên hệ", "warning");
+                document.getElementById("modal-lead-phone")?.focus();
+                return;
+            }
+            if (!email) {
+                showToast("Vui lòng cung cấp email", "warning");
+                document.getElementById("modal-lead-email")?.focus();
+                return;
+            }
+
+            const payload = {
+                fullName,
+                name: fullName,
+                phone,
+                email,
+                source,
+                course,
+                program: course,
+                status,
+                notes,
+                message: notes,
+                counselorNotes: notes
+            };
+
+            const token = localStorage.getItem("tms_token");
+            const saveBtn = document.getElementById("btn-save-lead-modal");
+            if (saveBtn) saveBtn.disabled = true;
+
+            try {
+                let res, data;
+                if (leadId) {
+                    // Sửa Lead
+                    res = await fetch(`/api/leads/${leadId}`, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    // Tạo Lead Mới
+                    res = await fetch(`/api/leads`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                }
+
+                data = await res.json();
+                if (res.ok && data.success) {
+                    if (data.isDuplicatePhone && data.duplicateWarning) {
+                        showToast(`⚠️ CẢNH BÁO: ${data.duplicateWarning}`, "warning");
+                    } else {
+                        showToast(leadId ? "Cập nhật hồ sơ lead thành công!" : "Tạo khách hàng tiềm năng mới thành công!");
+                    }
+                    closeLeadModal();
+                    loadDashboardLeads();
+                } else {
+                    showToast(data.message || "Thao tác không thành công", "danger");
+                }
+            } catch (err) {
+                showToast("Lỗi kết nối máy chủ: " + err.message, "danger");
+            } finally {
+                if (saveBtn) saveBtn.disabled = false;
+            }
+        }
+
+        function editLead(leadId) {
+            const found = allDashboardLeads.find(l => l.id === leadId || l.code === leadId);
+            if (found) {
+                openLeadModal(found);
+            } else {
+                fetch(`/api/leads/${leadId}`, {
+                    headers: localStorage.getItem("tms_token") ? { "Authorization": `Bearer ${localStorage.getItem("tms_token")}` } : {}
+                })
+                .then(r => r.json())
+                .then(d => {
+                    if (d.success && d.data) openLeadModal(d.data);
+                })
+                .catch(() => showToast("Không tìm thấy thông tin hồ sơ lead", "error"));
+            }
+        }
+
+        function confirmDeleteLead(leadId, leadName) {
+            // KN-74: Chỉ Quản lý đào tạo (và Quản trị viên) được xóa lead
+            const currentUserRole = normalizeRole(localStorage.getItem("tms_current_role") || "visitor");
+            if (currentUserRole === "admissions") {
+                showToast("Từ chối truy cập: Chỉ Quản lý đào tạo mới có quyền xóa hồ sơ lead khỏi hệ thống!", "danger");
+                return;
+            }
+
+            const modal = document.getElementById("lead-delete-modal");
+            const textEl = document.getElementById("lead-delete-confirm-text");
+            const targetInput = document.getElementById("lead-delete-target-id");
+
+            if (targetInput) targetInput.value = leadId;
+            if (textEl) textEl.innerHTML = `Bạn có chắc chắn muốn xóa hồ sơ khách hàng <strong>"${leadName}"</strong> khỏi hệ thống? Thao tác này không thể hoàn tác.`;
+            if (modal) modal.style.display = "flex";
+        }
+
+        function closeDeleteLeadModal() {
+            const modal = document.getElementById("lead-delete-modal");
+            if (modal) modal.style.display = "none";
+        }
+
+        async function executeDeleteLead() {
+            const targetId = document.getElementById("lead-delete-target-id")?.value;
+            if (!targetId) return;
+
+            const token = localStorage.getItem("tms_token");
+            try {
+                const res = await fetch(`/api/leads/${targetId}`, {
+                    method: "DELETE",
+                    headers: token ? { "Authorization": `Bearer ${token}` } : {}
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast("Đã xóa hồ sơ khách hàng tiềm năng thành công!");
+                    closeDeleteLeadModal();
+                    loadDashboardLeads();
+                } else {
+                    showToast(data.message || "Từ chối xóa hồ sơ lead!", "danger");
+                }
+            } catch (err) {
+                showToast("Lỗi kết nối khi xóa: " + err.message, "danger");
+            }
+        }
+
         function renderDashboardLeads(leadsList) {
             const tableBody = document.getElementById("leads-table-body");
             if (!tableBody) return;
 
             if (!leadsList || leadsList.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">Không tìm thấy hồ sơ Lead nào.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-muted);">Không tìm thấy hồ sơ Lead nào.</td></tr>`;
                 return;
             }
+
+            const currentRole = normalizeRole(localStorage.getItem("tms_current_role") || "visitor");
+            const canDeleteLead = (currentRole === "training_manager" || currentRole === "administrator");
 
             tableBody.innerHTML = leadsList.map(lead => {
                 let badgeStyle = "background: #10b981; color: white;";
@@ -2677,29 +3060,55 @@
                     badgeStyle = "background: #f59e0b; color: white;";
                 } else if (lead.status === "Đã ghi danh") {
                     badgeStyle = "background: #3b82f6; color: white;";
+                } else if (lead.status === "Không liên lạc được") {
+                    badgeStyle = "background: #8b5cf6; color: white;";
                 } else if (lead.status === "Hủy") {
                     badgeStyle = "background: #ef4444; color: white;";
                 }
 
                 const createdDate = lead.createdAt ? new Date(lead.createdAt).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" }) : "Vừa xong";
 
+                // Huy hiệu cảnh báo trùng số điện thoại nếu có
+                const dupPhoneBadge = lead.isDuplicatePhone ? `
+                    <span title="${lead.duplicateWarning || 'Trùng số điện thoại'}" style="display: inline-block; margin-left: 4px; font-size: 11px; color: #b45309; background: #fef3c7; border: 1px solid #fde68a; border-radius: 4px; padding: 1px 4px; font-weight: 600; cursor: help;">⚠️ Trùng</span>
+                ` : "";
+
+                // Nút Xóa theo phân quyền KN-74: Chỉ Quản lý đào tạo được xóa lead
+                const deleteButtonHtml = canDeleteLead ? `
+                    <button class="btn" title="Xóa hồ sơ Lead" onclick="confirmDeleteLead('${lead.id}', '${(lead.fullName || lead.name || '').replace(/'/g, "\\'")}')" style="padding: 4px 8px; font-size: 0.75rem; border-radius: 6px; background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; cursor: pointer; font-weight: 600; transition: 0.2s;">
+                        🗑️ Xóa
+                    </button>
+                ` : `
+                    <button class="btn" title="Chỉ Quản lý đào tạo được xoá lead (KN-74)" onclick="showToast('Từ chối truy cập: Chỉ Quản lý đào tạo mới có quyền xóa hồ sơ lead khỏi hệ thống!', 'danger')" style="padding: 4px 8px; font-size: 0.75rem; border-radius: 6px; background: var(--bg-body); color: var(--text-muted); border: 1px dashed var(--border); opacity: 0.6; cursor: not-allowed;">
+                        🔒 Xóa
+                    </button>
+                `;
+
                 return `
                     <tr>
                         <td><strong>${lead.code || lead.id}</strong></td>
                         <td><strong>${lead.fullName || lead.name}</strong></td>
-                        <td>${lead.phone}</td>
-                        <td>${lead.email}</td>
-                        <td>${lead.course || "Chung"}</td>
-                        <td><span class="badge" style="${badgeStyle}; font-weight: 700; padding: 3px 8px; border-radius: 999px;">${lead.status || "Mới"}</span></td>
+                        <td>${lead.phone} ${dupPhoneBadge}</td>
+                        <td><small>${lead.email}</small></td>
+                        <td><span style="font-size: 0.75rem; color: var(--text-muted);">${lead.source || "Website"}</span></td>
+                        <td><span class="course-title" style="font-size: 0.8125rem;">${lead.course || lead.program || "Chung"}</span></td>
+                        <td><span class="badge" style="${badgeStyle}; font-weight: 700; padding: 3px 8px; border-radius: 999px; font-size: 0.75rem;">${lead.status || "Mới"}</span></td>
                         <td><small style="color: var(--text-muted);">${createdDate}</small></td>
                         <td>
-                            <select onchange="updateDashboardLeadStatus('${lead.id}', this.value)" style="padding: 4px 8px; font-size: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main);">
-                                <option value="" disabled selected>Đổi trạng thái</option>
-                                <option value="Mới">Mới</option>
-                                <option value="Đang tư vấn">Đang tư vấn</option>
-                                <option value="Đã ghi danh">Đã ghi danh</option>
-                                <option value="Hủy">Hủy</option>
-                            </select>
+                            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                                <button class="btn btn-secondary" title="Sửa thông tin Lead" onclick="editLead('${lead.id}')" style="padding: 4px 8px; font-size: 0.75rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 3px;">
+                                    ✏️ Sửa
+                                </button>
+                                ${deleteButtonHtml}
+                                <select onchange="updateDashboardLeadStatus('${lead.id}', this.value)" style="padding: 4px 6px; font-size: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main);">
+                                    <option value="" disabled selected>Trạng thái</option>
+                                    <option value="Mới">Mới</option>
+                                    <option value="Đang tư vấn">Đang tư vấn</option>
+                                    <option value="Đã ghi danh">Đã ghi danh</option>
+                                    <option value="Không liên lạc được">Không liên lạc được</option>
+                                    <option value="Hủy">Hủy</option>
+                                </select>
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -2715,7 +3124,9 @@
                     (l.fullName && l.fullName.toLowerCase().includes(query)) ||
                     (l.phone && l.phone.includes(query)) ||
                     (l.email && l.email.toLowerCase().includes(query)) ||
-                    (l.code && l.code.toLowerCase().includes(query));
+                    (l.code && l.code.toLowerCase().includes(query)) ||
+                    (l.source && l.source.toLowerCase().includes(query)) ||
+                    (l.course && l.course.toLowerCase().includes(query));
 
                 const matchStatus = !statusFilter || (l.status === statusFilter);
                 return matchQuery && matchStatus;

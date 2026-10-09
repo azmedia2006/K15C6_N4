@@ -62,7 +62,9 @@ const {
     getLeadStats,
     generateAntiSpamChallenge,
     verifyAntiSpamChallenge,
-    checkSpam
+    checkSpam,
+    checkDuplicatePhone,
+    updateLead
 } = require("./leadService");
 
 const app = express();
@@ -839,6 +841,12 @@ app.post(["/api/leads", "/api/admissions/leads", "/api/public/leads"], (req, res
     const clientIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "127.0.0.1";
     const leadData = req.body || {};
 
+    // Nếu request có Header Authorization (cán bộ tuyển sinh / quản trị tạo từ giao diện nội bộ)
+    const authHeader = req.headers["authorization"] || "";
+    if (authHeader) {
+        leadData.bypassSpamCheck = true;
+    }
+
     const result = createLead(leadData, { ip: clientIp });
 
     if (!result.success) {
@@ -861,10 +869,42 @@ app.post(["/api/leads", "/api/admissions/leads", "/api/public/leads"], (req, res
         thankYouMessage: result.thankYouMessage,
         contactCommitment: result.contactCommitment,
         commitment: result.commitment,
+        isDuplicatePhone: Boolean(result.isDuplicatePhone),
+        duplicateWarning: result.duplicateWarning || null,
+        duplicateLead: result.duplicateLead || null,
         data: result.lead,
         lead: result.lead
     });
 });
+
+// KN-74: API Kiểm tra trùng số điện thoại Lead (Real-time duplicate phone check)
+app.get("/api/leads/check-phone",
+    authenticateToken,
+    requireRole("admissions", "training_manager", "administrator"),
+    (req, res) => {
+        const { phone, excludeId } = req.query;
+        if (!phone) {
+            return res.status(400).json({
+                success: false,
+                message: "Vui lòng cung cấp số điện thoại cần kiểm tra."
+            });
+        }
+        const result = checkDuplicatePhone(phone, excludeId);
+        return res.status(200).json({
+            success: true,
+            isDuplicate: result.isDuplicate,
+            duplicateLead: result.duplicateLead ? {
+                id: result.duplicateLead.id,
+                code: result.duplicateLead.code,
+                fullName: result.duplicateLead.fullName || result.duplicateLead.name,
+                phone: result.duplicateLead.phone,
+                status: result.duplicateLead.status,
+                course: result.duplicateLead.course
+            } : null,
+            message: result.message
+        });
+    }
+);
 
 // API Thống kê số lượng Lead (Quyền: Tư vấn tuyển sinh, Quản lý đào tạo hoặc Quản trị viên)
 app.get("/api/leads/stats",
@@ -909,10 +949,27 @@ app.get("/api/leads/:id",
     }
 );
 
+// KN-74: API Sửa toàn diện Lead (Họ tên, SĐT, Email, Nguồn, Chương trình quan tâm, Ghi chú, Trạng thái)
+// Quyền: Tư vấn tuyển sinh (admissions), Quản lý đào tạo (training_manager), Quản trị viên (administrator)
+app.put("/api/leads/:id",
+    authenticateToken,
+    requireRole("admissions", "training_manager", "administrator"),
+    (req, res) => {
+        const result = updateLead(req.params.id, req.body, req.user);
+        if (!result.success) {
+            const statusCode = result.code === "LEAD_NOT_FOUND" ? 404 : 400;
+            return res.status(statusCode).json(result);
+        }
+
+        supabaseService.syncLeadsDatabase(leads).catch(() => {});
+        return res.status(200).json(result);
+    }
+);
+
 // API Cập nhật trạng thái Lead (vd: chuyển từ "Mới" sang "Đang tư vấn", "Đã ghi danh", "Hủy")
 app.put("/api/leads/:id/status",
     authenticateToken,
-    requireRole("admissions", "administrator"),
+    requireRole("admissions", "training_manager", "administrator"),
     (req, res) => {
         const { status, counselorNotes, assignedTo } = req.body || {};
         if (!status) {
@@ -936,10 +993,25 @@ app.put("/api/leads/:id/status",
     }
 );
 
-// API Xóa Lead (Chỉ Quản trị viên)
+// KN-74: API Xóa Lead - TIÊU CHÍ CỐT LÕI: Chỉ Quản lý đào tạo (và Quản trị hệ thống) được xoá lead
 app.delete("/api/leads/:id",
     authenticateToken,
-    requireRole("administrator"),
+    (req, res, next) => {
+        const userRoles = (req.user && Array.isArray(req.user.roles))
+            ? req.user.roles.map(r => r.code || r.id)
+            : [req.user && req.user.role];
+
+        const canDelete = userRoles.includes("training_manager") || userRoles.includes("administrator");
+        if (!canDelete) {
+            return res.status(403).json({
+                success: false,
+                code: 403,
+                message: "Từ chối truy cập: Chỉ Quản lý đào tạo mới có quyền xóa hồ sơ lead khỏi hệ thống.",
+                requiredRoles: ["training_manager", "administrator"]
+            });
+        }
+        next();
+    },
     (req, res) => {
         const result = deleteLead(req.params.id);
         if (!result.success) {
