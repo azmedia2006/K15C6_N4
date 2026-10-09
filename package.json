@@ -15,7 +15,8 @@
     "test:kn10": "cd backend && npm run test:kn10",
     "test:lead": "cd backend && npm run test:lead",
     "test:kn66": "cd backend && npm run test:kn66",
-    "test:import": "cd backend && npm run test:import"
+    "test:import": "cd backend && npm run test:import",
+    "test:kn68": "cd backend && npm run test:kn68"
   },
   "dependencies": {
     "cors": "^2.8.6",

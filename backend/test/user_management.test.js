@@ -300,7 +300,9 @@ async function runAllTests() {
     }
 }
 
-runAllTests().catch((err) => {
+runAllTests().then(() => {
+    process.exit(0);
+}).catch((err) => {
     console.error("\n\x1b[31m✖ KIỂM THỬ KN-11 THẤT BẠI:\x1b[0m", err);
     process.exit(1);
 });

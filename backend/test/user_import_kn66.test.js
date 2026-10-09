@@ -276,7 +276,9 @@ async function runAllTests() {
     }
 }
 
-runAllTests().catch((err) => {
+runAllTests().then(() => {
+    process.exit(0);
+}).catch((err) => {
     console.error("\n[FAILED] KIỂM THỬ THẤT BẠI:", err);
     process.exit(1);
 });

@@ -2065,12 +2065,16 @@
             const statusClass = u.status === "locked" ? "locked" : "active";
             const statusLabel = u.status === "locked" ? "Tạm khóa" : "Đang hoạt động";
 
+            const avatarContent = (u.thumbnail || u.avatar)
+                ? `<img src="${u.thumbnail || u.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="${initials}">`
+                : initials;
+
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td>
                     <div class="user-cell">
-                        <div class="user-cell-avatar" style="background: ${roleInfo.color}">
-                            ${initials}
+                        <div class="user-cell-avatar" style="background: ${u.thumbnail || u.avatar ? 'transparent' : roleInfo.color}">
+                            ${avatarContent}
                         </div>
                         <div class="user-cell-meta">
                             <div class="user-cell-name">

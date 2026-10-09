@@ -49,7 +49,12 @@ const {
     previewImportUsers,
     importUsersBatch,
     parseExcelBuffer,
-    generateUsersTemplate
+    generateUsersTemplate,
+    updateUserAvatar,
+    deleteUserAvatar,
+    validateAndProcessAvatar,
+    MAX_AVATAR_SIZE_BYTES,
+    ALLOWED_MIME_TYPES
 } = require("./userService");
 
 const {
@@ -69,7 +74,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // KN-60: Middleware xác thực Token (Bearer Token)
 // Luôn lấy thông tin người dùng và vai trò mới nhất trực tiếp từ DB/Store (đảm bảo tính tức thời)
@@ -578,6 +584,172 @@ app.delete(
         }
     }
 );
+
+// =========================================================================
+// KN-68: API TẢI LÊN ẢNH ĐẠI DIỆN & TẠO BẢN THU NHỎ PHỤC VỤ ĐIỂM DANH
+// Tiêu chí chấp nhận:
+// 1. Chấp nhận JPG/PNG tối đa 2MB (2,097,152 bytes)
+// 2. Cắt vuông và tạo bản thu nhỏ (thumbnail) phục vụ điểm danh nhận diện khuôn mặt
+// =========================================================================
+
+// Cập nhật ảnh đại diện của người dùng (hỗ trợ cả /api/users/:id/avatar và /api/user/avatar)
+app.post(
+    ["/api/users/:id/avatar", "/api/user/avatar"],
+    async (req, res) => {
+        try {
+            // Xác định ID người dùng từ params hoặc body hoặc token
+            let targetUserId = req.params.id;
+            if (!targetUserId && req.body && req.body.userId) {
+                targetUserId = req.body.userId;
+            }
+
+            // Nếu có token xác thực, cho phép người dùng tự đổi ảnh của mình hoặc Admin đổi hộ
+            const authHeader = req.headers["authorization"] || "";
+            if (authHeader) {
+                const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : authHeader.trim();
+                const payload = verifyToken(token);
+                if (payload && payload.userId && !targetUserId) {
+                    targetUserId = payload.userId;
+                }
+            }
+
+            if (!targetUserId) {
+                targetUserId = "usr_student"; // Fallback tài khoản học viên mẫu cho demo
+            }
+
+            const { avatarData, thumbnailData, mimeType, sizeBytes } = req.body || {};
+
+            if (!avatarData) {
+                return res.status(400).json({
+                    success: false,
+                    code: 400,
+                    error: "Vui lòng cung cấp dữ liệu ảnh đại diện."
+                });
+            }
+
+            const updatedUser = updateUserAvatar(targetUserId, {
+                avatarData,
+                thumbnailData,
+                mimeType,
+                sizeBytes
+            });
+
+            // Đồng bộ sang Supabase nếu có cấu hình
+            try {
+                await supabaseService.syncSingleUser(updatedUser, null, users);
+            } catch (e) {
+                // Ignore sync error in offline mode
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: "Tải lên ảnh đại diện thành công. Đã tạo bản thu nhỏ phục vụ nhận diện điểm danh lớp đông.",
+                user: updatedUser,
+                data: updatedUser
+            });
+        } catch (err) {
+            return res.status(err.status || err.statusCode || 400).json({
+                success: false,
+                code: err.status || err.statusCode || 400,
+                error: err.message || "Không thể tải lên ảnh đại diện."
+            });
+        }
+    }
+);
+
+// Lấy ảnh đại diện và thumbnail của người dùng
+app.get(
+    ["/api/users/:id/avatar", "/api/user/avatar"],
+    (req, res) => {
+        const targetUserId = req.params.id || "usr_student";
+        const user = getUserById(targetUserId) || users.find(u => u.id === targetUserId || u.email.toLowerCase() === targetUserId.toLowerCase());
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                code: 404,
+                error: "Không tìm thấy người dùng."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            userId: user.id,
+            name: user.name,
+            avatar: user.avatar || "",
+            thumbnail: user.thumbnail || ""
+        });
+    }
+);
+
+// Xóa ảnh đại diện (khôi phục về chữ cái mặc định)
+app.delete(
+    ["/api/users/:id/avatar", "/api/user/avatar"],
+    (req, res) => {
+        try {
+            const targetUserId = req.params.id || "usr_student";
+            const result = deleteUserAvatar(targetUserId);
+            return res.status(200).json({
+                success: true,
+                message: "Đã xóa ảnh đại diện thành công.",
+                data: result
+            });
+        } catch (err) {
+            return res.status(err.status || err.statusCode || 400).json({
+                success: false,
+                code: err.status || err.statusCode || 400,
+                error: err.message || "Không thể xóa ảnh đại diện."
+            });
+        }
+    }
+);
+
+// API Danh sách học viên lớp học kèm ảnh nhận diện phục vụ điểm danh lớp đông (KN-68)
+app.get("/api/attendance/students", (req, res) => {
+    const studentUsers = users.filter(u => u.role === "student");
+    const sv001 = studentUsers.find(u => u.id === "usr_student" || u.email === "student@tms.edu.vn") || {};
+
+    const attendanceStudents = [
+        {
+            id: sv001.id || "usr_student",
+            studentCode: "SV001",
+            name: sv001.name || "Lê Minh Tuấn",
+            email: sv001.email || "student@tms.edu.vn",
+            className: "K15-PM01",
+            attendanceRate: 92,
+            status: "present",
+            avatar: sv001.avatar || "",
+            thumbnail: sv001.thumbnail || ""
+        },
+        {
+            id: "usr_sv002",
+            studentCode: "SV002",
+            name: "Hoàng Thùy Linh",
+            email: "linh.ht@tms.edu.vn",
+            className: "K15-PM01",
+            attendanceRate: 88,
+            status: "present",
+            avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='50' fill='%236366f1'/><circle cx='50' cy='38' r='20' fill='%23ffffff'/><path d='M20 85 C20 62 35 56 50 56 C65 56 80 62 80 85 Z' fill='%23ffffff'/></svg>",
+            thumbnail: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='50' fill='%236366f1'/><circle cx='50' cy='38' r='20' fill='%23ffffff'/><path d='M20 85 C20 62 35 56 50 56 C65 56 80 62 80 85 Z' fill='%23ffffff'/></svg>"
+        },
+        {
+            id: "usr_sv003",
+            studentCode: "SV003",
+            name: "Trần Đình Trọng",
+            email: "trong.td@tms.edu.vn",
+            className: "K15-PM01",
+            attendanceRate: 74,
+            status: "absent",
+            avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='50' fill='%23f59e0b'/><circle cx='50' cy='38' r='20' fill='%23ffffff'/><path d='M20 85 C20 62 35 56 50 56 C65 56 80 62 80 85 Z' fill='%23ffffff'/></svg>",
+            thumbnail: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='50' fill='%23f59e0b'/><circle cx='50' cy='38' r='20' fill='%23ffffff'/><path d='M20 85 C20 62 35 56 50 56 C65 56 80 62 80 85 Z' fill='%23ffffff'/></svg>"
+        }
+    ];
+
+    return res.status(200).json({
+        success: true,
+        data: attendanceStudents
+    });
+});
 
 // KN-58: Xây dựng API gán vai trò cho người dùng
 // POST /api/admin/users/:userId/roles
