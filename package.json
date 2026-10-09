@@ -13,12 +13,15 @@
     "test:kn8": "cd backend && npm run test:kn8",
     "test:supabase": "cd backend && npm run test:supabase",
     "test:kn10": "cd backend && npm run test:kn10",
-    "test:lead": "cd backend && npm run test:lead"
+    "test:lead": "cd backend && npm run test:lead",
+    "test:kn66": "cd backend && npm run test:kn66",
+    "test:import": "cd backend && npm run test:import"
   },
   "dependencies": {
     "cors": "^2.8.6",
     "dotenv": "^18.0.6",
     "express": "^5.2.1",
-    "nodemailer": "^10.0.16"
+    "nodemailer": "^10.0.16",
+    "xlsx": "^0.18.5"
   }
 }

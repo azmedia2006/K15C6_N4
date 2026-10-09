@@ -1181,7 +1181,7 @@
                 const role = String(result.role || "").trim().toLowerCase().replace(/^role_/, "").replace(/[\s-]+/g, "_");
                 handleSuccessfulLogin(role, result.user, result.token);
             } catch {
-                // Chế độ demo / offline client-side mô phỏng đầy đủ tiêu chí của user story KN-14
+                // Chế độ demo / offline client-side mô phỏng đầy đủ phân quyền và xác thực người dùng
                 const inputEmail = document.querySelector("#email").value.trim().toLowerCase();
                 const inputPass = document.querySelector("#password").value;
 

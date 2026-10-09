@@ -302,8 +302,332 @@ function deleteUser(id, currentAdminId = null) {
     return { success: true, message: `Đã xóa tài khoản '${targetUser.name}' (${targetUser.email}) thành công.` };
 }
 
+// =========================================================================
+// KN-66: NHẬP DANH SÁCH NGƯỜI DÙNG HÀNG LOẠT TỪ TỆP EXCEL / CSV
+// =========================================================================
+
+const XLSX = require("xlsx");
+
+// Bản đồ ánh xạ tên vai trò tiếng Việt / tiếng Anh sang mã vai trò chuẩn TMS
+const ROLE_NAME_MAP = {
+    "học viên": "student",
+    "hoc vien": "student",
+    "sinh viên": "student",
+    "sinh vien": "student",
+    "học sinh": "student",
+    "hoc sinh": "student",
+    "student": "student",
+    "giảng viên": "instructor",
+    "giang vien": "instructor",
+    "giáo viên": "instructor",
+    "giao vien": "instructor",
+    "thầy cô": "instructor",
+    "thay co": "instructor",
+    "instructor": "instructor",
+    "teacher": "instructor",
+    "trợ giảng": "teaching_assistant",
+    "tro giang": "teaching_assistant",
+    "teaching assistant": "teaching_assistant",
+    "teaching_assistant": "teaching_assistant",
+    "ta": "teaching_assistant",
+    "quản lý đào tạo": "training_manager",
+    "quan ly dao tao": "training_manager",
+    "training manager": "training_manager",
+    "training_manager": "training_manager",
+    "tư vấn tuyển sinh": "admissions",
+    "tu van tuyen sinh": "admissions",
+    "tuyển sinh": "admissions",
+    "tuyen sinh": "admissions",
+    "tư vấn": "admissions",
+    "tu van": "admissions",
+    "admissions": "admissions",
+    "kế toán": "accountant",
+    "ke toan": "accountant",
+    "kế toán đào tạo": "accountant",
+    "accountant": "accountant",
+    "quản trị viên": "administrator",
+    "quan tri vien": "administrator",
+    "quản trị hệ thống": "administrator",
+    "quan tri he thong": "administrator",
+    "admin": "administrator",
+    "administrator": "administrator",
+    "khách": "visitor",
+    "khach": "visitor",
+    "khách tham quan": "visitor",
+    "khach tham quan": "visitor",
+    "khách truy cập": "visitor",
+    "khach truy cap": "visitor",
+    "visitor": "visitor"
+};
+
+function normalizeRole(inputRole) {
+    if (!inputRole || !String(inputRole).trim()) {
+        return "student"; // Mặc định là học viên khi import khóa học viên mới
+    }
+    const clean = String(inputRole).trim().toLowerCase();
+    if (ROLE_NAME_MAP[clean]) {
+        return ROLE_NAME_MAP[clean];
+    }
+    if (VALID_ROLES.includes(clean)) {
+        return clean;
+    }
+    return null;
+}
+
+function extractRowFields(row) {
+    if (!row || typeof row !== "object") {
+        return { name: "", email: "", phone: "", role: "", password: "" };
+    }
+
+    const findVal = (keys) => {
+        for (const k of keys) {
+            for (const actualKey of Object.keys(row)) {
+                if (actualKey.trim().toLowerCase() === k.toLowerCase()) {
+                    const val = row[actualKey];
+                    return val != null ? String(val).trim() : "";
+                }
+            }
+        }
+        return "";
+    };
+
+    const name = findVal(["họ và tên", "họ tên", "họ và ten", "họ tên đầy đủ", "tên", "full name", "fullname", "name"]);
+    const email = findVal(["email", "địa chỉ email", "email đăng nhập", "mail"]);
+    const phone = findVal(["số điện thoại", "số đt", "sđt", "điện thoại", "phone", "phone number", "tel", "telephone"]);
+    const role = findVal(["vai trò", "vai trò hệ thống", "chức vụ", "quyền", "role"]);
+    const password = findVal(["mật khẩu", "mật khẩu ban đầu", "mật khẩu tạm", "password", "pass"]);
+
+    return { name, email, phone, role, password };
+}
+
+function validateImportRow(rawRow, existingEmailsSet, batchEmailsMap, rowIndex) {
+    const rowNumber = rowIndex + 1;
+    const { name, email, phone, role, password } = extractRowFields(rawRow);
+    const errors = [];
+
+    // 1. Kiểm tra Họ và Tên
+    if (!name) {
+        errors.push("Họ và tên không được để trống.");
+    } else if (name.length < 2) {
+        errors.push("Họ và tên phải có ít nhất 2 ký tự.");
+    }
+
+    // 2. Kiểm tra Email
+    let normalizedEmail = "";
+    if (!email) {
+        errors.push("Email không được để trống.");
+    } else {
+        normalizedEmail = email.toLowerCase();
+        if (!isValidEmail(normalizedEmail)) {
+            errors.push(`Định dạng email '${email}' không hợp lệ.`);
+        } else if (existingEmailsSet.has(normalizedEmail)) {
+            errors.push(`Email '${email}' đã tồn tại trong hệ thống.`);
+        } else if (batchEmailsMap.has(normalizedEmail)) {
+            errors.push(`Email '${email}' bị trùng lặp với dòng ${batchEmailsMap.get(normalizedEmail)} trong cùng tệp.`);
+        } else {
+            batchEmailsMap.set(normalizedEmail, rowNumber);
+        }
+    }
+
+    // 3. Kiểm tra Vai trò
+    const normalizedRole = normalizeRole(role);
+    if (!normalizedRole) {
+        errors.push(`Vai trò '${role}' không hợp lệ.`);
+    }
+
+    // 4. Kiểm tra Số điện thoại
+    let cleanPhone = "";
+    if (phone) {
+        cleanPhone = phone.replace(/[\s\.\-\(\)]/g, "");
+        if (!/^[0-9\+]{8,15}$/.test(cleanPhone)) {
+            errors.push(`Số điện thoại '${phone}' không đúng định dạng.`);
+        }
+    }
+
+    const isValid = errors.length === 0;
+
+    return {
+        rowNumber,
+        isValid,
+        errors,
+        error: errors.join(" "),
+        data: {
+            name,
+            email: normalizedEmail || email,
+            phone: cleanPhone || phone || "",
+            role: normalizedRole || "student",
+            password: password || ""
+        },
+        originalData: rawRow
+    };
+}
+
+function previewImportUsers(rows) {
+    if (!Array.isArray(rows)) {
+        throw { status: 400, message: "Dữ liệu dòng nhập (rows) phải là một danh sách mảng." };
+    }
+
+    const existingEmailsSet = new Set(users.map(u => (u.email || "").toLowerCase()));
+    const batchEmailsMap = new Map();
+
+    const evaluatedRows = rows.map((row, index) =>
+        validateImportRow(row, existingEmailsSet, batchEmailsMap, index)
+    );
+
+    const validRows = evaluatedRows.filter(r => r.isValid);
+    const invalidRows = evaluatedRows.filter(r => !r.isValid);
+
+    return {
+        totalRows: evaluatedRows.length,
+        validCount: validRows.length,
+        invalidCount: invalidRows.length,
+        rows: evaluatedRows,
+        validRows,
+        invalidRows
+    };
+}
+
+function importUsersBatch(rows, { currentAdminId, skipInvalid = true } = {}) {
+    const preview = previewImportUsers(rows);
+    const importedUsers = [];
+    const skippedRows = [...preview.invalidRows];
+
+    for (const validItem of preview.validRows) {
+        try {
+            const createRes = createUser({
+                name: validItem.data.name,
+                email: validItem.data.email,
+                role: validItem.data.role,
+                phone: validItem.data.phone,
+                password: validItem.data.password
+            });
+
+            importedUsers.push({
+                rowNumber: validItem.rowNumber,
+                id: createRes.user.id,
+                name: createRes.user.name,
+                email: createRes.user.email,
+                role: createRes.user.role,
+                phone: createRes.user.phone,
+                temporaryPassword: createRes.temporaryPassword,
+                status: createRes.user.status,
+                createdAt: createRes.user.createdAt
+            });
+        } catch (err) {
+            skippedRows.push({
+                rowNumber: validItem.rowNumber,
+                isValid: false,
+                errors: [err.message || "Lỗi tạo tài khoản"],
+                error: err.message || "Lỗi tạo tài khoản",
+                data: validItem.data,
+                originalData: validItem.originalData
+            });
+        }
+    }
+
+    return {
+        success: true,
+        summary: {
+            totalRows: preview.totalRows,
+            validCount: preview.validCount,
+            invalidCount: preview.invalidCount,
+            importedCount: importedUsers.length,
+            skippedCount: skippedRows.length,
+            importedUsers,
+            skippedRows
+        }
+    };
+}
+
+function parseExcelBuffer(buffer) {
+    if (!buffer) return [];
+    const wb = XLSX.read(buffer, { type: "buffer" });
+    const firstSheetName = wb.SheetNames[0];
+    if (!firstSheetName) return [];
+    const ws = wb.Sheets[firstSheetName];
+    return XLSX.utils.sheet_to_json(ws, { defval: "" });
+}
+
+function generateUsersTemplate(format = "xlsx") {
+    const templateData = [
+        {
+            "Họ và tên": "Nguyễn Văn An",
+            "Email": "an.nguyen@example.com",
+            "Số điện thoại": "0912345678",
+            "Vai trò": "Học viên",
+            "Mật khẩu ban đầu": ""
+        },
+        {
+            "Họ và tên": "Trần Thị Bình",
+            "Email": "binh.tran@example.com",
+            "Số điện thoại": "0987654321",
+            "Vai trò": "Học viên",
+            "Mật khẩu ban đầu": ""
+        },
+        {
+            "Họ và tên": "Lê Hoàng Nam",
+            "Email": "nam.le@example.com",
+            "Số điện thoại": "0901234567",
+            "Vai trò": "Học viên",
+            "Mật khẩu ban đầu": ""
+        },
+        {
+            "Họ và tên": "Phạm Minh Đức",
+            "Email": "duc.pham@example.com",
+            "Số điện thoại": "0934567890",
+            "Vai trò": "Giảng viên",
+            "Mật khẩu ban đầu": ""
+        },
+        {
+            "Họ và tên": "Hoàng Thu Thảo",
+            "Email": "thao.hoang@example.com",
+            "Số điện thoại": "0978901234",
+            "Vai trò": "Trợ giảng",
+            "Mật khẩu ban đầu": ""
+        }
+    ];
+
+    if (format === "csv") {
+        const headers = ["Họ và tên", "Email", "Số điện thoại", "Vai trò", "Mật khẩu ban đầu"];
+        let csvContent = "\uFEFF" + headers.join(",") + "\n";
+        templateData.forEach(row => {
+            csvContent += `"${row["Họ và tên"]}","${row["Email"]}","${row["Số điện thoại"]}","${row["Vai trò"]}","${row["Mật khẩu ban đầu"]}"\n`;
+        });
+        return {
+            contentType: "text/csv; charset=utf-8",
+            filename: "tms_mau_nhap_nguoi_dung.csv",
+            data: Buffer.from(csvContent, "utf-8")
+        };
+    }
+
+    const ws = XLSX.utils.json_to_sheet(templateData, {
+        header: ["Họ và tên", "Email", "Số điện thoại", "Vai trò", "Mật khẩu ban đầu"]
+    });
+
+    ws["!cols"] = [
+        { wch: 22 },
+        { wch: 28 },
+        { wch: 16 },
+        { wch: 18 },
+        { wch: 20 }
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "DanhSachHocVien");
+    const buffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+
+    return {
+        contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        filename: "tms_mau_nhap_nguoi_dung.xlsx",
+        data: buffer
+    };
+}
+
 module.exports = {
     VALID_ROLES,
+    ROLE_NAME_MAP,
+    normalizeRole,
+    extractRowFields,
     getUsers,
     getUserById,
     createUser,
@@ -312,5 +636,10 @@ module.exports = {
     isValidEmail,
     generateRandomTempPassword,
     sendActivationEmail,
-    sentEmails
+    sentEmails,
+    validateImportRow,
+    previewImportUsers,
+    importUsersBatch,
+    parseExcelBuffer,
+    generateUsersTemplate
 };

@@ -54,4 +54,5 @@ Dưới đây là danh sách tài khoản được phân quyền theo 8 vai trò
 | 7 | **Kế toán đào tạo (Accountant)** | `accountant@tms.edu.vn` | `accountant123` | `frontend/Index.html?role=accountant` |
 | 8 | **Khách truy cập (Visitor)** | `visitor@tms.edu.vn` | `visitor123` | `frontend/Index.html?role=visitor` |
 
->
+> **Tính năng bổ sung:**  
+> Hệ thống hỗ trợ nhập danh sách học viên và người dùng hàng loạt từ tệp Excel (`.xlsx`, `.xls`, `.csv`) với tính năng tải tệp mẫu, xem trước và báo lỗi từng dòng, tự động bỏ qua dòng lỗi và xuất báo cáo tổng kết chi tiết. Chi tiết tại [KN_66.md](file:///c:/Users/Administrator/Downloads/ttcs_minhquan/KN_66.md).

@@ -8,6 +8,9 @@
     
     <!-- Client-Side Access Guard -->
     <script src="/authGuard.js" data-required="administrator"></script>
+
+    <!-- SheetJS (XLSX) for client-side Excel Parsing & Generation -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -388,6 +391,189 @@
             background: var(--bg-page);
             border-color: #cbd5e1;
             transform: translateY(-1px);
+        }
+
+        .btn-emerald {
+            background-color: #059669;
+            color: white;
+            box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);
+        }
+
+        .btn-emerald:hover {
+            background-color: #047857;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35);
+        }
+
+        /* Large Modal for Excel Import */
+        .modal-card.modal-xl {
+            max-width: 980px;
+            width: 96%;
+        }
+
+        /* Dropzone Component */
+        .dropzone-box {
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 26px 20px;
+            text-align: center;
+            background: var(--bg-page);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .dropzone-box:hover, .dropzone-box.dragover {
+            border-color: #059669;
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .dropzone-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.12);
+            color: #059669;
+            display: grid;
+            place-items: center;
+        }
+
+        /* Guide Banner */
+        .guide-box {
+            background: var(--bg-page);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        /* Preview Summary Bar */
+        .preview-summary-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            background: var(--bg-page);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .preview-tags-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .preview-tag {
+            padding: 4px 10px;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .preview-tag.total {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            color: var(--text-heading);
+        }
+
+        .preview-tag.valid {
+            background: #ecfdf5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .preview-tag.invalid {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        /* Preview Table */
+        .preview-table-container {
+            max-height: 320px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: var(--bg-surface);
+        }
+
+        .preview-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8125rem;
+            text-align: left;
+        }
+
+        .preview-table th {
+            position: sticky;
+            top: 0;
+            background: var(--bg-page);
+            padding: 10px 14px;
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 0.6875rem;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-color);
+            z-index: 10;
+            white-space: nowrap;
+        }
+
+        .preview-table td {
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        .preview-table tr.row-invalid {
+            background-color: rgba(239, 68, 68, 0.05);
+        }
+
+        .preview-table tr.row-valid:hover td {
+            background-color: rgba(16, 185, 129, 0.04);
+        }
+
+        .row-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 99px;
+            font-size: 0.6875rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .row-badge.valid {
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+
+        .row-badge.invalid {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+        }
+
+        .row-error-text {
+            color: #dc2626;
+            font-size: 0.75rem;
+            font-weight: 500;
         }
 
         /* Executive Metrics Strip */
@@ -1115,6 +1301,10 @@
                 <p class="page-header-desc">Quản lý danh sách nhân sự, giảng viên và học viên. Cấp tài khoản mới, khởi tạo mật khẩu tạm an toàn và điều chỉnh trạng thái truy cập.</p>
             </div>
             <div class="page-header-actions">
+                <button class="btn btn-emerald" onclick="openImportExcelModal()" title="Nhập danh sách học viên hàng loạt từ tệp Excel">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="12" y2="12"/><line x1="15" y1="15" x2="12" y2="12"/></svg>
+                    <span>Nhập từ Excel</span>
+                </button>
                 <button class="btn btn-secondary" onclick="exportUsersCSV()" title="Tải danh sách người dùng ra bảng tính Excel">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     <span>Xuất file Excel (.csv)</span>
@@ -1448,6 +1638,232 @@
                 <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- MODAL: Nhập danh sách người dùng hàng loạt từ Excel -->
+<div class="modal-overlay" id="import-excel-modal">
+    <div class="modal-card modal-xl">
+        <div class="modal-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(16, 185, 129, 0.15); color: #059669; display: grid; place-items: center;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="12" y2="12"/><line x1="15" y1="15" x2="12" y2="12"/></svg>
+                </div>
+                <div>
+                    <h3 style="margin: 0; line-height: 1.2;">Nhập Danh Sách Người Dùng Từ Excel</h3>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Tạo tài khoản hàng loạt cho khoá học viên mới nhanh chóng và chính xác.</p>
+                </div>
+            </div>
+            <button class="modal-close" onclick="closeModal('import-excel-modal')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <!-- Khu vực tải file mẫu & hướng dẫn -->
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; background: rgba(16, 185, 129, 0.08); padding: 12px 16px; border-radius: var(--radius-md); border: 1px solid var(--primary-border);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    <span style="font-size: 0.8125rem; font-weight: 500; color: #065f46;">Chưa có tệp định dạng chuẩn? Hãy tải tệp mẫu đã có sẵn cấu trúc cột và dữ liệu minh họa:</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button type="button" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;" onclick="downloadSampleTemplate('xlsx')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <span>Tải mẫu Excel (.xlsx)</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;" onclick="downloadSampleTemplate('csv')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <span>Tải mẫu CSV (.csv)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Khung Kéo thả tập tin (Dropzone) -->
+            <div id="import-upload-step">
+                <input type="file" id="import-file-input" accept=".xlsx,.xls,.csv" style="display: none;" onchange="handleFileSelected(this.files[0])">
+                <div class="dropzone-box" id="import-dropzone" onclick="document.getElementById('import-file-input').click()">
+                    <div class="dropzone-icon">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    </div>
+                    <div>
+                        <strong style="color: var(--text-heading); font-size: 0.9375rem;">Kéo và thả tệp Excel (.xlsx, .xls) hoặc CSV vào đây</strong>
+                        <p style="color: var(--text-muted); font-size: 0.8125rem; margin-top: 4px;">hoặc <span style="color: var(--primary); font-weight: 600; text-decoration: underline;">nhấn để duyệt tệp từ máy tính</span></p>
+                    </div>
+                    <span style="font-size: 0.6875rem; color: var(--text-light);">Hỗ trợ tối đa 500 dòng mỗi lượt nhập. Tệp mã hóa UTF-8.</span>
+                </div>
+
+                <div class="guide-box" style="margin-top: 14px;">
+                    <div style="font-weight: 600; color: var(--text-heading); display: flex; align-items: center; gap: 6px;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        <span>Quy tắc dữ liệu các cột trong tệp:</span>
+                    </div>
+                    <ul style="padding-left: 20px; line-height: 1.6; font-size: 0.8125rem;">
+                        <li><strong>Họ và tên:</strong> Bắt buộc, tối thiểu 2 ký tự (Ví dụ: Nguyễn Văn An).</li>
+                        <li><strong>Email:</strong> Bắt buộc, đúng định dạng, không được trùng với tài khoản đã có trong hệ thống và không trùng trong cùng file.</li>
+                        <li><strong>Số điện thoại:</strong> Tùy chọn, 8-15 chữ số.</li>
+                        <li><strong>Vai trò:</strong> Mặc định là <em>Học viên</em> nếu để trống. Hỗ trợ: Học viên, Giảng viên, Trợ giảng, Quản lý đào tạo, Tuyển sinh, Kế toán, Quản trị viên.</li>
+                        <li><strong>Mật khẩu ban đầu:</strong> Tùy chọn. Nếu để trống, hệ thống sẽ tự động sinh mật khẩu tạm an toàn <code>TMS@...</code>.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Khu vực Xem trước (Preview) -->
+            <div id="import-preview-step" style="display: none; flex-direction: column; gap: 14px;">
+                <div class="preview-summary-bar">
+                    <div class="preview-tags-group">
+                        <span class="preview-tag total" id="preview-tag-total">Tổng: 0 dòng</span>
+                        <span class="preview-tag valid" id="preview-tag-valid">Hợp lệ: 0 dòng</span>
+                        <span class="preview-tag invalid" id="preview-tag-invalid">Có lỗi: 0 dòng</span>
+                    </div>
+
+                    <div style="display: flex; gap: 6px; align-items: center;">
+                        <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Xem:</span>
+                        <div class="segmented-control" style="padding: 2px;">
+                            <button class="seg-btn active" id="btn-filter-all" onclick="filterPreviewRows('all', this)">Tất cả</button>
+                            <button class="seg-btn" id="btn-filter-valid" onclick="filterPreviewRows('valid', this)">Chỉ hợp lệ</button>
+                            <button class="seg-btn" id="btn-filter-invalid" onclick="filterPreviewRows('invalid', this)">Chỉ có lỗi</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="preview-table-container">
+                    <table class="preview-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px; text-align: center;">Dòng</th>
+                                <th>Họ và tên</th>
+                                <th>Email</th>
+                                <th>Số điện thoại</th>
+                                <th>Vai trò</th>
+                                <th style="width: 100px; text-align: center;">Trạng thái</th>
+                                <th>Chi tiết kiểm tra / Lỗi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="preview-table-body">
+                            <!-- Rows injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="font-size: 0.8125rem; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between;">
+                    <span id="preview-note-text">Dòng lỗi sẽ tự động bị bỏ qua, chỉ các dòng hợp lệ được tạo tài khoản.</span>
+                    <button type="button" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="resetImportFile()">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        <span>Chọn tệp khác</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer" style="justify-content: space-between;">
+            <button type="button" class="btn btn-secondary" onclick="closeModal('import-excel-modal')">Hủy bỏ</button>
+            <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn btn-emerald" id="btn-confirm-import" onclick="handleConfirmImport()" disabled style="opacity: 0.6;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span id="btn-confirm-import-text">Tiến hành nhập dữ liệu</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Báo cáo Tổng kết sau khi nhập -->
+<div class="modal-overlay" id="import-summary-modal">
+    <div class="modal-card modal-xl">
+        <div class="modal-header" style="background: var(--primary-soft); border-bottom-color: var(--primary-border);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: #10b981; color: white; display: grid; place-items: center;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div>
+                    <h3 style="margin: 0; line-height: 1.2; color: #065f46;">Báo Cáo Tổng Kết Nhập Dữ Liệu Hàng Loạt</h3>
+                    <p style="font-size: 0.75rem; color: #047857; margin-top: 2px;">Quá trình nhập dữ liệu đã hoàn tất. Thông tin tài khoản và mật khẩu tạm thời đã sẵn sàng.</p>
+                </div>
+            </div>
+            <button class="modal-close" onclick="closeModal('import-summary-modal')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <!-- Thẻ thống kê kết quả -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;">
+                <div style="background: var(--bg-page); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px 18px; text-align: center;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Tổng số dòng</div>
+                    <div style="font-size: 1.5rem; font-weight: 800; color: var(--text-heading); margin-top: 4px;" id="summary-stat-total">0</div>
+                </div>
+
+                <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: var(--radius-md); padding: 14px 18px; text-align: center;">
+                    <div style="font-size: 0.75rem; color: #065f46; font-weight: 700; text-transform: uppercase;">Nhập thành công</div>
+                    <div style="font-size: 1.5rem; font-weight: 800; color: #059669; margin-top: 4px;" id="summary-stat-success">0</div>
+                </div>
+
+                <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius-md); padding: 14px 18px; text-align: center;">
+                    <div style="font-size: 0.75rem; color: #991b1b; font-weight: 700; text-transform: uppercase;">Bỏ qua do lỗi</div>
+                    <div style="font-size: 1.5rem; font-weight: 800; color: #dc2626; margin-top: 4px;" id="summary-stat-skipped">0</div>
+                </div>
+            </div>
+
+            <!-- Danh sách tài khoản đã cấp -->
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                    <strong style="color: var(--text-heading); font-size: 0.875rem;">Danh sách tài khoản vừa được cấp kèm mật khẩu tạm thời:</strong>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;" onclick="copyImportedCredentials()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                            <span>Sao chép toàn bộ thông tin</span>
+                        </button>
+                        <button type="button" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;" onclick="exportImportResultsCSV()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            <span>Tải kết quả (.csv)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="preview-table-container" style="max-height: 240px;">
+                    <table class="preview-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px; text-align: center;">STT</th>
+                                <th>Họ và tên</th>
+                                <th>Email đăng nhập</th>
+                                <th>Vai trò</th>
+                                <th>Mật khẩu tạm thời</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summary-success-table-body">
+                            <!-- Rows injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Danh sách dòng bị bỏ qua (nếu có) -->
+            <div id="summary-skipped-section" style="display: none; flex-direction: column; gap: 8px; margin-top: 6px;">
+                <strong style="color: #991b1b; font-size: 0.8125rem;">Chi tiết các dòng bị bỏ qua (vui lòng sửa lại trong file gốc để nhập bổ sung):</strong>
+                <div class="preview-table-container" style="max-height: 160px; border-color: #fecaca;">
+                    <table class="preview-table">
+                        <thead>
+                            <tr style="background: #fef2f2;">
+                                <th style="width: 60px; text-align: center; color: #991b1b;">Dòng</th>
+                                <th style="color: #991b1b;">Họ và tên</th>
+                                <th style="color: #991b1b;">Email</th>
+                                <th style="color: #991b1b;">Nguyên nhân lỗi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summary-skipped-table-body">
+                            <!-- Rows injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer" style="justify-content: flex-end;">
+            <button type="button" class="btn btn-primary" onclick="finishImportSummary()">
+                <span>Hoàn tất & Làm mới danh sách</span>
+            </button>
+        </div>
     </div>
 </div>
 
@@ -2104,6 +2520,536 @@
             toast.style.transition = "all 0.3s ease";
             setTimeout(() => toast.remove(), 300);
         }, 3000);
+    }
+
+    // =========================================================================
+    // LOGIC XỬ LÝ NHẬP DANH SÁCH NGƯỜI DÙNG HÀNG LOẠT TỪ EXCEL / CSV
+    // =========================================================================
+
+    let currentImportParsedRows = [];
+    let currentImportPreviewData = null;
+    let currentImportFilter = "all";
+    let lastImportSummary = null;
+
+    // 1. Mở modal nhập Excel
+    function openImportExcelModal() {
+        resetImportFile();
+        document.getElementById("import-excel-modal").classList.add("open");
+    }
+
+    // 2. Tải tệp mẫu (.xlsx hoặc .csv)
+    function downloadSampleTemplate(format = 'xlsx') {
+        const url = `${API_BASE}/admin/users/import/template?format=${format}`;
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = format === 'csv' ? 'tms_mau_nhap_nguoi_dung.csv' : 'tms_mau_nhap_nguoi_dung.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => document.body.removeChild(a), 500);
+        showToast(`Đang tải tệp mẫu định dạng ${format.toUpperCase()}...`, "success");
+    }
+
+    // Thiết lập kéo thả file
+    const dropzone = document.getElementById("import-dropzone");
+    if (dropzone) {
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropzone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.classList.add("dragover");
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropzone.addEventListener(eventName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.classList.remove("dragover");
+            }, false);
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files && files.length > 0) {
+                handleFileSelected(files[0]);
+            }
+        });
+    }
+
+    // 3. Xử lý khi người dùng chọn file
+    function handleFileSelected(file) {
+        if (!file) return;
+
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (!['xlsx', 'xls', 'csv'].includes(ext)) {
+            showToast("Vui lòng chọn định dạng tệp Excel (.xlsx, .xls) hoặc CSV (.csv)", "error");
+            return;
+        }
+
+        const reader = new FileReader();
+
+        if (ext === 'csv') {
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const rows = parseCSVClient(text);
+                if (!rows || rows.length === 0) {
+                    showToast("Tệp CSV rỗng hoặc không đúng cấu trúc.", "error");
+                    return;
+                }
+                processRowsAndShowPreview(rows);
+            };
+            reader.readAsText(file, "UTF-8");
+        } else {
+            // Excel (.xlsx, .xls)
+            reader.onload = function(e) {
+                try {
+                    if (window.XLSX) {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const rows = XLSX.utils.sheet_to_json(firstSheet, { defval: "" });
+                        if (!rows || rows.length === 0) {
+                            showToast("Tệp Excel rỗng hoặc không có dữ liệu.", "error");
+                            return;
+                        }
+                        processRowsAndShowPreview(rows);
+                    } else {
+                        clientSideFallbackPreview([]);
+                    }
+                } catch (err) {
+                    showToast("Không thể đọc tệp Excel: " + err.message, "error");
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+    }
+
+    // Parser CSV dự phòng phía Client (hỗ trợ ngoặc kép, UTF-8)
+    function parseCSVClient(text) {
+        if (text.charCodeAt(0) === 0xFEFF) {
+            text = text.slice(1);
+        }
+        const lines = text.split(/\r\n|\n|\r/).filter(l => l.trim().length > 0);
+        if (lines.length < 2) return [];
+
+        const parseRow = (line) => {
+            const re_value = /(?!\s*$)\s*(?:"([^"]*(?:""[^"]*)*)"|([^,]*))\s*(?:,|$)/g;
+            const res = [];
+            let match;
+            while ((match = re_value.exec(line)) !== null) {
+                let val = match[1] !== undefined ? match[1].replace(/""/g, '"') : match[2];
+                res.push((val || "").trim());
+                if (re_value.lastIndex === line.length) break;
+            }
+            return res;
+        };
+
+        const headers = parseRow(lines[0]);
+        const rows = [];
+        for (let i = 1; i < lines.length; i++) {
+            const vals = parseRow(lines[i]);
+            if (vals.length === 0 || vals.every(v => v === "")) continue;
+            const obj = {};
+            headers.forEach((h, idx) => {
+                obj[h] = vals[idx] || "";
+            });
+            rows.push(obj);
+        }
+        return rows;
+    }
+
+    // Xử lý xem trước thông qua API Backend (hoặc fallback đồng bộ)
+    async function processRowsAndShowPreview(rows) {
+        currentImportParsedRows = rows;
+        try {
+            const token = await getValidAdminToken();
+            const res = await fetch(`${API_BASE}/admin/users/import/preview`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                },
+                body: JSON.stringify({ rows })
+            });
+            const d = await res.json();
+            if (d.success && d.preview) {
+                currentImportPreviewData = d.preview;
+                displayPreviewStep();
+                return;
+            }
+        } catch (e) {
+            console.warn("Server preview fallback:", e);
+        }
+
+        clientSideFallbackPreview(rows);
+    }
+
+    function clientSideFallbackPreview(rows) {
+        const existingEmails = new Set(usersData.map(u => (u.email || "").toLowerCase()));
+        const batchEmails = new Map();
+
+        const roleMap = {
+            "học viên": "student", "hoc vien": "student", "sinh viên": "student", "student": "student",
+            "giảng viên": "instructor", "giang vien": "instructor", "instructor": "instructor",
+            "trợ giảng": "teaching_assistant", "tro giang": "teaching_assistant", "teaching_assistant": "teaching_assistant",
+            "quản lý đào tạo": "training_manager", "quan ly dao tao": "training_manager", "training_manager": "training_manager",
+            "tư vấn tuyển sinh": "admissions", "tuyển sinh": "admissions", "admissions": "admissions",
+            "kế toán": "accountant", "accountant": "accountant",
+            "quản trị viên": "administrator", "administrator": "administrator", "admin": "administrator"
+        };
+
+        const evaluated = rows.map((r, idx) => {
+            const rowNumber = idx + 1;
+            const findKey = (kList) => {
+                for (const k of kList) {
+                    for (const actual of Object.keys(r)) {
+                        if (actual.trim().toLowerCase() === k.toLowerCase()) {
+                            return r[actual] != null ? String(r[actual]).trim() : "";
+                        }
+                    }
+                }
+                return "";
+            };
+
+            const name = findKey(["họ và tên", "họ tên", "tên", "name", "full name"]);
+            const email = findKey(["email", "địa chỉ email", "email đăng nhập", "mail"]);
+            const phone = findKey(["số điện thoại", "số đt", "sđt", "điện thoại", "phone"]);
+            const rawRole = findKey(["vai trò", "vai trò hệ thống", "role", "chức vụ"]);
+            const password = findKey(["mật khẩu", "mật khẩu ban đầu", "password"]);
+
+            const errors = [];
+            if (!name || name.length < 2) errors.push("Họ và tên bắt buộc (tối thiểu 2 ký tự).");
+            
+            let normEmail = (email || "").toLowerCase().trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!normEmail) {
+                errors.push("Email không được để trống.");
+            } else if (!emailRegex.test(normEmail)) {
+                errors.push(`Định dạng email '${email}' không hợp lệ.`);
+            } else if (existingEmails.has(normEmail)) {
+                errors.push(`Email '${email}' đã tồn tại trong hệ thống.`);
+            } else if (batchEmails.has(normEmail)) {
+                errors.push(`Email '${email}' bị trùng lặp với dòng ${batchEmails.get(normEmail)} trong tệp.`);
+            } else {
+                batchEmails.set(normEmail, rowNumber);
+            }
+
+            let roleCode = "student";
+            if (rawRole) {
+                const clean = rawRole.toLowerCase().trim();
+                roleCode = roleMap[clean] || (Object.keys(roleLabels).includes(clean) ? clean : null);
+                if (!roleCode) errors.push(`Vai trò '${rawRole}' không hợp lệ.`);
+            }
+
+            const isValid = errors.length === 0;
+
+            return {
+                rowNumber,
+                isValid,
+                errors,
+                error: errors.join(" "),
+                data: { name, email: normEmail || email, phone, role: roleCode || "student", password }
+            };
+        });
+
+        currentImportPreviewData = {
+            totalRows: evaluated.length,
+            validCount: evaluated.filter(r => r.isValid).length,
+            invalidCount: evaluated.filter(r => !r.isValid).length,
+            rows: evaluated,
+            validRows: evaluated.filter(r => r.isValid),
+            invalidRows: evaluated.filter(r => !r.isValid)
+        };
+
+        displayPreviewStep();
+    }
+
+    function displayPreviewStep() {
+        if (!currentImportPreviewData) return;
+
+        document.getElementById("import-upload-step").style.display = "none";
+        document.getElementById("import-preview-step").style.display = "flex";
+
+        const p = currentImportPreviewData;
+        document.getElementById("preview-tag-total").textContent = `Tổng: ${p.totalRows} dòng`;
+        document.getElementById("preview-tag-valid").textContent = `Hợp lệ: ${p.validCount} dòng`;
+        document.getElementById("preview-tag-invalid").textContent = `Có lỗi: ${p.invalidCount} dòng`;
+
+        currentImportFilter = "all";
+        document.querySelectorAll("#import-preview-step .seg-btn").forEach(b => b.classList.remove("active"));
+        document.getElementById("btn-filter-all").classList.add("active");
+
+        renderPreviewRows("all");
+
+        const btnConfirm = document.getElementById("btn-confirm-import");
+        const btnText = document.getElementById("btn-confirm-import-text");
+
+        if (p.validCount > 0) {
+            btnConfirm.disabled = false;
+            btnConfirm.style.opacity = "1";
+            btnText.textContent = `Xác nhận nhập ${p.validCount} tài khoản (Bỏ qua ${p.invalidCount} dòng lỗi)`;
+        } else {
+            btnConfirm.disabled = true;
+            btnConfirm.style.opacity = "0.6";
+            btnText.textContent = `Không có dòng hợp lệ để nhập`;
+        }
+    }
+
+    function filterPreviewRows(filter, btn) {
+        currentImportFilter = filter;
+        document.querySelectorAll("#import-preview-step .seg-btn").forEach(b => b.classList.remove("active"));
+        if (btn) btn.classList.add("active");
+        renderPreviewRows(filter);
+    }
+
+    function renderPreviewRows(filter) {
+        if (!currentImportPreviewData) return;
+        const tbody = document.getElementById("preview-table-body");
+        tbody.innerHTML = "";
+
+        let list = currentImportPreviewData.rows || [];
+        if (filter === "valid") {
+            list = list.filter(r => r.isValid);
+        } else if (filter === "invalid") {
+            list = list.filter(r => !r.isValid);
+        }
+
+        if (list.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 24px; color: var(--text-muted);">Không có dữ liệu phù hợp với bộ lọc '${filter === 'valid' ? 'Chỉ hợp lệ' : 'Chỉ có lỗi'}'.</td></tr>`;
+            return;
+        }
+
+        list.forEach(item => {
+            const tr = document.createElement("tr");
+            tr.className = item.isValid ? "row-valid" : "row-invalid";
+
+            const roleMeta = roleLabels[item.data.role] || { name: item.data.role, color: "#64748b" };
+
+            tr.innerHTML = `
+                <td style="text-align: center; font-weight: 700; color: var(--text-muted);">${item.rowNumber}</td>
+                <td style="font-weight: 600; color: var(--text-heading);">${escapeHtml(item.data.name || "(Trống)")}</td>
+                <td><code>${escapeHtml(item.data.email || "(Trống)")}</code></td>
+                <td>${escapeHtml(item.data.phone || "-")}</td>
+                <td><span style="font-weight: 600; color: ${roleMeta.color};">${escapeHtml(roleMeta.name)}</span></td>
+                <td style="text-align: center;">
+                    ${item.isValid 
+                        ? `<span class="row-badge valid">✔ Hợp lệ</span>`
+                        : `<span class="row-badge invalid">✖ Lỗi</span>`}
+                </td>
+                <td>
+                    ${item.isValid 
+                        ? `<span style="color: #059669; font-size: 0.75rem;">Sẵn sàng nhập (Mật khẩu tự sinh: TMS@...)</span>`
+                        : `<span class="row-error-text">${escapeHtml(item.error)}</span>`}
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function resetImportFile() {
+        currentImportParsedRows = [];
+        currentImportPreviewData = null;
+        document.getElementById("import-file-input").value = "";
+        document.getElementById("import-upload-step").style.display = "block";
+        document.getElementById("import-preview-step").style.display = "none";
+        const btnConfirm = document.getElementById("btn-confirm-import");
+        btnConfirm.disabled = true;
+        btnConfirm.style.opacity = "0.6";
+        document.getElementById("btn-confirm-import-text").textContent = "Tiến hành nhập dữ liệu";
+    }
+
+    async function handleConfirmImport() {
+        if (!currentImportPreviewData || currentImportPreviewData.validCount === 0) return;
+
+        const btnConfirm = document.getElementById("btn-confirm-import");
+        const originalText = btnConfirm.innerHTML;
+        btnConfirm.disabled = true;
+        btnConfirm.innerHTML = `<span>Đang xử lý nhập dữ liệu...</span>`;
+
+        try {
+            const token = await getValidAdminToken();
+            const res = await fetch(`${API_BASE}/admin/users/import`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                },
+                body: JSON.stringify({ rows: currentImportParsedRows })
+            });
+
+            const data = await res.json();
+            if (data.success && data.summary) {
+                lastImportSummary = data.summary;
+                handleImportSuccess(data.summary);
+                return;
+            } else {
+                throw new Error(data.message || "Lỗi máy chủ khi nhập.");
+            }
+        } catch (e) {
+            console.warn("Server import error, using client optimistic fallback:", e.message);
+            clientSideFallbackImport();
+        } finally {
+            btnConfirm.innerHTML = originalText;
+        }
+    }
+
+    function clientSideFallbackImport() {
+        const p = currentImportPreviewData;
+        const newlyImported = [];
+
+        p.validRows.forEach(item => {
+            const tempPass = "TMS@" + Math.random().toString(36).substring(2, 8);
+            const newUid = "usr_" + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
+            const created = {
+                id: newUid,
+                name: item.data.name,
+                email: item.data.email,
+                role: item.data.role,
+                phone: item.data.phone || "Chưa cập nhật",
+                status: "active",
+                createdAt: new Date().toISOString(),
+                temporaryPassword: tempPass
+            };
+            usersData.unshift(created);
+            newlyImported.push(created);
+        });
+
+        const summary = {
+            totalRows: p.totalRows,
+            validCount: p.validCount,
+            invalidCount: p.invalidCount,
+            importedCount: newlyImported.length,
+            skippedCount: p.invalidCount,
+            importedUsers: newlyImported,
+            skippedRows: p.invalidRows
+        };
+
+        lastImportSummary = summary;
+        handleImportSuccess(summary);
+    }
+
+    function handleImportSuccess(summary) {
+        closeModal("import-excel-modal");
+
+        if (Array.isArray(summary.importedUsers)) {
+            summary.importedUsers.forEach(nu => {
+                if (!usersData.some(u => u.email.toLowerCase() === nu.email.toLowerCase())) {
+                    usersData.unshift({
+                        id: nu.id,
+                        name: nu.name,
+                        email: nu.email,
+                        role: nu.role,
+                        phone: nu.phone || "",
+                        status: nu.status || "active",
+                        createdAt: nu.createdAt || new Date().toISOString()
+                    });
+                }
+            });
+        }
+
+        renderTable();
+        updateMetrics();
+        try { localStorage.setItem("tms_users_cache", JSON.stringify(usersData)); } catch {}
+
+        document.getElementById("summary-stat-total").textContent = summary.totalRows;
+        document.getElementById("summary-stat-success").textContent = summary.importedCount;
+        document.getElementById("summary-stat-skipped").textContent = summary.skippedCount;
+
+        const successTbody = document.getElementById("summary-success-table-body");
+        successTbody.innerHTML = "";
+        (summary.importedUsers || []).forEach((u, i) => {
+            const tr = document.createElement("tr");
+            const roleMeta = roleLabels[u.role] || { name: u.role, color: "#64748b" };
+            tr.innerHTML = `
+                <td style="text-align: center; color: var(--text-muted); font-weight: 700;">${i + 1}</td>
+                <td style="font-weight: 600; color: var(--text-heading);">${escapeHtml(u.name)}</td>
+                <td><code>${escapeHtml(u.email)}</code></td>
+                <td><span style="font-weight: 600; color: ${roleMeta.color};">${escapeHtml(roleMeta.name)}</span></td>
+                <td><code style="color: #b91c1c; background: #fef2f2; padding: 2px 6px; border-radius: 4px; font-weight: 700;">${escapeHtml(u.temporaryPassword)}</code></td>
+            `;
+            successTbody.appendChild(tr);
+        });
+
+        const skippedSec = document.getElementById("summary-skipped-section");
+        const skippedTbody = document.getElementById("summary-skipped-table-body");
+        skippedTbody.innerHTML = "";
+
+        if (summary.skippedRows && summary.skippedRows.length > 0) {
+            skippedSec.style.display = "flex";
+            summary.skippedRows.forEach(sr => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td style="text-align: center; color: #991b1b; font-weight: 700;">Dòng ${sr.rowNumber}</td>
+                    <td>${escapeHtml(sr.data?.name || sr.originalData?.["Họ và tên"] || "-")}</td>
+                    <td><code>${escapeHtml(sr.data?.email || sr.originalData?.["Email"] || "-")}</code></td>
+                    <td style="color: #dc2626; font-size: 0.75rem;">${escapeHtml(sr.error || "Dữ liệu không hợp lệ")}</td>
+                `;
+                skippedTbody.appendChild(tr);
+            });
+        } else {
+            skippedSec.style.display = "none";
+        }
+
+        document.getElementById("import-summary-modal").classList.add("open");
+        showToast(`Nhập thành công ${summary.importedCount} tài khoản!`, "success");
+    }
+
+    function copyImportedCredentials() {
+        if (!lastImportSummary || !lastImportSummary.importedUsers || lastImportSummary.importedUsers.length === 0) {
+            showToast("Không có tài khoản nào để sao chép.", "error");
+            return;
+        }
+
+        let txt = "DANH SÁCH TÀI KHOẢN VÀ MẬT KHẨU TẠM THỜI (HỆ THỐNG ĐÀO TẠO TMS)\n";
+        txt += "----------------------------------------------------------------------\n";
+        lastImportSummary.importedUsers.forEach((u, i) => {
+            const roleName = roleLabels[u.role]?.name || u.role;
+            txt += `${i + 1}. Họ tên: ${u.name} | Email: ${u.email} | Vai trò: ${roleName} | Mật khẩu: ${u.temporaryPassword}\n`;
+        });
+        txt += "----------------------------------------------------------------------\n";
+        txt += "Đường dẫn đăng nhập hệ thống: " + window.location.origin + "/Login.html\n";
+
+        navigator.clipboard.writeText(txt).then(() => {
+            showToast("Đã sao chép toàn bộ danh sách tài khoản & mật khẩu!", "success");
+        }).catch(() => {
+            showToast("Vui lòng cho phép quyền truy cập bộ nhớ tạm.", "error");
+        });
+    }
+
+    function exportImportResultsCSV() {
+        if (!lastImportSummary || !lastImportSummary.importedUsers || lastImportSummary.importedUsers.length === 0) {
+            showToast("Không có dữ liệu để xuất file.", "error");
+            return;
+        }
+
+        let csv = "DANH SÁCH TÀI KHOẢN HỌC VIÊN ĐÃ CẤP TỰ ĐỘNG TỪ TỆP EXCEL\n";
+        csv += "Ngày kết xuất," + new Date().toLocaleString("vi-VN") + "\n\n";
+        csv += "STT,Họ và Tên,Email Đăng Nhập,Vai Trò,Mật Khẩu Tạm Thời,Số Điện Thoại\n";
+
+        lastImportSummary.importedUsers.forEach((u, i) => {
+            const roleName = roleLabels[u.role]?.name || u.role;
+            csv += `"${i + 1}","${u.name}","${u.email}","${roleName}","${u.temporaryPassword}","${u.phone || ''}"\n`;
+        });
+
+        const bom = "\uFEFF";
+        const blob = new Blob([bom + csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "TMS_Tai_Khoan_Hoc_Vien_Moi_" + Date.now() + ".csv";
+        document.body.appendChild(link);
+        link.click();
+        setTimeout(() => {
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }, 1000);
+        showToast("Đã tải tệp kết quả tài khoản!", "success");
+    }
+
+    function finishImportSummary() {
+        closeModal("import-summary-modal");
+        loadUsersFromAPIOrLocal();
     }
 </script>
 

@@ -29,6 +29,7 @@ const {
     revokeRoleFromUser,
     getUsersWithRolesList,
     getAuditLogs,
+    recordAuditLog,
     removeAllUserRoles,
     syncUserRole,
     getAllUserRolesAssignments
@@ -43,7 +44,12 @@ const {
     deleteUser,
     getUserById,
     lockUser,
-    unlockUser
+    unlockUser,
+    validateImportRow,
+    previewImportUsers,
+    importUsersBatch,
+    parseExcelBuffer,
+    generateUsersTemplate
 } = require("./userService");
 
 const {
@@ -355,6 +361,128 @@ app.post(
             return res.status(err.status || err.statusCode || 500).json({
                 success: false,
                 message: err.message || "Đã xảy ra lỗi khi tạo người dùng."
+            });
+        }
+    }
+);
+
+// =========================================================================
+// KN-66: API NHẬP DANH SÁCH NGƯỜI DÙNG HÀNG LOẠT TỪ EXCEL / CSV
+// =========================================================================
+
+// 1. Tải tệp mẫu Excel / CSV (Accepts ?format=xlsx hoặc ?format=csv)
+app.get(
+    ["/api/admin/users/import/template", "/api/admin/users/template"],
+    (req, res) => {
+        try {
+            const format = String(req.query.format || "xlsx").toLowerCase();
+            const template = generateUsersTemplate(format);
+            res.setHeader("Content-Type", template.contentType);
+            res.setHeader("Content-Disposition", `attachment; filename="${template.filename}"`);
+            return res.status(200).send(template.data);
+        } catch (err) {
+            return res.status(500).json({
+                success: false,
+                message: "Không thể tạo file mẫu: " + err.message
+            });
+        }
+    }
+);
+
+// 2. Xem trước và báo lỗi theo từng dòng trước khi nhập (Preview & Row Validation)
+app.post(
+    ["/api/admin/users/import/preview", "/api/admin/users/preview-import"],
+    authenticateToken,
+    requireRole("administrator"),
+    (req, res) => {
+        try {
+            let rows = req.body?.rows;
+            if (!rows && req.body?.fileBase64) {
+                const buffer = Buffer.from(req.body.fileBase64, "base64");
+                rows = parseExcelBuffer(buffer);
+            }
+            if (!rows || !Array.isArray(rows)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Dữ liệu không hợp lệ. Vui lòng cung cấp mảng danh sách 'rows' hoặc 'fileBase64'."
+                });
+            }
+
+            const preview = previewImportUsers(rows);
+            return res.status(200).json({
+                success: true,
+                message: `Phân tích hoàn tất: ${preview.validCount}/${preview.totalRows} dòng hợp lệ.`,
+                preview
+            });
+        } catch (err) {
+            return res.status(err.status || 500).json({
+                success: false,
+                message: err.message || "Lỗi khi kiểm tra dữ liệu file."
+            });
+        }
+    }
+);
+
+// 3. Nhập người dùng hàng loạt (Dòng lỗi bỏ qua, dòng hợp lệ được nhập, báo cáo tổng kết)
+app.post(
+    ["/api/admin/users/import", "/api/admin/users/batch-import"],
+    authenticateToken,
+    requireRole("administrator"),
+    async (req, res) => {
+        try {
+            let rows = req.body?.rows;
+            if (!rows && req.body?.fileBase64) {
+                const buffer = Buffer.from(req.body.fileBase64, "base64");
+                rows = parseExcelBuffer(buffer);
+            }
+            if (!rows || !Array.isArray(rows)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Vui lòng cung cấp mảng danh sách 'rows' để tiến hành nhập."
+                });
+            }
+
+            const result = importUsersBatch(rows, {
+                currentAdminId: req.user?.id || "usr_admin",
+                skipInvalid: true
+            });
+
+            // Đồng bộ sang user_roles & Supabase
+            for (const u of result.summary.importedUsers) {
+                try {
+                    syncUserRole(u.id, u.role);
+                } catch (e) {}
+
+                try {
+                    const fullUser = users.find(existing => existing.id === u.id);
+                    if (fullUser) {
+                        await supabaseService.syncSingleUser(fullUser, u.temporaryPassword, users);
+                    }
+                } catch (e) {}
+            }
+
+            // Ghi nhận Audit Log (KN-63)
+            try {
+                recordAuditLog({
+                    adminId: req.user?.id || "usr_admin",
+                    targetUserId: `batch_${result.summary.importedCount}_users`,
+                    action: "IMPORT_USERS_BATCH",
+                    roleId: "various",
+                    ip: req.ip || "127.0.0.1",
+                    status: "SUCCESS",
+                    reason: `Nhập thành công ${result.summary.importedCount} tài khoản, bỏ qua ${result.summary.skippedCount} dòng lỗi.`
+                });
+            } catch (e) {}
+
+            return res.status(200).json({
+                success: true,
+                message: `Đã nhập thành công ${result.summary.importedCount} tài khoản. Bỏ qua ${result.summary.skippedCount} dòng lỗi.`,
+                summary: result.summary
+            });
+        } catch (err) {
+            return res.status(err.status || 500).json({
+                success: false,
+                message: err.message || "Đã xảy ra lỗi khi nhập danh sách người dùng."
             });
         }
     }
