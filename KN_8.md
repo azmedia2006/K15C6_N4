@@ -1,6 +1,6 @@
 # Báo cáo Triển khai Tính năng: Phân quyền theo Vai trò Toàn Hệ thống
 
-- Người thực hiện: Minh Quân
+- Người thực hiện: Đoàn Minh Quân
 - Chức năng: Kiểm soát truy cập dựa trên vai trò (Role-Based Access Control - RBAC) tại tầng máy chủ cho toàn hệ thống
 - Trạng thái: Hoàn thành (Đạt toàn bộ tiêu chí kiểm thử)
 

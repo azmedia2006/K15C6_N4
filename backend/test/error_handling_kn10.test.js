@@ -52,7 +52,7 @@ async function stopServer() {
 async function runTests() {
     console.log("\n=======================================================");
     console.log("   TMS ERROR HANDLING SUITE - KIỂM THỬ TỰ ĐỘNG KN-10   ");
-    console.log("   Assignee: Thach Minh Quan | Jira Sprint 1 (1 SP)    ");
+    console.log("   Assignee: Doan Minh Quan | Sprint 1               ");
     console.log("=======================================================");
 
     await startServer();
