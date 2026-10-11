@@ -1,0 +1,17 @@
+{
+  "name": "tms-kn75-lead-assignment",
+  "version": "1.0.0",
+  "private": true,
+  "description": "KN-75 - Phân công lead cho tư vấn viên (module độc lập, không thay đổi dependency của dự án gốc)",
+  "scripts": {
+    "migrate": "node migrate.js",
+    "test": "node --test --test-concurrency=1 test/kn75.api.test.js",
+    "test:ui": "node test/kn75.ui.test.js"
+  },
+  "dependencies": {
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.48.0"
+  }
+}
