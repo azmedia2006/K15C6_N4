@@ -1,0 +1,16 @@
+# PostgreSQL local cho KN-75: docker compose -f backend/kn75/docker-compose.yml up -d
+services:
+  kn75-postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tms
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./docker-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      retries: 20
