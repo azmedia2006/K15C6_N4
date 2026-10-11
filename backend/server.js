@@ -1372,6 +1372,9 @@ app.get("/frontend/:page", (req, res) => {
     res.redirect(301, `/${req.params.page}`);
 });
 
+// KN-75: Phân công lead cho tư vấn viên (module độc lập, chỉ thêm route /api/kn75/*)
+require("./kn75").mountKn75(app, { authenticateToken, requireRole });
+
 // KN-49 & KN-50: Các định tuyến mã lỗi chuẩn (Clean Error Routing)
 app.get(["/403", "/error-403"], (req, res) => {
     res.sendFile(path.join(rootDir, "Error.html"));
