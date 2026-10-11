@@ -1,6 +1,16 @@
 const path = require("path");
+require("dotenv").config({
+    path: [path.join(__dirname, ".env"), path.join(__dirname, "../.env")]
+});
 const express = require("express");
 const cors = require("cors");
+const {
+    verifySmtp,
+    SMTP_CONFIG,
+    sentEmails,
+    sendActivationEmail,
+    sendPasswordResetEmail
+} = require("./emailService");
 const {
     findUserByEmail,
     hashPassword,
@@ -10,7 +20,10 @@ const {
     getLockoutStatus,
     recordFailedAttempt,
     recordSuccessfulLogin,
-    users
+    users,
+    createPasswordResetToken,
+    verifyPasswordResetToken,
+    resetPasswordWithToken
 } = require("./authService");
 
 const {
@@ -20,6 +33,7 @@ const {
     revokeRoleFromUser,
     getUsersWithRolesList,
     getAuditLogs,
+    recordAuditLog,
     removeAllUserRoles,
     syncUserRole,
     getAllUserRolesAssignments
@@ -34,7 +48,17 @@ const {
     deleteUser,
     getUserById,
     lockUser,
-    unlockUser
+    unlockUser,
+    validateImportRow,
+    previewImportUsers,
+    importUsersBatch,
+    parseExcelBuffer,
+    generateUsersTemplate,
+    updateUserAvatar,
+    deleteUserAvatar,
+    validateAndProcessAvatar,
+    MAX_AVATAR_SIZE_BYTES,
+    ALLOWED_MIME_TYPES
 } = require("./userService");
 
 const {
@@ -54,7 +78,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // KN-60: Middleware xác thực Token (Bearer Token)
 // Luôn lấy thông tin người dùng và vai trò mới nhất trực tiếp từ DB/Store (đảm bảo tính tức thời)
@@ -246,6 +271,130 @@ app.get("/api/auth/me", authenticateToken, (req, res) => {
     });
 });
 
+// =========================================================================
+// KN-39, KN-40, KN-42, KN-43: BỘ API QUÊN VÀ ĐẶT LẠI MẬT KHẨU
+// Hỗ trợ cả tiền tố /api/auth/* và /auth/*
+// =========================================================================
+
+// KN-39 & KN-42: API Yêu cầu quên mật khẩu và phát hành liên kết gửi qua Email
+app.post(["/api/auth/forgot-password", "/auth/forgot-password"], async (req, res) => {
+    const { email } = req.body || {};
+
+    if (!email || !String(email).trim()) {
+        return res.status(400).json({
+            success: false,
+            code: 400,
+            message: "Vui lòng nhập địa chỉ email liên kết với tài khoản."
+        });
+    }
+
+    const clientIp = req.ip || req.headers["x-forwarded-for"] || (req.socket && req.socket.remoteAddress) || "127.0.0.1";
+    const result = createPasswordResetToken(email, clientIp);
+
+    // Rate Limit: Quá 5 lần / giờ (KN-39)
+    if (result.rateLimited) {
+        return res.status(429).json({
+            success: false,
+            code: 429,
+            message: "Bạn đã yêu cầu đặt lại mật khẩu quá nhiều lần (tối đa 5 lần/giờ). Vui lòng thử lại sau.",
+            retryAfterSeconds: result.retryAfterSeconds
+        });
+    }
+
+    // Nếu tài khoản tồn tại: Gửi email bất đồng bộ qua SMTP (Fire and forget, không làm chậm response)
+    if (result.userFound && result.token) {
+        const hostHeader = req.get("host") || "localhost:3000";
+        const protocol = req.protocol || "http";
+        const defaultBaseUrl = `${protocol}://${hostHeader}`;
+        const frontendUrl = process.env.FRONTEND_URL || defaultBaseUrl;
+        const resetUrl = `${frontendUrl.replace(/\/$/, "")}/ResetPassword.html?token=${result.token}`;
+
+        try {
+            sendPasswordResetEmail({
+                to: result.user.email,
+                name: result.user.name,
+                resetToken: result.token,
+                resetUrl
+            });
+        } catch (mailErr) {
+            console.warn("[Server] Gửi email đặt lại mật khẩu thất bại:", mailErr.message);
+        }
+    }
+
+    // KN-39: Luôn trả về 200 kèm thông báo bảo mật chung (chống rò rỉ sự tồn tại của email)
+    return res.status(200).json({
+        success: true,
+        code: 200,
+        message: "Nếu email thuộc tài khoản hợp lệ, hướng dẫn khôi phục sẽ được gửi đến hộp thư của bạn."
+    });
+});
+
+// KN-43: API Xác thực tính hợp lệ của token đặt lại mật khẩu
+app.get(["/api/auth/verify-reset-token", "/auth/verify-reset-token"], (req, res) => {
+    const token = req.query.token;
+
+    if (!token) {
+        return res.status(400).json({
+            success: false,
+            valid: false,
+            code: 400,
+            message: "Yêu cầu cung cấp mã xác thực token."
+        });
+    }
+
+    const check = verifyPasswordResetToken(token);
+    if (!check.valid) {
+        return res.status(400).json({
+            success: false,
+            valid: false,
+            code: 400,
+            message: check.error || "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn."
+        });
+    }
+
+    return res.status(200).json({
+        success: true,
+        valid: true,
+        maskedEmail: check.maskedEmail
+    });
+});
+
+// KN-43 & KN-45: API Thiết lập mật khẩu mới bằng token đã xác nhận
+app.post(["/api/auth/reset-password", "/auth/reset-password"], async (req, res) => {
+    const { token, newPassword } = req.body || {};
+
+    if (!token || !newPassword) {
+        return res.status(400).json({
+            success: false,
+            code: 400,
+            message: "Vui lòng cung cấp mã token và mật khẩu mới."
+        });
+    }
+
+    try {
+        const resetResult = resetPasswordWithToken(token, newPassword);
+
+        // Đồng bộ dữ liệu người dùng sang Supabase
+        try {
+            await supabaseService.syncUsersDatabase(users);
+        } catch (syncErr) {
+            // Không chặn tiến trình nếu offline
+        }
+
+        return res.status(200).json({
+            success: true,
+            code: 200,
+            message: resetResult.message || "Đặt lại mật khẩu thành công! Bạn có thể sử dụng mật khẩu mới để đăng nhập."
+        });
+    } catch (err) {
+        return res.status(err.status || 400).json({
+            success: false,
+            code: err.status || 400,
+            message: err.message || "Không thể đặt lại mật khẩu."
+        });
+    }
+});
+
 // API Đăng ký tài khoản người dùng công khai (Học viên)
 app.post("/api/auth/register", async (req, res) => {
     try {
@@ -351,6 +500,128 @@ app.post(
     }
 );
 
+// =========================================================================
+// KN-66: API NHẬP DANH SÁCH NGƯỜI DÙNG HÀNG LOẠT TỪ EXCEL / CSV
+// =========================================================================
+
+// 1. Tải tệp mẫu Excel / CSV (Accepts ?format=xlsx hoặc ?format=csv)
+app.get(
+    ["/api/admin/users/import/template", "/api/admin/users/template"],
+    (req, res) => {
+        try {
+            const format = String(req.query.format || "xlsx").toLowerCase();
+            const template = generateUsersTemplate(format);
+            res.setHeader("Content-Type", template.contentType);
+            res.setHeader("Content-Disposition", `attachment; filename="${template.filename}"`);
+            return res.status(200).send(template.data);
+        } catch (err) {
+            return res.status(500).json({
+                success: false,
+                message: "Không thể tạo file mẫu: " + err.message
+            });
+        }
+    }
+);
+
+// 2. Xem trước và báo lỗi theo từng dòng trước khi nhập (Preview & Row Validation)
+app.post(
+    ["/api/admin/users/import/preview", "/api/admin/users/preview-import"],
+    authenticateToken,
+    requireRole("administrator"),
+    (req, res) => {
+        try {
+            let rows = req.body?.rows;
+            if (!rows && req.body?.fileBase64) {
+                const buffer = Buffer.from(req.body.fileBase64, "base64");
+                rows = parseExcelBuffer(buffer);
+            }
+            if (!rows || !Array.isArray(rows)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Dữ liệu không hợp lệ. Vui lòng cung cấp mảng danh sách 'rows' hoặc 'fileBase64'."
+                });
+            }
+
+            const preview = previewImportUsers(rows);
+            return res.status(200).json({
+                success: true,
+                message: `Phân tích hoàn tất: ${preview.validCount}/${preview.totalRows} dòng hợp lệ.`,
+                preview
+            });
+        } catch (err) {
+            return res.status(err.status || 500).json({
+                success: false,
+                message: err.message || "Lỗi khi kiểm tra dữ liệu file."
+            });
+        }
+    }
+);
+
+// 3. Nhập người dùng hàng loạt (Dòng lỗi bỏ qua, dòng hợp lệ được nhập, báo cáo tổng kết)
+app.post(
+    ["/api/admin/users/import", "/api/admin/users/batch-import"],
+    authenticateToken,
+    requireRole("administrator"),
+    async (req, res) => {
+        try {
+            let rows = req.body?.rows;
+            if (!rows && req.body?.fileBase64) {
+                const buffer = Buffer.from(req.body.fileBase64, "base64");
+                rows = parseExcelBuffer(buffer);
+            }
+            if (!rows || !Array.isArray(rows)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Vui lòng cung cấp mảng danh sách 'rows' để tiến hành nhập."
+                });
+            }
+
+            const result = importUsersBatch(rows, {
+                currentAdminId: req.user?.id || "usr_admin",
+                skipInvalid: true
+            });
+
+            // Đồng bộ sang user_roles & Supabase
+            for (const u of result.summary.importedUsers) {
+                try {
+                    syncUserRole(u.id, u.role);
+                } catch (e) {}
+
+                try {
+                    const fullUser = users.find(existing => existing.id === u.id);
+                    if (fullUser) {
+                        await supabaseService.syncSingleUser(fullUser, u.temporaryPassword, users);
+                    }
+                } catch (e) {}
+            }
+
+            // Ghi nhận Audit Log (KN-63)
+            try {
+                recordAuditLog({
+                    adminId: req.user?.id || "usr_admin",
+                    targetUserId: `batch_${result.summary.importedCount}_users`,
+                    action: "IMPORT_USERS_BATCH",
+                    roleId: "various",
+                    ip: req.ip || "127.0.0.1",
+                    status: "SUCCESS",
+                    reason: `Nhập thành công ${result.summary.importedCount} tài khoản, bỏ qua ${result.summary.skippedCount} dòng lỗi.`
+                });
+            } catch (e) {}
+
+            return res.status(200).json({
+                success: true,
+                message: `Đã nhập thành công ${result.summary.importedCount} tài khoản. Bỏ qua ${result.summary.skippedCount} dòng lỗi.`,
+                summary: result.summary
+            });
+        } catch (err) {
+            return res.status(err.status || 500).json({
+                success: false,
+                message: err.message || "Đã xảy ra lỗi khi nhập danh sách người dùng."
+            });
+        }
+    }
+);
+
 // Lấy chi tiết một người dùng kèm danh sách vai trò
 app.get(
     "/api/admin/users/:userId",
@@ -441,6 +712,172 @@ app.delete(
         }
     }
 );
+
+// =========================================================================
+// KN-68: API TẢI LÊN ẢNH ĐẠI DIỆN & TẠO BẢN THU NHỎ PHỤC VỤ ĐIỂM DANH
+// Tiêu chí chấp nhận:
+// 1. Chấp nhận JPG/PNG tối đa 2MB (2,097,152 bytes)
+// 2. Cắt vuông và tạo bản thu nhỏ (thumbnail) phục vụ điểm danh nhận diện khuôn mặt
+// =========================================================================
+
+// Cập nhật ảnh đại diện của người dùng (hỗ trợ cả /api/users/:id/avatar và /api/user/avatar)
+app.post(
+    ["/api/users/:id/avatar", "/api/user/avatar"],
+    async (req, res) => {
+        try {
+            // Xác định ID người dùng từ params hoặc body hoặc token
+            let targetUserId = req.params.id;
+            if (!targetUserId && req.body && req.body.userId) {
+                targetUserId = req.body.userId;
+            }
+
+            // Nếu có token xác thực, cho phép người dùng tự đổi ảnh của mình hoặc Admin đổi hộ
+            const authHeader = req.headers["authorization"] || "";
+            if (authHeader) {
+                const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : authHeader.trim();
+                const payload = verifyToken(token);
+                if (payload && payload.userId && !targetUserId) {
+                    targetUserId = payload.userId;
+                }
+            }
+
+            if (!targetUserId) {
+                targetUserId = "usr_student"; // Fallback tài khoản học viên mẫu cho demo
+            }
+
+            const { avatarData, thumbnailData, mimeType, sizeBytes } = req.body || {};
+
+            if (!avatarData) {
+                return res.status(400).json({
+                    success: false,
+                    code: 400,
+                    error: "Vui lòng cung cấp dữ liệu ảnh đại diện."
+                });
+            }
+
+            const updatedUser = updateUserAvatar(targetUserId, {
+                avatarData,
+                thumbnailData,
+                mimeType,
+                sizeBytes
+            });
+
+            // Đồng bộ sang Supabase nếu có cấu hình
+            try {
+                await supabaseService.syncSingleUser(updatedUser, null, users);
+            } catch (e) {
+                // Ignore sync error in offline mode
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: "Tải lên ảnh đại diện thành công. Đã tạo bản thu nhỏ phục vụ nhận diện điểm danh lớp đông.",
+                user: updatedUser,
+                data: updatedUser
+            });
+        } catch (err) {
+            return res.status(err.status || err.statusCode || 400).json({
+                success: false,
+                code: err.status || err.statusCode || 400,
+                error: err.message || "Không thể tải lên ảnh đại diện."
+            });
+        }
+    }
+);
+
+// Lấy ảnh đại diện và thumbnail của người dùng
+app.get(
+    ["/api/users/:id/avatar", "/api/user/avatar"],
+    (req, res) => {
+        const targetUserId = req.params.id || "usr_student";
+        const user = getUserById(targetUserId) || users.find(u => u.id === targetUserId || u.email.toLowerCase() === targetUserId.toLowerCase());
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                code: 404,
+                error: "Không tìm thấy người dùng."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            userId: user.id,
+            name: user.name,
+            avatar: user.avatar || "",
+            thumbnail: user.thumbnail || ""
+        });
+    }
+);
+
+// Xóa ảnh đại diện (khôi phục về chữ cái mặc định)
+app.delete(
+    ["/api/users/:id/avatar", "/api/user/avatar"],
+    (req, res) => {
+        try {
+            const targetUserId = req.params.id || "usr_student";
+            const result = deleteUserAvatar(targetUserId);
+            return res.status(200).json({
+                success: true,
+                message: "Đã xóa ảnh đại diện thành công.",
+                data: result
+            });
+        } catch (err) {
+            return res.status(err.status || err.statusCode || 400).json({
+                success: false,
+                code: err.status || err.statusCode || 400,
+                error: err.message || "Không thể xóa ảnh đại diện."
+            });
+        }
+    }
+);
+
+// API Danh sách học viên lớp học kèm ảnh nhận diện phục vụ điểm danh lớp đông (KN-68)
+app.get("/api/attendance/students", (req, res) => {
+    const studentUsers = users.filter(u => u.role === "student");
+    const sv001 = studentUsers.find(u => u.id === "usr_student" || u.email === "student@tms.edu.vn") || {};
+
+    const attendanceStudents = [
+        {
+            id: sv001.id || "usr_student",
+            studentCode: "SV001",
+            name: sv001.name || "Lê Minh Tuấn",
+            email: sv001.email || "student@tms.edu.vn",
+            className: "K15-PM01",
+            attendanceRate: 92,
+            status: "present",
+            avatar: sv001.avatar || "",
+            thumbnail: sv001.thumbnail || ""
+        },
+        {
+            id: "usr_sv002",
+            studentCode: "SV002",
+            name: "Hoàng Thùy Linh",
+            email: "linh.ht@tms.edu.vn",
+            className: "K15-PM01",
+            attendanceRate: 88,
+            status: "present",
+            avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='50' fill='%236366f1'/><circle cx='50' cy='38' r='20' fill='%23ffffff'/><path d='M20 85 C20 62 35 56 50 56 C65 56 80 62 80 85 Z' fill='%23ffffff'/></svg>",
+            thumbnail: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='50' fill='%236366f1'/><circle cx='50' cy='38' r='20' fill='%23ffffff'/><path d='M20 85 C20 62 35 56 50 56 C65 56 80 62 80 85 Z' fill='%23ffffff'/></svg>"
+        },
+        {
+            id: "usr_sv003",
+            studentCode: "SV003",
+            name: "Trần Đình Trọng",
+            email: "trong.td@tms.edu.vn",
+            className: "K15-PM01",
+            attendanceRate: 74,
+            status: "absent",
+            avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='50' fill='%23f59e0b'/><circle cx='50' cy='38' r='20' fill='%23ffffff'/><path d='M20 85 C20 62 35 56 50 56 C65 56 80 62 80 85 Z' fill='%23ffffff'/></svg>",
+            thumbnail: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='50' fill='%23f59e0b'/><circle cx='50' cy='38' r='20' fill='%23ffffff'/><path d='M20 85 C20 62 35 56 50 56 C65 56 80 62 80 85 Z' fill='%23ffffff'/></svg>"
+        }
+    ];
+
+    return res.status(200).json({
+        success: true,
+        data: attendanceStudents
+    });
+});
 
 // KN-58: Xây dựng API gán vai trò cho người dùng
 // POST /api/admin/users/:userId/roles
@@ -847,16 +1284,74 @@ app.post("/api/supabase/sync", async (req, res) => {
 });
 
 // Health check endpoint
-app.get("/api/health", (req, res) => {
+app.get("/api/health", async (req, res) => {
+    const smtpCheck = await verifySmtp();
     res.json({
         status: "ok",
         supabase: {
             configured: Boolean(supabaseService.SUPABASE_URL),
             url: supabaseService.SUPABASE_URL
         },
+        smtp: {
+            configured: Boolean(SMTP_CONFIG.host),
+            host: SMTP_CONFIG.host,
+            port: SMTP_CONFIG.port,
+            user: SMTP_CONFIG.user,
+            from: SMTP_CONFIG.fromEmail,
+            connected: smtpCheck.success
+        },
         timestamp: new Date().toISOString()
     });
 });
+
+// KN-11 & KN-86: API Kiểm tra trạng thái SMTP và gửi email thử nghiệm (Chỉ Quản trị viên)
+app.get("/api/admin/smtp/status",
+    authenticateToken,
+    requireRole("administrator"),
+    async (req, res) => {
+        const smtpStatus = await verifySmtp();
+        return res.status(200).json({
+            success: true,
+            smtp: {
+                host: SMTP_CONFIG.host,
+                port: SMTP_CONFIG.port,
+                user: SMTP_CONFIG.user,
+                fromEmail: SMTP_CONFIG.fromEmail,
+                fromName: SMTP_CONFIG.fromName,
+                secure: SMTP_CONFIG.secure,
+                connected: smtpStatus.success,
+                error: smtpStatus.error || null,
+                totalSentEmails: sentEmails.length
+            }
+        });
+    }
+);
+
+app.post("/api/admin/smtp/test",
+    authenticateToken,
+    requireRole("administrator"),
+    async (req, res) => {
+        const targetEmail = (req.body && req.body.to) ? req.body.to : (req.user ? req.user.email : SMTP_CONFIG.user);
+        try {
+            const emailResult = sendActivationEmail({
+                to: targetEmail,
+                name: req.body?.name || "Quản trị viên Thử nghiệm",
+                temporaryPassword: "TMS@" + Math.random().toString(36).substring(2, 8),
+                role: "administrator"
+            });
+            return res.status(200).json({
+                success: true,
+                message: `Đã gửi email kích hoạt thử nghiệm tới ${targetEmail} thành công!`,
+                emailRecord: emailResult
+            });
+        } catch (err) {
+            return res.status(500).json({
+                success: false,
+                message: "Gửi email thử nghiệm thất bại: " + err.message
+            });
+        }
+    }
+);
 
 // Phục vụ giao diện Frontend tĩnh & Clean URLs
 const frontendDir = path.join(__dirname, "../frontend");
@@ -876,6 +1371,9 @@ app.get("/frontend/Login.html", (req, res) => {
 app.get("/frontend/:page", (req, res) => {
     res.redirect(301, `/${req.params.page}`);
 });
+
+// KN-75: Phân công lead cho tư vấn viên (module độc lập, chỉ thêm route /api/kn75/*)
+require("./kn75").mountKn75(app, { authenticateToken, requireRole });
 
 // KN-49 & KN-50: Các định tuyến mã lỗi chuẩn (Clean Error Routing)
 app.get(["/403", "/error-403"], (req, res) => {
@@ -939,13 +1437,16 @@ async function hydrateUsersFromSupabase() {
                 if (idx === -1) {
                     users.push(ru);
                 } else {
-                    users[idx] = { ...users[idx], ...ru };
+                    // Giữ lại các thay đổi cục bộ hiện thời nếu có (mật khẩu mới, avatar mới, ...)
+                    users[idx] = { ...ru, ...users[idx] };
                 }
             });
         }
     } catch {}
 }
-hydrateUsersFromSupabase().catch(() => {});
+if (process.env.NODE_ENV !== "test") {
+    hydrateUsersFromSupabase().catch(() => {});
+}
 
 // Khởi chạy server và đồng bộ dữ liệu ban đầu
 if (require.main === module) {
