@@ -266,6 +266,152 @@ app.get("/api/auth/me", authenticateToken, (req, res) => {
         user: req.user
     });
 });
+// KN-67: Lấy hồ sơ cá nhân của người đang đăng nhập
+app.get("/api/auth/me/profile", authenticateToken, (req, res) => {
+    const user = users.find(u => u.id === req.user.id);
+
+    if (!user) {
+        return res.status(404).json({
+            success: false,
+            message: "Không tìm thấy hồ sơ người dùng."
+        });
+    }
+
+    return res.json({
+        success: true,
+        user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: req.user.role,
+            phone: user.phone || "",
+            birthDate: user.birthDate || "",
+            address: user.address || ""
+        }
+    });
+});
+
+// KN-67: Cập nhật hồ sơ cá nhân
+app.put("/api/auth/me/profile", authenticateToken, async (req, res) => {
+    try {
+        const user = users.find(u => u.id === req.user.id);
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "Không tìm thấy hồ sơ người dùng."
+            });
+        }
+
+        const data = req.body || {};
+        const allowedFields = ["name", "phone", "birthDate", "address"];
+
+        if (Object.keys(data).some(key => !allowedFields.includes(key))) {
+            return res.status(400).json({
+                success: false,
+                message: "Bạn chỉ được cập nhật họ tên, số điện thoại, ngày sinh và địa chỉ."
+            });
+        }
+
+        const updated = {};
+
+        if (data.name !== undefined) {
+            if (typeof data.name !== "string" ||
+                data.name.trim().length < 2 ||
+                data.name.trim().length > 255) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Họ tên phải có từ 2 đến 255 ký tự."
+                });
+            }
+            updated.name = data.name.trim();
+        }
+
+        if (data.phone !== undefined) {
+            if (typeof data.phone !== "string") {
+                return res.status(400).json({
+                    success: false,
+                    message: "Số điện thoại không hợp lệ."
+                });
+            }
+
+            const phone = data.phone.trim();
+            const phoneRegex = /^(?:0[35789]\d{8}|\+84[35789]\d{8})$/;
+
+            if (phone && !phoneRegex.test(phone)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Số điện thoại Việt Nam không hợp lệ."
+                });
+            }
+
+            updated.phone = phone;
+        }
+
+        if (data.birthDate !== undefined) {
+            const birthDate = data.birthDate;
+
+            if (birthDate !== "" && (
+                typeof birthDate !== "string" ||
+                !/^\d{4}-\d{2}-\d{2}$/.test(birthDate) ||
+                !Number.isFinite(Date.parse(birthDate)) ||
+                new Date(birthDate).toISOString().slice(0, 10) !== birthDate ||
+                birthDate > new Date().toISOString().slice(0, 10)
+            )) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Ngày sinh không hợp lệ."
+                });
+            }
+
+            updated.birthDate = birthDate;
+        }
+
+        if (data.address !== undefined) {
+            if (typeof data.address !== "string" ||
+                data.address.trim().length > 500) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Địa chỉ không được vượt quá 500 ký tự."
+                });
+            }
+
+            updated.address = data.address.trim();
+        }
+    // KN-67: Chuẩn bị hồ sơ mới
+        const nextUser = {
+            ...user,
+            ...updated,
+            updatedAt: new Date().toISOString()
+    };
+
+    // Lưu lên Supabase trước
+            await supabaseService.saveUserProfile(nextUser);
+
+    // Chỉ cập nhật RAM khi Supabase lưu thành công
+        Object.assign(user, updated);
+            user.updatedAt = nextUser.updatedAt;
+
+        return res.json({
+            success: true,
+            message: "Cập nhật hồ sơ cá nhân thành công.",
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                role: req.user.role,
+                phone: user.phone || "",
+                birthDate: user.birthDate || "",
+                address: user.address || ""
+            }
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Không thể cập nhật hồ sơ cá nhân."
+        });
+    }
+});
 
 // API Đăng ký tài khoản người dùng công khai (Học viên)
 app.post("/api/auth/register", async (req, res) => {
@@ -1310,18 +1456,51 @@ async function hydrateUsersFromSupabase() {
                 }
             });
         }
-    } catch {}
-}
-hydrateUsersFromSupabase().catch(() => {});
+                // KN-67: Khôi phục hồ sơ mới nhất từ Supabase PostgreSQL
+        const profiles = await supabaseService.loadUserProfiles();
 
-// Khởi chạy server và đồng bộ dữ liệu ban đầu
+        profiles.forEach(profile => {
+            const user = users.find(u => u.id === profile.id);
+            if (!user) return;
+
+            if (typeof profile.name === "string") {
+                user.name = profile.name;
+            }
+
+            user.phone = profile.phone ?? "";
+            user.birthDate = profile.birth_date ?? "";
+            user.address = profile.address ?? "";
+        });
+        } catch (error) {
+        console.warn(
+            "[KN-67] Không thể khôi phục hồ sơ từ Supabase:",
+            error.message
+        );
+    }
+}
+// KN-67: Tải dữ liệu đã lưu trước khi khởi động server
 if (require.main === module) {
-    app.listen(PORT, () => {
-        console.log(`TMS Server running at http://localhost:${PORT}`);
-        // Chạy đồng bộ ban đầu lên Supabase trong background
-        supabaseService.syncUsersDatabase(users).catch(() => {});
-        supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs()).catch(() => {});
-    });
-}
+    hydrateUsersFromSupabase()
+        .then(() => {
+            app.listen(PORT, () => {
+                console.log(
+                    `TMS Server running at http://localhost:${PORT}`
+                );
 
+                // Không ghi đè dữ liệu người dùng khi vừa khởi động.
+                // Hồ sơ được đồng bộ khi người dùng cập nhật.
+                supabaseService.syncRolesDatabase(
+                    getAllRoles(),
+                    getAllUserRolesAssignments(),
+                    getAuditLogs()
+                ).catch(err => {
+                    console.error("Role sync error:", err.message);
+                });
+            });
+        })
+        .catch(err => {
+            console.error("Không thể tải dữ liệu Supabase:", err);
+            process.exitCode = 1;
+        });
+}
 module.exports = app;

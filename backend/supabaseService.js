@@ -252,6 +252,9 @@ async function syncUsersDatabase(usersList) {
         name: u.name,
         role: u.role || "student",
         phone: u.phone || "",
+        // KN-67: Thông tin hồ sơ cá nhân
+        birth_date: u.birthDate || null,
+        address: u.address || "",
         status: u.status || "active",
         created_at: u.createdAt || new Date().toISOString(),
         updated_at: u.updatedAt || new Date().toISOString()
@@ -274,15 +277,20 @@ async function syncUsersDatabase(usersList) {
 async function syncSingleUser(user, plainPassword = null, allUsers = null) {
     if (!user || !user.email) return;
     try {
-        const mappedUser = {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            role: user.role || "student",
-            phone: user.phone || "",
-            status: user.status || "active",
-            created_at: user.createdAt || new Date().toISOString(),
-            updated_at: user.updatedAt || new Date().toISOString()
+      const mappedUser = {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role || "student",
+    phone: user.phone || "",
+
+    // KN-67: Thông tin hồ sơ cá nhân
+    birth_date: user.birthDate || null,
+    address: user.address || "",
+
+    status: user.status || "active",
+    created_at: user.createdAt || new Date().toISOString(),
+    updated_at: user.updatedAt || new Date().toISOString()
         };
 
         const tasks = [
@@ -452,6 +460,72 @@ async function syncLeadsDatabase(leadsList) {
     } catch {}
 }
 
+/**
+ * KN-67: Chỉ cập nhật hồ sơ của một tài khoản.
+ * Không ghi đè toàn bộ users.json hoặc tài khoản khác.
+ */
+async function saveUserProfile(user) {
+    if (!user || !user.id) {
+        throw new Error("Thiếu ID người dùng.");
+    }
+
+    const profileData = {
+        name: user.name,
+        phone: user.phone || null,
+        birth_date: user.birthDate || null,
+        address: user.address || null,
+        updated_at: user.updatedAt || new Date().toISOString()
+    };
+
+    const response = await supabaseRequest(
+        `/rest/v1/users?id=eq.${encodeURIComponent(user.id)}&select=id`,
+        {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "Prefer": "return=representation"
+            },
+            body: profileData
+        }
+    );
+
+    if (!response || !response.ok) {
+        const status = response ? response.status : "NETWORK";
+        throw new Error(`Không thể lưu hồ sơ lên Supabase: ${status}`);
+    }
+
+    const rows = await response.json();
+
+    if (!Array.isArray(rows) ||
+        !rows.some(row => row.id === user.id)) {
+        throw new Error("Không tìm thấy tài khoản trong Supabase.");
+    }
+
+    return true;
+}
+
+/**
+ * KN-67: Đọc hồ sơ từ PostgreSQL để khôi phục sau restart.
+ */
+async function loadUserProfiles() {
+    const response = await supabaseRequest(
+        "/rest/v1/users?select=id,name,phone,birth_date,address"
+    );
+
+    if (!response || !response.ok) {
+        const status = response ? response.status : "NETWORK";
+        throw new Error(`Không thể đọc hồ sơ từ Supabase: ${status}`);
+    }
+
+    const rows = await response.json();
+
+    if (!Array.isArray(rows)) {
+        throw new Error("Dữ liệu hồ sơ không hợp lệ.");
+    }
+
+    return rows;
+}
+
 module.exports = {
     SUPABASE_URL,
     SUPABASE_PUBLISHABLE_KEY,
@@ -469,5 +543,7 @@ module.exports = {
     syncRolesDatabase,
     syncBusinessDatabase,
     syncLeadsDatabase,
-    checkSupabaseHealth
+    checkSupabaseHealth,
+    saveUserProfile,
+    loadUserProfiles
 };

@@ -1,0 +1,296 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ sơ cá nhân | TMS</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 32px 16px;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #14233b;
+        }
+
+        .container {
+            max-width: 720px;
+            margin: auto;
+            background: white;
+            border-radius: 18px;
+            padding: 32px;
+            box-shadow: 0 8px 30px #172b4d12;
+        }
+
+        .back {
+            color: #059669;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        h1 { margin: 24px 0 8px; }
+        .description { color: #64748b; margin-bottom: 28px; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .field { margin-bottom: 20px; }
+        .field.full { grid-column: 1 / -1; }
+
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #cbd5e1;
+            border-radius: 9px;
+            font: inherit;
+        }
+
+        input:focus, textarea:focus {
+            border-color: #10b981;
+            outline: 2px solid #10b98122;
+        }
+
+        input[readonly] {
+            background: #f1f5f9;
+            color: #64748b;
+            cursor: not-allowed;
+        }
+
+        .note {
+            color: #64748b;
+            font-size: 12px;
+            margin-top: 6px;
+        }
+
+        button {
+            border: none;
+            background: #10b981;
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 9px;
+            padding: 14px 25px;
+            cursor: pointer;
+        }
+
+        button:disabled { opacity: .6; cursor: wait; }
+
+        #message {
+            margin-top: 18px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .success { color: #059669; }
+        .error { color: #dc2626; }
+
+        @media (max-width: 580px) {
+            .grid { grid-template-columns: 1fr; }
+            .container { padding: 22px; }
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <a class="back" href="./Index.html">← Quay lại Dashboard</a>
+
+        <h1>Hồ sơ cá nhân</h1>
+        <p class="description">
+            Xem và cập nhật thông tin liên hệ của bạn.
+        </p>
+
+        <form id="profileForm">
+            <div class="grid">
+                <div class="field full">
+                    <label for="name">Họ và tên *</label>
+                    <input id="name" type="text"
+                           minlength="2" maxlength="255" required>
+                </div>
+
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input id="email" type="email" readonly>
+                    <div class="note">Không thể tự thay đổi email.</div>
+                </div>
+
+                <div class="field">
+                    <label for="role">Vai trò</label>
+                    <input id="role" type="text" readonly>
+                    <div class="note">Vai trò do quản trị viên phân quyền.</div>
+                </div>
+
+                <div class="field">
+                    <label for="phone">Số điện thoại Việt Nam</label>
+                    <input id="phone" type="tel"
+                           maxlength="12"
+                           placeholder="0912345678">
+                </div>
+
+                <div class="field">
+                    <label for="birthDate">Ngày sinh</label>
+                    <input id="birthDate" type="date">
+                </div>
+
+                <div class="field full">
+                    <label for="address">Địa chỉ</label>
+                    <textarea id="address" rows="3" maxlength="500"
+                              placeholder="Nhập địa chỉ hiện tại"></textarea>
+                </div>
+            </div>
+
+            <button id="saveBtn" type="submit" disabled>
+                Lưu thay đổi
+            </button>
+
+            <p id="message" role="status" aria-live="polite"></p>
+        </form>
+    </main>
+
+    <script>
+        const token = localStorage.getItem("tms_token");
+        const form = document.getElementById("profileForm");
+        const saveBtn = document.getElementById("saveBtn");
+        const message = document.getElementById("message");
+
+        const roleNames = {
+            administrator: "Quản trị viên",
+            training_manager: "Quản lý đào tạo",
+            instructor: "Giảng viên",
+            teaching_assistant: "Trợ giảng",
+            student: "Học viên",
+            admissions: "Tư vấn tuyển sinh",
+            accountant: "Kế toán",
+            visitor: "Khách"
+        };
+
+        function showMessage(text, isSuccess = false) {
+            message.textContent = text;
+            message.className = isSuccess ? "success" : "error";
+        }
+
+        function redirectToLogin() {
+            localStorage.removeItem("tms_token");
+            localStorage.removeItem("tms_current_user");
+            localStorage.removeItem("tms_current_role");
+            window.location.replace("./Login.html");
+        }
+
+        function fillProfile(user) {
+            document.getElementById("name").value = user.name || "";
+            document.getElementById("email").value = user.email || "";
+            document.getElementById("role").value =
+                roleNames[user.role] || user.role || "";
+            document.getElementById("phone").value = user.phone || "";
+            document.getElementById("birthDate").value =
+                user.birthDate || "";
+            document.getElementById("address").value =
+                user.address || "";
+        }
+
+        async function loadProfile() {
+            if (!token) {
+                redirectToLogin();
+                return;
+            }
+
+            try {
+                const response = await fetch("/api/auth/me/profile", {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                if ([401, 403, 423].includes(response.status)) {
+                    redirectToLogin();
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(
+                        result.message || "Không thể tải hồ sơ."
+                    );
+                }
+
+                fillProfile(result.user);
+                saveBtn.disabled = false;
+            } catch (error) {
+                showMessage(error.message);
+            }
+        }
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const phone = document.getElementById("phone").value.trim();
+            const phoneRegex =
+                /^(?:0[35789]\d{8}|\+84[35789]\d{8})$/;
+
+            if (phone && !phoneRegex.test(phone)) {
+                showMessage("Số điện thoại Việt Nam không hợp lệ.");
+                return;
+            }
+
+            const data = {
+                name: document.getElementById("name").value.trim(),
+                phone: phone,
+                birthDate: document.getElementById("birthDate").value,
+                address: document.getElementById("address").value.trim()
+            };
+
+            saveBtn.disabled = true;
+            showMessage("Đang lưu thông tin...", true);
+
+            try {
+                const response = await fetch("/api/auth/me/profile", {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if ([401, 403, 423].includes(response.status)) {
+                    redirectToLogin();
+                    return;
+                }
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(
+                        result.message || "Cập nhật thất bại."
+                    );
+                }
+
+                fillProfile(result.user);
+                showMessage(
+                    "Cập nhật hồ sơ cá nhân thành công!",
+                    true
+                );
+            } catch (error) {
+                showMessage(error.message);
+            } finally {
+                saveBtn.disabled = false;
+            }
+        });
+
+        loadProfile();
+    </script>
+</body>
+</html>
