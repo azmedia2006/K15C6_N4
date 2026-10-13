@@ -20,6 +20,12 @@ CREATE TABLE IF NOT EXISTS public.users (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+-- KN-67: Bổ sung thông tin hồ sơ cá nhân
+ALTER TABLE public.users
+ADD COLUMN IF NOT EXISTS birth_date DATE;
+
+ALTER TABLE public.users
+ADD COLUMN IF NOT EXISTS address TEXT;
 
 -- 3. Table: roles
 CREATE TABLE IF NOT EXISTS public.roles (
