@@ -124,3 +124,71 @@ CREATE POLICY "Service role full access audit_logs" ON public.audit_logs FOR ALL
 CREATE POLICY "Service role full access scores" ON public.scores FOR ALL USING (true);
 CREATE POLICY "Service role full access tuition" ON public.tuition FOR ALL USING (true);
 CREATE POLICY "Service role full access leads" ON public.leads FOR ALL USING (true);
+
+-- ========================================================
+-- KN-70 (KN-107): SUBJECT & PROGRAM CATALOG MANAGEMENT
+-- Quản lý danh mục môn học, tái sử dụng đa chương trình
+-- Ràng buộc: Môn đã có lớp học thì không xóa được (RESTRICT)
+-- ========================================================
+
+-- 11. Table: programs (Chương trình đào tạo)
+CREATE TABLE IF NOT EXISTS public.programs (
+    id VARCHAR(64) PRIMARY KEY,
+    code VARCHAR(32) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    total_sessions INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 12. Table: subjects (Danh mục môn học)
+CREATE TABLE IF NOT EXISTS public.subjects (
+    id VARCHAR(64) PRIMARY KEY,
+    code VARCHAR(32) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    sessions INT NOT NULL CHECK (sessions > 0),
+    weight NUMERIC(4,2) NOT NULL CHECK (weight > 0),
+    outcomes TEXT NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    created_by VARCHAR(64) REFERENCES public.users(id) ON DELETE SET NULL
+);
+
+-- 13. Table: program_subjects (Quan hệ nhiều-nhiều: Một môn dùng cho nhiều chương trình)
+CREATE TABLE IF NOT EXISTS public.program_subjects (
+    id SERIAL PRIMARY KEY,
+    program_id VARCHAR(64) NOT NULL REFERENCES public.programs(id) ON DELETE CASCADE,
+    subject_id VARCHAR(64) NOT NULL REFERENCES public.subjects(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    CONSTRAINT uq_program_subject UNIQUE (program_id, subject_id)
+);
+
+-- 14. Table: classes (Lớp học - Ràng buộc: Môn đã có lớp học thì không được xóa)
+CREATE TABLE IF NOT EXISTS public.classes (
+    id VARCHAR(64) PRIMARY KEY,
+    code VARCHAR(32) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    subject_id VARCHAR(64) NOT NULL REFERENCES public.subjects(id) ON DELETE RESTRICT,
+    program_id VARCHAR(64) REFERENCES public.programs(id) ON DELETE SET NULL,
+    status VARCHAR(32) NOT NULL DEFAULT 'active',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 15. RLS Policies for Subjects & Programs
+ALTER TABLE public.programs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.subjects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.program_subjects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.classes ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public read programs" ON public.programs FOR SELECT USING (true);
+CREATE POLICY "Public read subjects" ON public.subjects FOR SELECT USING (true);
+CREATE POLICY "Public read program_subjects" ON public.program_subjects FOR SELECT USING (true);
+CREATE POLICY "Public read classes" ON public.classes FOR SELECT USING (true);
+
+CREATE POLICY "Service role full access programs" ON public.programs FOR ALL USING (true);
+CREATE POLICY "Service role full access subjects" ON public.subjects FOR ALL USING (true);
+CREATE POLICY "Service role full access program_subjects" ON public.program_subjects FOR ALL USING (true);
+CREATE POLICY "Service role full access classes" ON public.classes FOR ALL USING (true);
+

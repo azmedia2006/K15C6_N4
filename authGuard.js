@@ -50,11 +50,10 @@
 
         var isUnauthenticated = !token && (!currentUser || !currentUser.id);
 
+        var requiredRoles = requiredRole.split(",").map(function(item) { return item.trim().toLowerCase(); });
         var hasPermission = userRoles.some(function(r) {
-            if (requiredRole === "administrator") {
-                return r === "administrator" || r === "admin";
-            }
-            return r === requiredRole.toLowerCase();
+            if (r === "administrator" || r === "admin") return true;
+            return requiredRoles.indexOf(r) !== -1;
         });
 
         if (isUnauthenticated || !hasPermission) {

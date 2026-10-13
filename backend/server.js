@@ -74,6 +74,21 @@ const {
     checkSpam
 } = require("./leadService");
 
+const {
+    initSubjectData,
+    getAllPrograms,
+    getProgramById,
+    getSubjects,
+    getSubjectById,
+    createSubject,
+    updateSubject,
+    deleteSubject,
+    addSubjectToProgram,
+    removeSubjectFromProgram,
+    getClassesBySubjectId,
+    addClassForSubject
+} = require("./subjectService");
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -1494,6 +1509,276 @@ app.post("/api/admin/smtp/test",
             return res.status(500).json({
                 success: false,
                 message: "Gửi email thử nghiệm thất bại: " + err.message
+            });
+        }
+    }
+);
+
+// -------------------------------------------------------------
+// KN-70: QUẢN LÝ DANH MỤC MÔN HỌC & CHƯƠNG TRÌNH ĐÀO TẠO
+// Quyền: Quản lý đào tạo (training_manager) & Quản trị hệ thống (administrator)
+// Tiêu chí:
+// - Khai báo mã, tên, số buổi, trọng số, chuẩn đầu ra
+// - Một môn dùng lại cho nhiều chương trình (N-N)
+// - Môn đã có lớp học thì không xóa được (classCount > 0)
+// -------------------------------------------------------------
+
+// API Lấy danh mục chương trình đào tạo
+app.get("/api/programs", (req, res) => {
+    try {
+        const programList = getAllPrograms();
+        return res.status(200).json({
+            success: true,
+            total: programList.length,
+            programs: programList
+        });
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: "Lỗi khi lấy danh mục chương trình: " + err.message
+        });
+    }
+});
+
+// API Lấy chi tiết chương trình đào tạo kèm danh sách môn học
+app.get("/api/programs/:id", (req, res) => {
+    try {
+        const program = getProgramById(req.params.id);
+        if (!program) {
+            return res.status(404).json({
+                success: false,
+                message: "Không tìm thấy chương trình đào tạo yêu cầu."
+            });
+        }
+        return res.status(200).json({
+            success: true,
+            program
+        });
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: "Lỗi khi lấy chi tiết chương trình: " + err.message
+        });
+    }
+});
+
+// API Tra cứu danh sách môn học (hỗ trợ search, filter programId, pagination)
+app.get("/api/subjects", (req, res) => {
+    try {
+        const { search, programId, page, limit } = req.query;
+        const result = getSubjects({ search, programId, page, limit });
+        return res.status(200).json({
+            success: true,
+            ...result
+        });
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: "Lỗi khi tra cứu danh mục môn học: " + err.message
+        });
+    }
+});
+
+// API Lấy chi tiết môn học theo ID
+app.get("/api/subjects/:id", (req, res) => {
+    try {
+        const subject = getSubjectById(req.params.id);
+        if (!subject) {
+            return res.status(404).json({
+                success: false,
+                message: "Không tìm thấy thông tin môn học."
+            });
+        }
+        return res.status(200).json({
+            success: true,
+            subject
+        });
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: "Lỗi khi lấy chi tiết môn học: " + err.message
+        });
+    }
+});
+
+// API Lấy danh sách lớp học của môn học
+app.get("/api/subjects/:id/classes", (req, res) => {
+    try {
+        const classList = getClassesBySubjectId(req.params.id);
+        return res.status(200).json({
+            success: true,
+            total: classList.length,
+            classes: classList
+        });
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: "Lỗi khi lấy danh sách lớp học: " + err.message
+        });
+    }
+});
+
+// API Tạo môn học mới (Chỉ Quản lý đào tạo & Admin)
+app.post("/api/subjects",
+    authenticateToken,
+    requireRole("training_manager", "administrator"),
+    (req, res) => {
+        try {
+            const { code, name, sessions, weight, outcomes, programIds } = req.body || {};
+            const newSubject = createSubject(
+                { code, name, sessions, weight, outcomes, programIds },
+                req.user ? req.user.id : "training_manager"
+            );
+
+            // Ghi Audit Log cho hành động thêm môn học
+            recordAuditLog({
+                adminId: req.user ? req.user.id : "system",
+                targetUserId: null,
+                action: "CREATE_SUBJECT",
+                roleId: null,
+                status: "SUCCESS",
+                reason: `Tạo mới môn học ${newSubject.name} [${newSubject.code}] thành công.`
+            });
+
+            return res.status(201).json({
+                success: true,
+                message: `Tạo mới môn học "${newSubject.name}" [${newSubject.code}] thành công!`,
+                subject: newSubject
+            });
+        } catch (err) {
+            return res.status(err.statusCode || 400).json({
+                success: false,
+                code: err.code || "CREATE_SUBJECT_FAILED",
+                field: err.field,
+                message: err.message
+            });
+        }
+    }
+);
+
+// API Cập nhật môn học (Chỉ Quản lý đào tạo & Admin)
+app.put("/api/subjects/:id",
+    authenticateToken,
+    requireRole("training_manager", "administrator"),
+    (req, res) => {
+        try {
+            const { code, name, sessions, weight, outcomes, programIds } = req.body || {};
+            const updatedSubject = updateSubject(
+                req.params.id,
+                { code, name, sessions, weight, outcomes, programIds },
+                req.user ? req.user.id : "training_manager"
+            );
+
+            recordAuditLog({
+                adminId: req.user ? req.user.id : "system",
+                targetUserId: null,
+                action: "UPDATE_SUBJECT",
+                roleId: null,
+                status: "SUCCESS",
+                reason: `Cập nhật thông tin môn học ${updatedSubject.name} [${updatedSubject.code}].`
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: `Cập nhật môn học "${updatedSubject.name}" thành công!`,
+                subject: updatedSubject
+            });
+        } catch (err) {
+            return res.status(err.statusCode || 400).json({
+                success: false,
+                code: err.code || "UPDATE_SUBJECT_FAILED",
+                field: err.field,
+                message: err.message
+            });
+        }
+    }
+);
+
+// API Xóa môn học (Chỉ Quản lý đào tạo & Admin - Ràng buộc: Môn đã có lớp học thì KHÔNG xoá được)
+app.delete("/api/subjects/:id",
+    authenticateToken,
+    requireRole("training_manager", "administrator"),
+    (req, res) => {
+        try {
+            const result = deleteSubject(req.params.id);
+
+            recordAuditLog({
+                adminId: req.user ? req.user.id : "system",
+                targetUserId: null,
+                action: "DELETE_SUBJECT",
+                roleId: null,
+                status: "SUCCESS",
+                reason: `Đã xóa môn học ${result.deletedSubject.name} [${result.deletedSubject.code}].`
+            });
+
+            return res.status(200).json(result);
+        } catch (err) {
+            // Trường hợp bị chặn do đã có lớp học
+            if (err.code === "CANNOT_DELETE_SUBJECT_HAS_CLASSES") {
+                recordAuditLog({
+                    adminId: req.user ? req.user.id : "system",
+                    targetUserId: null,
+                    action: "DELETE_SUBJECT",
+                    roleId: null,
+                    status: "FORBIDDEN",
+                    reason: `Bị chặn xóa môn học do có ${err.classes ? err.classes.length : 0} lớp học đang liên kết.`
+                });
+            }
+
+            return res.status(err.statusCode || 400).json({
+                success: false,
+                code: err.code || "DELETE_SUBJECT_FAILED",
+                message: err.message,
+                classes: err.classes || []
+            });
+        }
+    }
+);
+
+// API Gán môn học vào chương trình đào tạo (Tái sử dụng môn)
+app.post("/api/programs/:programId/subjects",
+    authenticateToken,
+    requireRole("training_manager", "administrator"),
+    (req, res) => {
+        try {
+            const { subjectId } = req.body || {};
+            if (!subjectId) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Vui lòng cung cấp mã định danh môn học (subjectId)."
+                });
+            }
+            const updatedSubject = addSubjectToProgram(req.params.programId, subjectId);
+            return res.status(200).json({
+                success: true,
+                message: "Đã gán môn học vào chương trình đào tạo thành công!",
+                subject: updatedSubject
+            });
+        } catch (err) {
+            return res.status(err.statusCode || 400).json({
+                success: false,
+                message: err.message
+            });
+        }
+    }
+);
+
+// API Gỡ môn học khỏi chương trình đào tạo
+app.delete("/api/programs/:programId/subjects/:subjectId",
+    authenticateToken,
+    requireRole("training_manager", "administrator"),
+    (req, res) => {
+        try {
+            const updatedSubject = removeSubjectFromProgram(req.params.programId, req.params.subjectId);
+            return res.status(200).json({
+                success: true,
+                message: "Đã gỡ môn học khỏi chương trình đào tạo.",
+                subject: updatedSubject
+            });
+        } catch (err) {
+            return res.status(err.statusCode || 400).json({
+                success: false,
+                message: err.message
             });
         }
     }
