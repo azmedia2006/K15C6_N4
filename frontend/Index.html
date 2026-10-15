@@ -2502,12 +2502,16 @@
                 <div class="ui-card">
                     <div class="card-head" style="flex-wrap: wrap; gap: 12px;">
                         <div>
-                            <h2>Quản lý Lead Tuyển sinh</h2>
+                            <h2>Quản lý & Tra cứu Lead Tuyển sinh (KN-76)</h2>
                             <p style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 2px;">
-                                Tiếp nhận từ Biểu mẫu Landing Page công khai. Lead mới gửi tự động ở trạng thái <strong>Mới</strong> kèm cam kết phản hồi 24h.
+                                Tìm nhanh theo Tên hoặc Số điện thoại. Lọc đa điều kiện (Trạng thái, Nguồn, Người phụ trách, Khoảng thời gian) để tìm lại cuộc trao đổi từ tháng trước khi khách gọi lại.
                             </p>
                         </div>
-                        <div style="display: flex; gap: 8px; align-items: center;">
+                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                            <a href="./LeadManagement.html" class="btn btn-secondary" style="font-size: 0.8125rem; display: flex; align-items: center; gap: 6px; text-decoration: none;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+                                <span>Trang Quản lý Lead Chuyên sâu</span>
+                            </a>
                             <button id="lead-create-button" class="btn btn-primary" onclick="openLeadForm()" style="font-size: 0.8125rem; display: none;">
                                 + Thêm Lead
                             </button>
@@ -2521,16 +2525,80 @@
                         </div>
                     </div>
 
-                    <!-- Search & Filter Controls -->
-                    <div style="display: flex; gap: 12px; margin-bottom: 1rem; flex-wrap: wrap;">
-                        <input type="text" id="lead-search-input" placeholder="Tìm theo tên, SĐT, email, mã hồ sơ..." oninput="filterLeadsTable()" style="flex: 1; min-width: 200px; padding: 6px 12px; font-size: 0.875rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-card); color: var(--text-main);">
-                        <select id="lead-status-filter" onchange="filterLeadsTable()" style="padding: 6px 12px; font-size: 0.875rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-card); color: var(--text-main);">
-                            <option value="">Tất cả trạng thái</option>
-                            <option value="Mới">Trạng thái: Mới</option>
-                            <option value="Đang tư vấn">Trạng thái: Đang tư vấn</option>
-                            <option value="Đã ghi danh">Trạng thái: Đã ghi danh</option>
-                            <option value="Hủy">Trạng thái: Hủy</option>
-                        </select>
+                    <!-- KN-76: BỘ LỌC ĐA ĐIỀU KIỆN & TÌM KIẾM NHANH -->
+                    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 1.25rem;">
+                        <!-- Hàng 1: Tìm nhanh theo Tên hoặc Số điện thoại + Trạng thái + Nguồn -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 10px;">
+                            <div>
+                                <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">🔍 TÌM NHANH (TÊN HOẶC SỐ ĐIỆN THOẠI):</label>
+                                <input type="text" id="lead-search-input" placeholder="Gõ tên hoặc số điện thoại..." oninput="filterLeadsTable()" style="width: 100%; box-sizing: border-box; padding: 7px 12px; font-size: 0.875rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-main, #fff); color: var(--text-main);">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">TRẠNG THÁI LEAD:</label>
+                                <select id="lead-status-filter" onchange="filterLeadsTable()" style="width: 100%; box-sizing: border-box; padding: 7px 12px; font-size: 0.875rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-main, #fff); color: var(--text-main);">
+                                    <option value="">Tất cả trạng thái</option>
+                                    <option value="Mới">Mới</option>
+                                    <option value="Đang tư vấn">Đang tư vấn</option>
+                                    <option value="Đã ghi danh">Đã ghi danh</option>
+                                    <option value="Không liên lạc được">Không liên lạc được</option>
+                                    <option value="Hủy">Hủy</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">NGUỒN LEAD (SOURCE):</label>
+                                <select id="lead-source-filter" onchange="filterLeadsTable()" style="width: 100%; box-sizing: border-box; padding: 7px 12px; font-size: 0.875rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-main, #fff); color: var(--text-main);">
+                                    <option value="">Tất cả nguồn</option>
+                                    <option value="Website">Website (Biểu mẫu công khai)</option>
+                                    <option value="Facebook">Facebook (Quảng cáo & Fanpage)</option>
+                                    <option value="Hotline">Hotline (Tổng đài tư vấn)</option>
+                                    <option value="Giới thiệu">Giới thiệu (Học viên cũ)</option>
+                                    <option value="Sự kiện">Sự kiện (Workshop / Hội thảo)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">NGƯỜI PHỤ TRÁCH:</label>
+                                <select id="lead-assignee-filter" onchange="filterLeadsTable()" style="width: 100%; box-sizing: border-box; padding: 7px 12px; font-size: 0.875rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-main, #fff); color: var(--text-main);">
+                                    <option value="">Tất cả người phụ trách</option>
+                                    <option value="unassigned">Chưa phân công</option>
+                                    <option value="usr_admissions">Vũ Hải Yến (Tư vấn tuyển sinh)</option>
+                                    <option value="usr_manager">Đỗ Quốc Bảo (Quản lý đào tạo)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Hàng 2: Khoảng thời gian (Preset & Custom Date) + Nút Đặt lại -->
+                        <div style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+                            <div style="flex: 1; min-width: 160px;">
+                                <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">KHOẢNG THỜI GIAN:</label>
+                                <select id="lead-time-preset" onchange="handleTimePresetChange()" style="width: 100%; box-sizing: border-box; padding: 7px 12px; font-size: 0.875rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-main, #fff); color: var(--text-main);">
+                                    <option value="all">Tất cả thời gian</option>
+                                    <option value="today">Hôm nay</option>
+                                    <option value="last_7_days">7 ngày qua</option>
+                                    <option value="last_30_days">30 ngày qua</option>
+                                    <option value="last_month">📅 Tháng trước (Tra cứu cuộc gọi cũ)</option>
+                                    <option value="this_month">Tháng này</option>
+                                    <option value="custom">Tùy chọn khoảng ngày...</option>
+                                </select>
+                            </div>
+                            <div id="lead-custom-date-container" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                <div>
+                                    <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">TỪ NGÀY:</label>
+                                    <input type="date" id="lead-start-date" onchange="filterLeadsTable()" style="padding: 6px 10px; font-size: 0.875rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-main, #fff); color: var(--text-main);">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">ĐẾN NGÀY:</label>
+                                    <input type="date" id="lead-end-date" onchange="filterLeadsTable()" style="padding: 6px 10px; font-size: 0.875rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-main, #fff); color: var(--text-main);">
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <button type="button" class="btn btn-secondary" onclick="resetLeadFilters()" style="padding: 7px 14px; font-size: 0.8125rem;">
+                                    <span>Đặt lại bộ lọc</span>
+                                </button>
+                                <span id="lead-filter-count-badge" style="font-size: 0.8125rem; font-weight: 600; padding: 6px 12px; background: rgba(59, 130, 246, 0.1); color: var(--primary); border-radius: var(--radius-sm);">
+                                    Đang tải...
+                                </span>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="table-responsive" id="lead-table-wrap">
@@ -2538,18 +2606,17 @@
                             <thead>
                                 <tr>
                                     <th>Mã Lead</th>
-                                    <th>Họ và Tên</th>
-                                    <th>Số điện thoại</th>
-                                    <th>Email</th>
-                                    <th>Chương trình quan tâm</th>
-                                    <th>Nguồn</th>
+                                    <th>Khách hàng (Tên & SĐT)</th>
+                                    <th>Nguồn Lead</th>
+                                    <th>Người phụ trách</th>
+                                    <th>Khóa học quan tâm</th>
                                     <th>Trạng thái</th>
-                                    <th>Thời gian gửi</th>
-                                    <th>Thao tác</th>
+                                    <th>Trao đổi gần nhất</th>
+                                    <th style="text-align: center;">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody id="leads-table-body">
-                                <tr><td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-muted);">Đang tải dữ liệu hồ sơ Lead...</td></tr>
+                                <tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">Đang tải dữ liệu hồ sơ Lead...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -2872,6 +2939,133 @@
                 <button type="button" class="btn btn-secondary" onclick="closeAvatarModal()">Hủy bỏ</button>
                 <button type="button" class="btn btn-primary" id="btn-save-avatar" onclick="submitAvatarUpload()" disabled>
                     Cắt vuông & Lưu ảnh
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- KN-76: Modal Lịch Sử Cuộc Trao Đổi & Ghi Nhận Cuộc Gọi Lead -->
+    <div class="modal-overlay" id="lead-consultation-modal" style="display:none; align-items:center; justify-content:center; z-index:9999;">
+        <div style="background:var(--bg-card, #fff); color:var(--text-main, #1e293b); width:95%; max-width:850px; max-height:90vh; border-radius:12px; border:1px solid var(--border); box-shadow:0 20px 40px rgba(0,0,0,0.25); display:flex; flex-direction:column; overflow:hidden;">
+            <!-- Header -->
+            <div style="padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:rgba(59, 130, 246, 0.05);">
+                <div>
+                    <h3 style="margin:0; font-size:1.15rem; display:flex; align-items:center; gap:8px;">
+                        <span>📞 Hồ sơ Lead & Lịch sử Cuộc trao đổi</span>
+                        <span id="modal-lead-code-badge" class="badge" style="background:#3b82f6; color:#fff; font-size:0.75rem;">LD-XXXX</span>
+                    </h3>
+                    <p style="margin:4px 0 0 0; font-size:0.8125rem; color:var(--text-muted);" id="modal-lead-subtitle">
+                        Tra cứu cuộc trao đổi từ tháng trước khi khách gọi lại và ghi nhận nội dung cuộc gọi mới tức thì
+                    </p>
+                </div>
+                <button class="modal-close-btn" onclick="closeConsultationModal()" style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--text-muted);">&times;</button>
+            </div>
+
+            <!-- Body -->
+            <div style="padding:20px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:20px;">
+                <!-- Khối tóm tắt thông tin khách hàng -->
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; background:var(--bg-main, #f8fafc); padding:14px; border-radius:8px; border:1px solid var(--border);">
+                    <div>
+                        <span style="font-size:0.75rem; color:var(--text-muted); display:block;">HỌ VÀ TÊN:</span>
+                        <strong id="modal-lead-name" style="font-size:0.95rem;">-</strong>
+                    </div>
+                    <div>
+                        <span style="font-size:0.75rem; color:var(--text-muted); display:block;">SỐ ĐIỆN THOẠI:</span>
+                        <strong id="modal-lead-phone" style="font-size:0.95rem; color:var(--primary);">-</strong>
+                    </div>
+                    <div>
+                        <span style="font-size:0.75rem; color:var(--text-muted); display:block;">EMAIL:</span>
+                        <span id="modal-lead-email" style="font-size:0.875rem;">-</span>
+                    </div>
+                    <div>
+                        <span style="font-size:0.75rem; color:var(--text-muted); display:block;">NGUỒN LEAD:</span>
+                        <span id="modal-lead-source" style="font-size:0.875rem; font-weight:600;">-</span>
+                    </div>
+                    <div>
+                        <span style="font-size:0.75rem; color:var(--text-muted); display:block;">KHÓA HỌC QUAN TÂM:</span>
+                        <span id="modal-lead-course" style="font-size:0.875rem; font-weight:600;">-</span>
+                    </div>
+                    <div>
+                        <span style="font-size:0.75rem; color:var(--text-muted); display:block;">TRẠNG THÁI HIỆN TẠI:</span>
+                        <span id="modal-lead-status-badge" class="badge" style="background:#10b981; color:#fff; font-weight:700;">-</span>
+                    </div>
+                    <div>
+                        <span style="font-size:0.75rem; color:var(--text-muted); display:block;">NGƯỜI PHỤ TRÁCH:</span>
+                        <span id="modal-lead-assignee" style="font-size:0.875rem;">-</span>
+                    </div>
+                    <div>
+                        <span style="font-size:0.75rem; color:var(--text-muted); display:block;">TIẾP NHẬN LÚC:</span>
+                        <span id="modal-lead-created" style="font-size:0.8125rem;">-</span>
+                    </div>
+                </div>
+
+                <!-- Khối Timeline Lịch sử trao đổi trong quá khứ -->
+                <div>
+                    <h4 style="margin:0 0 10px 0; font-size:0.9rem; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); display:flex; align-items:center; gap:6px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        <span>Lịch sử các cuộc trao đổi trước đây</span>
+                    </h4>
+                    <div id="modal-consultation-timeline" style="max-height:220px; overflow-y:auto; border:1px solid var(--border); border-radius:8px; padding:12px; background:var(--bg-main, #fff);">
+                        <!-- Timeline items rendered here -->
+                    </div>
+                </div>
+
+                <!-- Khối Ghi nhận cuộc trao đổi mới -->
+                <div style="border-top:1px dashed var(--border); padding-top:16px;">
+                    <h4 style="margin:0 0 12px 0; font-size:0.95rem; color:var(--primary); display:flex; align-items:center; gap:6px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        <span>Ghi nhận cuộc trao đổi mới (Khách vừa gọi lại / Gọi tư vấn)</span>
+                    </h4>
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin-bottom:10px;">
+                        <div>
+                            <label style="font-size:0.75rem; font-weight:600; display:block; margin-bottom:4px;">HÌNH THỨC TRAO ĐỔI:</label>
+                            <select id="new-consultation-channel" style="width:100%; box-sizing:border-box; padding:6px 10px; font-size:0.875rem; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg-card); color:var(--text-main);">
+                                <option value="Điện thoại (Khách gọi lại)">Điện thoại (Khách gọi lại)</option>
+                                <option value="Điện thoại (Tư vấn viên gọi đi)">Điện thoại (Tư vấn viên gọi đi)</option>
+                                <option value="Zalo / Nhắn tin">Zalo / Nhắn tin</option>
+                                <option value="Email tư vấn">Email tư vấn</option>
+                                <option value="Gặp trực tiếp tại trung tâm">Gặp trực tiếp tại trung tâm</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:0.75rem; font-weight:600; display:block; margin-bottom:4px;">KẾT QUẢ CUỘC GỌI:</label>
+                            <select id="new-consultation-result" style="width:100%; box-sizing:border-box; padding:6px 10px; font-size:0.875rem; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg-card); color:var(--text-main);">
+                                <option value="Đã chốt đăng ký">Đã chốt đăng ký (Thành công)</option>
+                                <option value="Quan tâm cao">Quan tâm cao</option>
+                                <option value="Hẹn gọi lại sau">Hẹn gọi lại sau</option>
+                                <option value="Hẹn lên trung tâm làm thủ tục">Hẹn lên trung tâm làm thủ tục</option>
+                                <option value="Cần gửi thêm học phí & lộ trình">Cần gửi thêm học phí & lộ trình</option>
+                                <option value="Không nghe máy / Thuê bao">Không nghe máy / Thuê bao</option>
+                                <option value="Từ chối / Chưa có nhu cầu">Từ chối / Chưa có nhu cầu</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:0.75rem; font-weight:600; display:block; margin-bottom:4px;">CẬP NHẬT TRẠNG THÁI LEAD:</label>
+                            <select id="new-consultation-status" style="width:100%; box-sizing:border-box; padding:6px 10px; font-size:0.875rem; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg-card); color:var(--text-main);">
+                                <option value="">Giữ nguyên trạng thái hiện tại</option>
+                                <option value="Đang tư vấn">Đang tư vấn</option>
+                                <option value="Đã ghi danh">Đã ghi danh</option>
+                                <option value="Không liên lạc được">Không liên lạc được</option>
+                                <option value="Hủy">Hủy</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:0.75rem; font-weight:600; display:block; margin-bottom:4px;">HẸN NGÀY LIÊN HỆ TIẾP THEO:</label>
+                            <input type="date" id="new-consultation-followup" style="width:100%; box-sizing:border-box; padding:6px 10px; font-size:0.875rem; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg-card); color:var(--text-main);">
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size:0.75rem; font-weight:600; display:block; margin-bottom:4px;">NỘI DUNG CHI TIẾT CUỘC TRAO ĐỔI:</label>
+                        <textarea id="new-consultation-notes" rows="3" placeholder="Nhập tóm tắt nội dung khách hàng vừa trao đổi, thắc mắc về khóa học, cam kết học phí, lý do khách gọi lại..." style="width:100%; box-sizing:border-box; padding:8px 12px; font-size:0.875rem; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--bg-card); color:var(--text-main); font-family:inherit; resize:vertical;"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="padding:12px 20px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:10px; background:var(--bg-main, #f8fafc);">
+                <button type="button" class="btn btn-secondary" onclick="closeConsultationModal()">Đóng cửa sổ</button>
+                <button type="button" class="btn btn-primary" id="btn-save-consultation" onclick="submitNewConsultation()">
+                    <span>💾 Lưu cuộc trao đổi & Cập nhật</span>
                 </button>
             </div>
         </div>
@@ -3278,23 +3472,62 @@
             })[character]);
         }
 
+        let activeModalLead = null;
+
+        function handleTimePresetChange() {
+            const preset = document.getElementById("lead-time-preset")?.value || "all";
+            const customBox = document.getElementById("lead-custom-date-container");
+            if (customBox) {
+                customBox.style.display = (preset === "custom") ? "flex" : "none";
+            }
+            filterLeadsTable();
+        }
+
+        function resetLeadFilters() {
+            const searchInput = document.getElementById("lead-search-input");
+            const statusFilter = document.getElementById("lead-status-filter");
+            const sourceFilter = document.getElementById("lead-source-filter");
+            const assigneeFilter = document.getElementById("lead-assignee-filter");
+            const timePreset = document.getElementById("lead-time-preset");
+            const startDate = document.getElementById("lead-start-date");
+            const endDate = document.getElementById("lead-end-date");
+            const customBox = document.getElementById("lead-custom-date-container");
+
+            if (searchInput) searchInput.value = "";
+            if (statusFilter) statusFilter.value = "";
+            if (sourceFilter) sourceFilter.value = "";
+            if (assigneeFilter) assigneeFilter.value = "";
+            if (timePreset) timePreset.value = "all";
+            if (startDate) startDate.value = "";
+            if (endDate) endDate.value = "";
+            if (customBox) customBox.style.display = "none";
+
+            loadDashboardLeads();
+        }
+
         async function loadDashboardLeads() {
             const tableBody = document.getElementById("leads-table-body");
             if (!tableBody) return;
             const tableWrap = document.getElementById("lead-table-wrap");
             if (tableWrap) tableWrap.scrollLeft = 0;
-            tableBody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-muted);">Đang tải danh sách hồ sơ Lead...</td></tr>`;
+            tableBody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">Đang tải danh sách hồ sơ Lead...</td></tr>`;
             const canManage = ["admissions", "training_manager", "administrator"].some(role => authorizedRoles.has(role));
             const createButton = document.getElementById("lead-create-button");
             if (createButton) createButton.style.display = canManage ? "" : "none";
 
             const token = localStorage.getItem("tms_token");
             try {
-                const [leadsRes, statsRes] = await Promise.allSettled([
+                const [leadsRes, statsRes, sourcesRes, counselorsRes] = await Promise.allSettled([
                     fetch("/api/leads?limit=100", {
                         headers: token ? { "Authorization": `Bearer ${token}` } : {}
                     }),
                     fetch("/api/leads/stats", {
+                        headers: token ? { "Authorization": `Bearer ${token}` } : {}
+                    }),
+                    fetch("/api/leads/sources", {
+                        headers: token ? { "Authorization": `Bearer ${token}` } : {}
+                    }),
+                    fetch("/api/leads/counselors", {
                         headers: token ? { "Authorization": `Bearer ${token}` } : {}
                     })
                 ]);
@@ -3317,6 +3550,7 @@
                     if (leadsData.success && Array.isArray(leadsData.data)) {
                         allDashboardLeads = leadsData.data;
                         renderDashboardLeads(allDashboardLeads);
+                        updateLeadFilterBadge(allDashboardLeads.length);
                         return;
                     }
                 }
@@ -3326,7 +3560,14 @@
             } catch (err) {
                 console.error("Lỗi tải leads:", err);
                 allDashboardLeads = [];
-                tableBody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 2rem; color: var(--error, #ef4444);">${escapeLeadHtml(err.message)}</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--error, #ef4444);">${escapeLeadHtml(err.message)}</td></tr>`;
+            }
+        }
+
+        function updateLeadFilterBadge(count) {
+            const badge = document.getElementById("lead-filter-count-badge");
+            if (badge) {
+                badge.textContent = `Tìm thấy ${count} hồ sơ Lead`;
             }
         }
 
@@ -3335,9 +3576,12 @@
             if (!tableBody) return;
 
             if (!leadsList || leadsList.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-muted);">Không tìm thấy hồ sơ Lead nào.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2.5rem; color: var(--text-muted);"><div style="font-size:1.1rem; font-weight:600; margin-bottom:4px;">Không tìm thấy hồ sơ Lead nào phù hợp</div><div style="font-size:0.85rem;">Thử đổi từ khóa tên, số điện thoại hoặc nới lỏng bộ lọc thời gian.</div></td></tr>`;
+                updateLeadFilterBadge(0);
                 return;
             }
+
+            updateLeadFilterBadge(leadsList.length);
 
             const canDelete = authorizedRoles.has("training_manager");
             tableBody.innerHTML = leadsList.map(lead => {
@@ -3346,24 +3590,42 @@
                     badgeStyle = "background: #f59e0b; color: white;";
                 } else if (lead.status === "Đã ghi danh") {
                     badgeStyle = "background: #3b82f6; color: white;";
+                } else if (lead.status === "Không liên lạc được") {
+                    badgeStyle = "background: #64748b; color: white;";
                 } else if (lead.status === "Hủy") {
                     badgeStyle = "background: #ef4444; color: white;";
                 }
 
-                const createdDate = lead.createdAt ? new Date(lead.createdAt).toLocaleString("vi-VN", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" }) : "Vừa xong";
+                const createdDate = lead.createdAt ? new Date(lead.createdAt).toLocaleString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "Vừa xong";
+                const lastContact = lead.lastContactedAt ? new Date(lead.lastContactedAt).toLocaleDateString("vi-VN") : (lead.createdAt ? new Date(lead.createdAt).toLocaleDateString("vi-VN") : "-");
+                const notesSummary = lead.counselorNotes || lead.notes || "Chưa có ghi chú trao đổi";
+
+                const historyCount = Array.isArray(lead.consultationHistory) ? lead.consultationHistory.length : 0;
+                const historyBadge = historyCount > 0
+                    ? `<span style="font-size:0.7rem; background:rgba(59,130,246,0.15); color:var(--primary); padding:1px 6px; border-radius:999px; margin-left:4px; font-weight:700;">${historyCount} cuộc gọi</span>`
+                    : '';
 
                 return `
                     <tr>
                         <td data-label="Mã Lead"><strong>${escapeLeadHtml(lead.code || lead.id)}</strong></td>
-                        <td data-label="Họ và tên"><strong>${escapeLeadHtml(lead.fullName || lead.name)}</strong></td>
-                        <td data-label="Số điện thoại">${escapeLeadHtml(lead.phone)}</td>
-                        <td data-label="Email">${escapeLeadHtml(lead.email)}</td>
-                        <td data-label="Chương trình quan tâm">${escapeLeadHtml(lead.course || "Chưa chọn khóa học cụ thể")}</td>
-                        <td data-label="Nguồn">${escapeLeadHtml(lead.source || "—")}</td>
-                        <td data-label="Trạng thái"><span class="badge" style="${badgeStyle}; font-weight: 700; padding: 3px 8px; border-radius: 999px;">${escapeLeadHtml(lead.status || "Mới")}</span></td>
-                        <td data-label="Thời gian gửi"><small style="color: var(--text-muted);">${createdDate}</small></td>
-                        <td>
+                        <td data-label="Khách hàng">
+                            <div style="font-weight: 700; color: var(--text-main); font-size: 0.9rem;">${escapeLeadHtml(lead.fullName || lead.name)}</div>
+                            <div style="font-size: 0.8125rem; color: var(--primary); font-weight: 600;">
+                                <a href="tel:${escapeLeadHtml(lead.phone)}" style="color: inherit; text-decoration: none;">${escapeLeadHtml(lead.phone)}</a>
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">${escapeLeadHtml(lead.email)}</div>
+                        </td>
+                        <td data-label="Nguồn"><span>${escapeLeadHtml(lead.source || "Website")}</span></td>
+                        <td data-label="Người phụ trách">${escapeLeadHtml(lead.assignedToName || (lead.assignedTo === "usr_admissions" ? "Vũ Hải Yến" : (lead.assignedTo || "Chưa phân công")))}</td>
+                        <td data-label="Khóa học quan tâm">${escapeLeadHtml(lead.course || "Chung")}</td>
+                        <td data-label="Trạng thái"><span class="badge" style="${badgeStyle}; font-weight: 700; padding: 4px 10px; border-radius: 999px; font-size: 0.75rem;">${escapeLeadHtml(lead.status || "Mới")}</span></td>
+                        <td data-label="Trao đổi gần nhất">
+                            <div style="font-size: 0.8125rem; font-weight: 600;">${lastContact} ${historyBadge}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeLeadHtml(notesSummary)}">${escapeLeadHtml(notesSummary)}</div>
+                        </td>
+                        <td data-label="Thao tác">
                             <div class="lead-row-actions">
+                                <button type="button" class="btn btn-secondary" onclick="openConsultationModal('${escapeLeadHtml(lead.id)}')" title="Xem lịch sử trao đổi và ghi nhận cuộc gọi mới" style="padding: 5px 9px; font-size: 0.75rem; border-color: var(--primary); color: var(--primary); font-weight: 600;">Lịch sử</button>
                                 <button type="button" class="btn btn-secondary" data-lead-id="${escapeLeadHtml(lead.id)}" onclick="openLeadForm(this.dataset.leadId)" style="padding: 4px 8px; font-size: 0.75rem;">Sửa</button>
                                 ${canDelete ? `<button type="button" class="btn btn-secondary" data-lead-id="${escapeLeadHtml(lead.id)}" onclick="deleteDashboardLead(this.dataset.leadId)" style="padding: 4px 8px; font-size: 0.75rem; color:#dc2626;">Xóa</button>` : ""}
                                 <select onchange="updateDashboardLeadStatus('${escapeLeadHtml(lead.id)}', this.value)" style="padding: 4px 8px; font-size: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main);">
@@ -3371,6 +3633,7 @@
                                     <option value="Mới">Mới</option>
                                     <option value="Đang tư vấn">Đang tư vấn</option>
                                     <option value="Đã ghi danh">Đã ghi danh</option>
+                                    <option value="Không liên lạc được">Không liên lạc được</option>
                                     <option value="Hủy">Hủy</option>
                                 </select>
                             </div>
@@ -3380,22 +3643,193 @@
             }).join("");
         }
 
-        function filterLeadsTable() {
-            const query = (document.getElementById("lead-search-input")?.value || "").toLowerCase().trim();
+        async function filterLeadsTable() {
+            const query = (document.getElementById("lead-search-input")?.value || "").trim();
             const statusFilter = (document.getElementById("lead-status-filter")?.value || "").trim();
+            const sourceFilter = (document.getElementById("lead-source-filter")?.value || "").trim();
+            const assigneeFilter = (document.getElementById("lead-assignee-filter")?.value || "").trim();
+            const timePreset = (document.getElementById("lead-time-preset")?.value || "").trim();
+            const startDate = (document.getElementById("lead-start-date")?.value || "").trim();
+            const endDate = (document.getElementById("lead-end-date")?.value || "").trim();
 
-            let filtered = allDashboardLeads.filter(l => {
+            const params = new URLSearchParams();
+            if (query) params.append("search", query);
+            if (statusFilter) params.append("status", statusFilter);
+            if (sourceFilter) params.append("source", sourceFilter);
+            if (assigneeFilter) params.append("assignedTo", assigneeFilter);
+            if (timePreset && timePreset !== "all" && timePreset !== "custom") params.append("timePreset", timePreset);
+            if (startDate) params.append("startDate", startDate);
+            if (endDate) params.append("endDate", endDate);
+            params.append("limit", "100");
+
+            const token = localStorage.getItem("tms_token");
+            try {
+                const res = await fetch(`/api/leads?${params.toString()}`, {
+                    headers: token ? { "Authorization": `Bearer ${token}` } : {}
+                });
+                if (res.ok) {
+                    const json = await res.json();
+                    if (json.success && Array.isArray(json.data)) {
+                        allDashboardLeads = json.data;
+                        renderDashboardLeads(allDashboardLeads);
+                        return;
+                    }
+                }
+            } catch (err) {
+                console.error("Lỗi gọi API lọc leads:", err);
+            }
+
+            // Fallback: Lọc cục bộ trên mảng hiện thời nếu mất kết nối
+            const lowerQuery = query.toLowerCase();
+            const filtered = allDashboardLeads.filter(l => {
                 const matchQuery = !query ||
-                    (l.fullName && l.fullName.toLowerCase().includes(query)) ||
+                    (l.fullName && l.fullName.toLowerCase().includes(lowerQuery)) ||
                     (l.phone && l.phone.includes(query)) ||
-                    (l.email && l.email.toLowerCase().includes(query)) ||
-                    (l.code && l.code.toLowerCase().includes(query));
-
+                    (l.email && l.email.toLowerCase().includes(lowerQuery)) ||
+                    (l.code && l.code.toLowerCase().includes(lowerQuery));
                 const matchStatus = !statusFilter || (l.status === statusFilter);
-                return matchQuery && matchStatus;
+                const matchSource = !sourceFilter || (l.source && l.source.includes(sourceFilter));
+                return matchQuery && matchStatus && matchSource;
             });
-
             renderDashboardLeads(filtered);
+        }
+
+        async function openConsultationModal(leadId) {
+            const modal = document.getElementById("lead-consultation-modal");
+            if (!modal) return;
+
+            let lead = allDashboardLeads.find(l => l.id === leadId);
+            const token = localStorage.getItem("tms_token");
+
+            try {
+                const res = await fetch(`/api/leads/${leadId}/consultations`, {
+                    headers: token ? { "Authorization": `Bearer ${token}` } : {}
+                });
+                if (res.ok) {
+                    const json = await res.json();
+                    if (json.success && json.lead) {
+                        lead = { ...lead, ...json.lead, consultationHistory: json.data || [] };
+                    }
+                }
+            } catch (e) {
+                console.warn("Lỗi lấy lịch sử cuộc gọi:", e);
+            }
+
+            if (!lead) {
+                showToast("Không tìm thấy hồ sơ Lead", "error");
+                return;
+            }
+
+            activeModalLead = lead;
+
+            // Populate thông tin Lead
+            document.getElementById("modal-lead-code-badge").textContent = lead.code || lead.id;
+            document.getElementById("modal-lead-name").textContent = lead.fullName || lead.name;
+            document.getElementById("modal-lead-phone").textContent = lead.phone;
+            document.getElementById("modal-lead-email").textContent = lead.email || "Chưa cập nhật";
+            document.getElementById("modal-lead-source").textContent = lead.source || "Website";
+            document.getElementById("modal-lead-course").textContent = lead.course || "Chưa chọn khóa cụ thể";
+            document.getElementById("modal-lead-status-badge").textContent = lead.status || "Mới";
+            document.getElementById("modal-lead-assignee").textContent = lead.assignedToName || (lead.assignedTo === "usr_admissions" ? "Vũ Hải Yến" : (lead.assignedTo || "Chưa phân công"));
+            document.getElementById("modal-lead-created").textContent = lead.createdAt ? new Date(lead.createdAt).toLocaleString("vi-VN") : "Gần đây";
+
+            // Render Timeline lịch sử trao đổi
+            const timelineBox = document.getElementById("modal-consultation-timeline");
+            const history = Array.isArray(lead.consultationHistory) ? lead.consultationHistory : [];
+
+            if (history.length === 0) {
+                timelineBox.innerHTML = `
+                    <div style="text-align:center; padding:16px; color:var(--text-muted); font-size:0.85rem;">
+                        Chưa có cuộc trao đổi nào được ghi nhận trước đó. Hãy tiếp nhận cuộc gọi và ghi nhận thông tin bên dưới!
+                    </div>
+                `;
+            } else {
+                timelineBox.innerHTML = history.map((c, index) => {
+                    const timeStr = c.timestamp ? new Date(c.timestamp).toLocaleString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "Vừa xong";
+                    return `
+                        <div style="padding:10px; margin-bottom:8px; border-radius:6px; background:var(--bg-card); border-left:4px solid var(--primary); box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; font-size:0.8125rem;">
+                                <span><strong>${c.counselorName || "Tư vấn viên"}</strong> • <em>${c.channel || "Điện thoại"}</em></span>
+                                <span style="color:var(--text-muted); font-size:0.75rem;">${timeStr}</span>
+                            </div>
+                            <div style="margin-bottom:4px;">
+                                <span class="badge" style="background:#e0f2fe; color:#0369a1; font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:4px;">
+                                    Kết quả: ${c.result || "Đang trao đổi"}
+                                </span>
+                                ${c.nextFollowUp ? `<span style="font-size:0.75rem; color:#b45309; margin-left:8px; font-weight:500;">📅 Hẹn gọi lại: ${new Date(c.nextFollowUp).toLocaleDateString("vi-VN")}</span>` : ''}
+                            </div>
+                            <div style="font-size:0.85rem; color:var(--text-main); line-height:1.4; background:var(--bg-main, #f8fafc); padding:6px 10px; border-radius:4px; margin-top:4px;">
+                                ${c.notes}
+                            </div>
+                        </div>
+                    `;
+                }).join("");
+            }
+
+            // Reset form ghi nhận cuộc gọi mới
+            document.getElementById("new-consultation-notes").value = "";
+            document.getElementById("new-consultation-status").value = "";
+            document.getElementById("new-consultation-followup").value = "";
+
+            modal.style.display = "flex";
+        }
+
+        function closeConsultationModal() {
+            const modal = document.getElementById("lead-consultation-modal");
+            if (modal) modal.style.display = "none";
+            activeModalLead = null;
+        }
+
+        async function submitNewConsultation() {
+            if (!activeModalLead) return;
+
+            const channel = document.getElementById("new-consultation-channel")?.value || "Điện thoại (Khách gọi lại)";
+            const result = document.getElementById("new-consultation-result")?.value || "Đang tư vấn";
+            const newStatus = document.getElementById("new-consultation-status")?.value || "";
+            const followUp = document.getElementById("new-consultation-followup")?.value || "";
+            const notes = (document.getElementById("new-consultation-notes")?.value || "").trim();
+
+            if (!notes) {
+                showToast("Vui lòng nhập tóm tắt nội dung cuộc trao đổi với khách!", "error");
+                document.getElementById("new-consultation-notes").focus();
+                return;
+            }
+
+            const token = localStorage.getItem("tms_token");
+            const btn = document.getElementById("btn-save-consultation");
+            btn.disabled = true;
+            btn.textContent = "Đang lưu...";
+
+            try {
+                const res = await fetch(`/api/leads/${activeModalLead.id}/consultations`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                    },
+                    body: JSON.stringify({
+                        channel,
+                        result,
+                        notes,
+                        nextFollowUp: followUp,
+                        newStatus
+                    })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast("Đã lưu thông tin cuộc trao đổi và cập nhật hồ sơ!");
+                    closeConsultationModal();
+                    loadDashboardLeads();
+                } else {
+                    showToast(data.message || "Không thể lưu cuộc trao đổi", "error");
+                }
+            } catch (err) {
+                showToast("Lỗi kết nối: " + err.message, "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<span>💾 Lưu cuộc trao đổi & Cập nhật</span>`;
+            }
         }
 
         async function updateDashboardLeadStatus(leadId, newStatus) {

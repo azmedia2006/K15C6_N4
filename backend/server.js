@@ -69,8 +69,11 @@ const {
     updateLead,
     updateLeadStatus,
     findDuplicateLeadPhones,
+    addConsultation,
     deleteLead,
     getLeadStats,
+    getLeadSources,
+    getCounselors,
     generateAntiSpamChallenge,
     verifyAntiSpamChallenge,
     checkSpam
@@ -1394,14 +1397,124 @@ app.get("/api/leads/stats",
     }
 );
 
-// API Lấy danh sách Lead có phân trang và lọc (Quyền: Tư vấn tuyển sinh, Quản lý đào tạo hoặc Quản trị viên)
+// API Lấy danh mục các nguồn Lead (Quyền: Tư vấn tuyển sinh, Quản lý đào tạo hoặc Quản trị viên)
+app.get("/api/leads/sources",
+    authenticateToken,
+    requireRole("admissions", "training_manager", "administrator"),
+    (req, res) => {
+        const sources = getLeadSources();
+        return res.status(200).json({
+            success: true,
+            data: sources
+        });
+    }
+);
+
+// API Lấy danh sách Tư vấn viên phụ trách Lead (Quyền: Tư vấn tuyển sinh, Quản lý đào tạo hoặc Quản trị viên)
+app.get("/api/leads/counselors",
+    authenticateToken,
+    requireRole("admissions", "training_manager", "administrator"),
+    (req, res) => {
+        const counselors = getCounselors();
+        return res.status(200).json({
+            success: true,
+            data: counselors
+        });
+    }
+);
+
+// KN-76: API Lấy danh sách Lead có phân trang, lọc đa điều kiện và tìm nhanh
 app.get("/api/leads",
     authenticateToken,
     requireRole("admissions", "training_manager", "administrator"),
     (req, res) => {
-        const { page, limit, status, course, search } = req.query;
-        const result = getLeads({ page, limit, status, course, search });
+        const {
+            page,
+            limit,
+            status,
+            course,
+            source,
+            assignedTo,
+            search,
+            startDate,
+            endDate,
+            timePreset,
+            sortBy,
+            sortOrder
+        } = req.query;
+
+        const result = getLeads({
+            page,
+            limit,
+            status,
+            course,
+            source,
+            assignedTo,
+            search,
+            startDate,
+            endDate,
+            timePreset,
+            sortBy,
+            sortOrder
+        });
         return res.status(200).json(result);
+    }
+);
+
+// KN-76: API Lấy chi tiết lịch sử các cuộc trao đổi của Lead
+app.get("/api/leads/:id/consultations",
+    authenticateToken,
+    requireRole("admissions", "training_manager", "administrator"),
+    (req, res) => {
+        const lead = getLeadById(req.params.id);
+        if (!lead) {
+            return res.status(404).json({
+                success: false,
+                message: "Không tìm thấy thông tin hồ sơ Lead."
+            });
+        }
+        return res.status(200).json({
+            success: true,
+            lead: {
+                id: lead.id,
+                code: lead.code,
+                fullName: lead.fullName || lead.name,
+                phone: lead.phone,
+                email: lead.email,
+                course: lead.course,
+                status: lead.status,
+                source: lead.source,
+                assignedTo: lead.assignedTo,
+                assignedToName: lead.assignedToName,
+                createdAt: lead.createdAt,
+                lastContactedAt: lead.lastContactedAt,
+                counselorNotes: lead.counselorNotes
+            },
+            data: lead.consultationHistory || []
+        });
+    }
+);
+
+// KN-76: API Ghi nhận cuộc trao đổi mới cho Lead khi khách gọi lại
+app.post("/api/leads/:id/consultations",
+    authenticateToken,
+    requireRole("admissions", "training_manager", "administrator"),
+    (req, res) => {
+        const { channel, result: callResult, notes, nextFollowUp, newStatus } = req.body || {};
+        const result = addConsultation(req.params.id, {
+            channel,
+            result: callResult,
+            notes,
+            nextFollowUp,
+            newStatus
+        }, req.user || {});
+
+        if (!result.success) {
+            return res.status(400).json(result);
+        }
+
+        supabaseService.syncLeadsDatabase(leads).catch(() => {});
+        return res.status(201).json(result);
     }
 );
 
