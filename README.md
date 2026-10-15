@@ -1,58 +1,145 @@
-Hệ Thống Quản Lý Đào Tạo (Training Management System - TMS)
-1. Giới thiệu tổng quan
-Hệ thống Quản lý Đào tạo (TMS) là giải pháp phần mềm quản trị nội bộ trên nền tảng Web, được xây dựng nhằm số hóa và đồng nhất toàn diện chu trình vận hành đào tạo tại trung tâm. Hệ thống kết nối và phục vụ 8 nhóm người dùng nghiệp vụ (từ Khách truy cập, Học viên, Giảng viên, Trợ giảng đến Tư vấn tuyển sinh, Kế toán, Quản lý đào tạo và Quản trị hệ thống), cung cấp một nguồn dữ liệu tập trung duy nhất (Single Source of Truth) thay thế cho quy trình quản lý thủ công phân tán.
-2. Bối cảnh & Vấn đề giải quyết
-Trước khi triển khai dự án, trung tâm vận hành dựa trên các công cụ rời rạc: quản lý danh sách và điểm số qua Google Sheets, xếp lịch trên Google Calendar, giao nhận bài tập qua Zalo / GitHub và theo dõi công nợ thủ công tại sổ sách kế toán. Thực trạng này dẫn đến nhiều bất cập:
-Thiếu tính tức thời: Ban quản lý không thể nắm bắt nhanh tình trạng chuyên cần hay tỷ lệ nợ bài tập của từng lớp theo thời gian thực.
-Phát hiện trễ học viên có nguy cơ bỏ học: Các dấu hiệu cảnh báo (vắng học liên tiếp, chậm nộp bài tập, chậm đóng học phí) nằm rải rác ở các bộ phận khác nhau, khiến việc hỗ trợ học viên bị chậm trễ.
-Sai lệch số liệu công nợ: Bộ phận tuyển sinh và kế toán không dùng chung một nguồn dữ liệu về các đợt thanh toán học phí.
-Khó khăn lưu trữ & đánh giá: Dữ liệu khóa cũ khó tra cứu để cấp lại bảng điểm; khảo sát chất lượng giảng dạy không gắn định danh trực tiếp với từng giảng viên và môn học cụ thể.
-3. Mục tiêu dự án
-Chuẩn hóa vòng đời học viên: Theo dõi xuyên suốt dữ liệu từ lúc tiếp nhận thông tin tư vấn (Lead), nhập học, xếp lớp, điểm danh, làm bài tập đến khi xét tốt nghiệp.
-Tối ưu hóa thao tác vận hành: Giảm thời gian điểm danh một buổi học xuống $\le$ 60 giây và thời gian chấm bài tập xuống $\le$ 3 phút.
-Tự động hóa cảnh báo rủi ro: Hệ thống chủ động phát hiện và gắn cờ cảnh báo các trường hợp học viên vắng học vượt ngưỡng hoặc nợ bài tập quá hạn.
-Minh bạch hóa tài chính: Đồng bộ bảng theo dõi công nợ học phí theo lớp khớp 100% với sổ kế toán thực tế.
-Khảo sát chất lượng thực chất: Tự động hóa quy trình khảo sát cuối khóa, đảm bảo tỷ lệ phản hồi $\ge$ 70% và quy chuẩn kết quả về từng giảng viên đứng lớp.
-4. Phạm vi chức năng (Project Scope)
-Phân hệ thực hiện (In-Scope)
-Tài khoản & Phân quyền (RBAC): Xác thực JWT, quản trị người dùng, phân quyền truy cập nghiêm ngặt ở tầng Server theo 8 vai trò và ghi nhật ký thao tác dữ liệu nhạy cảm (Audit Log).
-Danh mục đào tạo: Quản lý mô hình phân cấp: Chương trình đào tạo $\rightarrow$ Môn học $\rightarrow$ Buổi học.
-Tuyển sinh & Ghi danh: Tiếp nhận lead tư vấn từ Landing Page, quản lý phễu chăm sóc khách hàng và chuyển đổi thành hồ sơ học viên chính thức.
-Lớp học & Thời khóa biểu: Tự động sinh lịch học theo mẫu lặp, cơ chế phát hiện trùng lịch phòng/giảng viên, xử lý bảo lưu và chuyển lớp.
-Điểm danh & Chuyên cần: Giao diện điểm danh di động (Mobile-first từ 360px), tiếp nhận đơn xin nghỉ phép và thống kê tỷ lệ chuyên cần.
-Bài tập & Chấm điểm: Giao bài tập, nộp bài đa phiên bản, chấm điểm theo rubric chi tiết và cơ chế yêu cầu làm lại.
-Kết quả học tập & Tốt nghiệp: Thiết lập trọng số thành phần điểm, tự động tính điểm tổng kết môn học, xuất bảng điểm và xét điều kiện hoàn thành khóa.
-Học phí & Công nợ: Quản lý biểu phí, lập kế hoạch đóng theo đợt, ghi nhận thanh toán, xuất biên lai và báo cáo công nợ.
-Học liệu, Khảo sát & Báo cáo: Quản trị tài liệu theo buổi học, thông báo in-app kèm gửi email nhắc lịch, khảo sát đánh giá giảng viên và dashboard tổng quan.
-Giới hạn hệ thống (Out-of-Scope)
-Ứng dụng di động native (hệ thống tập trung tối ưu Web Responsive).
-Cổng thanh toán trực tuyến tự động (chỉ ghi nhận khoản nộp thủ công qua kế toán).
-Hệ thống học trực tuyến LMS phức tạp (không phát video trực tuyến, không chấm code tự động).
-Chat trực tiếp thời gian thực, tích hợp SSO doanh nghiệp (LDAP) và xuất hóa đơn điện tử VAT.
-5. Kiến trúc kỹ thuật & Công nghệ sử dụng
-Frontend: React, TypeScript, Tailwind CSS (giao diện tối ưu đa thiết bị, hỗ trợ hiển thị di động từ 360px).
-Backend: Spring Boot (Java) hoặc NestJS (TypeScript), kiến trúc phân lớp chuẩn RESTful APIs.
-Cơ sở dữ liệu: PostgreSQL (đảm bảo tính toàn vẹn dữ liệu, giao dịch ACID và các ràng buộc khóa ngoại chặt chẽ).
-Bảo mật & Phiên làm việc: JSON Web Tokens (Access Token + Refresh Token), mật khẩu mã hóa chuẩn bcrypt, kiểm soát truy cập phân tầng (Role-Based Access Control) tại Server Endpoint.
-Lưu trữ & Dịch vụ ngoài: Hệ thống lưu trữ đối tượng (S3-compatible) cho bài tập và slide bài giảng; hàng đợi gửi mail bất đồng bộ qua SMTP.
-Quản lý dự án & Quy trình phát triển: Agile/Scrum (8 tuần, 8 Sprints, 75 User Stories, 350 Story Points) quản lý qua Jira và mã nguồn kiểm soát theo Git Flow.
+# Hệ Thống Quản Lý Đào Tạo (Training Management System - TMS)
+
+[![Sprint](https://img.shields.io/badge/Sprint-KN%20Sprint%202-blue.svg)](https://github.com/azmedia2006/K15C6_N4)
+[![Story](https://img.shields.io/badge/User%20Story-KN--76-success.svg)](https://github.com/azmedia2006/K15C6_N4/tree/feature/KN_76)
+[![Assignee](https://img.shields.io/badge/Assignee-minhquan247-orange.svg)](https://github.com/minhquan247)
+[![Tests](https://img.shields.io/badge/Tests-10%2F10%20PASS-brightgreen.svg)](file:///c:/Users/Administrator/Downloads/minhquan_ttcs/backend/test/lead_filter_kn76.test.js)
 
 ---
 
-## 6. Danh sách Tài khoản & Mật khẩu thử nghiệm (Demo Accounts)
+## 1. Giới thiệu tổng quan
+**Hệ thống Quản lý Đào tạo (TMS)** là giải pháp phần mềm quản trị nội bộ trên nền tảng Web, được xây dựng nhằm số hóa và đồng nhất toàn diện chu trình vận hành đào tạo tại trung tâm. Hệ thống kết nối và phục vụ 8 nhóm người dùng nghiệp vụ (từ Khách truy cập, Học viên, Giảng viên, Trợ giảng đến Tư vấn tuyển sinh, Kế toán, Quản lý đào tạo và Quản trị hệ thống), cung cấp một nguồn dữ liệu tập trung duy nhất (**Single Source of Truth**) thay thế cho quy trình quản lý thủ công phân tán.
 
-Dưới đây là danh sách tài khoản được phân quyền theo 8 vai trò nghiệp vụ trong hệ thống để phục vụ kiểm thử đăng nhập và vận hành giao diện:
+---
 
-| STT | Vai trò nghiệp vụ (Role) | Email / Tên đăng nhập | Mật khẩu | Trang đích sau đăng nhập |
+## 2. Tính Năng Trọng Tâm Nhánh `feature/KN_76`: Quản Lý & Lọc Lead Tuyển Sinh (KN-76)
+
+Nhánh phát triển **`feature/KN_76`** triển khai đầy đủ User Story **KN-76** (Jira Sprint 2) dành cho phân hệ **Tư vấn tuyển sinh (Admissions)** do **`minhquan247`** phụ trách.
+
+### 2.1. User Story
+> *"Là Tư vấn tuyển sinh, tôi muốn tìm kiếm và lọc lead theo nhiều điều kiện, để tìm lại được cuộc trao đổi từ tháng trước khi khách gọi lại."*
+
+### 2.2. Các Chức Năng Nổi Bật Đã Triển Khai
+1. 🔍 **Tìm nhanh theo Tên hoặc Số điện thoại (Quick Search):**
+   - Hỗ trợ gõ tiếng Việt không dấu (ví dụ: gõ `hoang nam` tìm thấy ngay `Nguyễn Hoàng Nam`).
+   - Chuẩn hóa chuỗi số điện thoại linh hoạt (ví dụ: gõ `0977 889 900` khớp chính xác `0977889900`).
+   - Hỗ trợ tìm kiếm theo đuôi số điện thoại khi khách dùng số lạ gọi lại.
+
+2. 🎯 **Lọc Lead Đa Tiêu Chí Thời Gian Thực (Multi-criteria Filtering):**
+   - **Trạng thái:** Mới tiếp nhận (`new`), Đang tư vấn (`contacted`), Tiềm năng cao (`qualified`), Hẹn gặp/Test (`meeting_scheduled`), Đã ghi danh (`enrolled`), Tạm dừng (`lost`).
+   - **Nguồn tiếp cận:** Hotline Trực tiếp, Facebook Ads/Fanpage, Website Form, Giới thiệu (Referral), Zalo OA, Sự kiện trường học.
+   - **Tư vấn viên phụ trách:** Lọc theo từng nhân viên (`usr_admissions`, `minhquan247`, Hoàng Thị Lan...) hoặc hồ sơ chưa phân công (`unassigned`).
+
+3. 📅 **Lọc Theo Khoảng Thời Gian & Tra Cứu Cuộc Trao Đổi Từ Tháng Trước (`last_month`):**
+   - Mốc thời gian linh hoạt: Hôm nay, Hôm qua, 7 ngày gần nhất, 30 ngày gần nhất, Tháng này, và đặc biệt **Tháng trước (Last Month)**.
+   - Cơ chế đối chiếu thông minh: Quét cả ngày tạo lead lẫn mốc thời gian của từng cuộc gọi trong lịch sử tư vấn (`consultationHistory.timestamp`).
+   - Hỗ trợ chọn khoảng ngày tùy chỉnh (`startDate` đến `endDate`).
+
+4. 📞 **Tra Cứu Lịch Sử & Ghi Nhận Cuộc Trao Đổi Khi Khách Gọi Lại:**
+   - Hộp thoại Modal xem dòng thời gian (Timeline) chi tiết toàn bộ các cuộc trao đổi trong quá khứ.
+   - Cuộc trao đổi từ tháng trước được gắn nhãn nổi bật (`⭐ Cuộc trao đổi từ tháng trước`) giúp tư vấn viên nắm bắt ngay ngữ cảnh khi khách gọi lại.
+   - Tích hợp biểu mẫu ghi nhận nhanh: Loại cuộc gọi (Inbound/Outbound/Zalo), tóm tắt thảo luận và cập nhật trạng thái mới.
+
+5. 📊 **Giao Diện Quản Trị Chuyên Biệt ([`LeadManagement.html`](file:///c:/Users/Administrator/Downloads/minhquan_ttcs/LeadManagement.html)):**
+   - Thiết kế chuẩn TMS Design System, hỗ trợ Dark / Light Mode.
+   - 4 Thẻ KPI thống kê trực quan: Tổng lead, Trao đổi tháng trước, Đang tư vấn, Đã chốt nhập học.
+   - Tính năng xuất báo cáo danh sách khách hàng ra file CSV định dạng UTF-8 chuẩn.
+
+---
+
+## 3. Kiến Trúc Kỹ Thuật & Công Nghệ Sử Dụng
+
+- **Frontend:** HTML5, Vanilla CSS3 (Custom Design System, Dark/Light Mode, Glassmorphism, Micro-interactions), JavaScript ES6+.
+- **Backend:** Node.js, Express.js RESTful API architecture.
+- **Xác thực & Bảo mật:** JSON Web Token (JWT), kiểm soát phân quyền dựa trên vai trò (RBAC) chặt chẽ ở tầng Server Middleware.
+- **Cơ sở dữ liệu:** PostgreSQL / Supabase, schema chuẩn hóa quan hệ khóa ngoại (Foreign Keys, Indexes).
+- **Kiểm thử tự động:** Node.js Assert Test Runner, tích hợp kiểm thử API HTTP khép kín.
+- **Quy trình phát triển:** Agile/Scrum theo chuẩn Git Flow (`Develop`, `feature/KN_76`, `main`).
+
+---
+
+## 4. Danh Sách Tài Khoản Thử Nghiệm Hệ Thống (Demo Accounts)
+
+Hệ thống phân quyền truy cập theo 8 vai trò nghiệp vụ. Bạn có thể sử dụng các tài khoản sau để đăng nhập kiểm thử:
+
+| STT | Vai trò nghiệp vụ (Role) | Email / Tài khoản | Mật khẩu | Trang kiểm thử & Trải nghiệm |
 |:---:|:---|:---|:---:|:---|
-| 1 | **Quản trị hệ thống (Administrator)** | `admin@tms.edu.vn` | `admin123` | `frontend/Index.html?role=administrator` |
-| 2 | **Quản lý đào tạo (Training Manager)** | `manager@tms.edu.vn` | `manager123` | `frontend/Index.html?role=training_manager` |
-| 3 | **Giảng viên (Instructor)** | `teacher@tms.edu.vn` | `teacher123` | `frontend/Index.html?role=instructor` |
-| 4 | **Trợ giảng (Teaching Assistant)** | `ta@tms.edu.vn` | `ta123456` | `frontend/Index.html?role=teaching_assistant` |
-| 5 | **Học viên (Student / Learner)** | `student@tms.edu.vn` *(hoặc `sv001`)* | `student123` | `frontend/Index.html?role=student` |
-| 6 | **Tư vấn tuyển sinh (Admissions Counselor)** | `admissions@tms.edu.vn` | `admissions123` | `frontend/Index.html?role=admissions` |
-| 7 | **Kế toán đào tạo (Accountant)** | `accountant@tms.edu.vn` | `accountant123` | `frontend/Index.html?role=accountant` |
-| 8 | **Khách truy cập (Visitor)** | `visitor@tms.edu.vn` | `visitor123` | `frontend/Index.html?role=visitor` |
+| 1 | **Tư vấn tuyển sinh (Admissions Counselor)** | `admissions@tms.edu.vn` *(usr_admissions)* | `admissions123` | **[`/LeadManagement.html`](file:///c:/Users/Administrator/Downloads/minhquan_ttcs/LeadManagement.html)** *(Trang trọng tâm KN-76)* |
+| 2 | **Quản trị hệ thống (Administrator)** | `admin@tms.edu.vn` | `admin123` | [`/UserManagement.html`](file:///c:/Users/Administrator/Downloads/minhquan_ttcs/UserManagement.html) |
+| 3 | **Quản lý đào tạo (Training Manager)** | `manager@tms.edu.vn` | `manager123` | [`/SubjectManagement.html`](file:///c:/Users/Administrator/Downloads/minhquan_ttcs/SubjectManagement.html) |
+| 4 | **Giảng viên (Instructor)** | `teacher@tms.edu.vn` | `teacher123` | [`/Dashboard.html`](file:///c:/Users/Administrator/Downloads/minhquan_ttcs/Dashboard.html) |
+| 5 | **Trợ giảng (Teaching Assistant)** | `ta@tms.edu.vn` | `ta123456` | [`/Dashboard.html`](file:///c:/Users/Administrator/Downloads/minhquan_ttcs/Dashboard.html) |
+| 6 | **Học viên (Student / Learner)** | `student@tms.edu.vn` | `student123` | [`/Dashboard.html`](file:///c:/Users/Administrator/Downloads/minhquan_ttcs/Dashboard.html) |
+| 7 | **Kế toán đào tạo (Accountant)** | `accountant@tms.edu.vn` | `accountant123` | [`/Dashboard.html`](file:///c:/Users/Administrator/Downloads/minhquan_ttcs/Dashboard.html) |
+| 8 | **Khách truy cập (Visitor)** | `visitor@tms.edu.vn` | `visitor123` | [`/LeadForm.html`](file:///c:/Users/Administrator/Downloads/minhquan_ttcs/LeadForm.html) |
 
-> **Tính năng bổ sung:**  
-> Hệ thống hỗ trợ nhập danh sách học viên và người dùng hàng loạt từ tệp Excel (`.xlsx`, `.xls`, `.csv`) với tính năng tải tệp mẫu, xem trước và báo lỗi từng dòng, tự động bỏ qua dòng lỗi và xuất báo cáo tổng kết chi tiết. Chi tiết tại [KN_66.md](file:///c:/Users/Administrator/Downloads/ttcs_minhquan/KN_66.md).
+---
+
+## 5. Hướng Dẫn Cài Đặt & Chạy Thử Nghiệm
+
+### 5.1. Khởi chạy ứng dụng
+```bash
+# 1. Cài đặt các gói phụ thuộc (nếu chưa cài)
+npm install
+
+# 2. Khởi động máy chủ TMS
+npm start
+# Server chạy tại: http://localhost:3000
+```
+
+### 5.2. Chạy bộ kiểm thử tự động tính năng KN-76
+```bash
+npm run test:kn76
+```
+
+Kết quả kiểm thử tự động:
+```
+=======================================================
+   TMS LEAD SEARCH & MULTI-FILTER SUITE - KN-76        
+=======================================================
+=== 1. TÌM NHANH THEO TÊN HỌC VIÊN / KHÁCH HÀNG ===
+  ✔ PASS: Tìm nhanh theo Tên chính xác có dấu: "Nguyễn Hoàng Nam"
+  ✔ PASS: Tìm nhanh không dấu tiếng Việt: "hoang nam" -> Khớp "Nguyễn Hoàng Nam"
+  ✔ PASS: Tìm kiếm một phần tên: "Yến" -> Khớp "Lê Hoàng Yến"
+
+=== 2. TÌM NHANH THEO SỐ ĐIỆN THOẠI ===
+  ✔ PASS: Tìm theo số điện thoại chuẩn: "0977889900"
+  ✔ PASS: Chuẩn hóa chuỗi số điện thoại: "0977 889 900" -> Khớp chính xác
+  ✔ PASS: Tìm kiếm theo đuôi số điện thoại: "889900"
+
+=== 3. LỌC THEO TRẠNG THÁI (STATUS FILTER) ===
+  ✔ PASS: Lọc trạng thái "Mới", "Đang tư vấn", "Đã ghi danh", "Không liên lạc được"
+
+=== 4. LỌC THEO NGUỒN LEAD (SOURCE FILTER) ===
+  ✔ PASS: Lọc theo nguồn "Hotline", "Facebook", "Giới thiệu"
+
+=== 5. LỌC THEO NGƯỜI PHỤ TRÁCH ===
+  ✔ PASS: Lọc theo tư vấn viên (usr_admissions) & Lead "Chưa phân công"
+
+=== 6. LỌC THEO KHOẢNG THỜI GIAN (DATE RANGE & TIME PRESET) ===
+  ✔ PASS: Lọc nhanh "Tháng trước" (timePreset=last_month): Tìm lại cuộc trao đổi cũ khi khách gọi lại
+  ✔ PASS: Lọc theo khoảng ngày tùy chỉnh
+
+=== 7. KẾT HỢP NHIỀU ĐIỀU KIỆN LỌC CÙNG LÚC ===
+  ✔ PASS: Kết hợp SĐT + Trạng thái + Nguồn + Tháng trước -> Tìm thấy đúng 1 lead mục tiêu
+
+=== 8. XEM LỊCH SỬ TRAO ĐỔI & GHI NHẬN CUỘC GỌI MỚI ===
+  ✔ PASS: Tra cứu cuộc trao đổi từ tháng trước & Ghi nhận tương tác mới cập nhật trạng thái "Đã ghi danh"
+
+=== 9. DANH MỤC NGUỒN LEAD & TƯ VẤN VIÊN ===
+  ✔ PASS: GET /api/leads/sources & GET /api/leads/counselors
+
+=== 10. BẢO MẬT & PHÂN QUYỀN RBAC ===
+  ✔ PASS: Chặn không token (401), chặn học viên (403), cấp quyền tư vấn viên & admin
+
+=======================================================
+✔ TẤT CẢ 10 TIÊU CHÍ NGHIỆM THU KN-76 ĐÃ ĐẠT 100% PASS!
+=======================================================
+```
+
+---
+
+## 6. Tài Liệu Kỹ Thuật Chi Tiết
+- Chi tiết báo cáo nghiệm thu tính năng KN-76: [`KN_76.md`](file:///c:/Users/Administrator/Downloads/minhquan_ttcs/KN_76.md)
+- Mô hình cơ sở dữ liệu Supabase / PostgreSQL: [`supabase_schema.sql`](file:///c:/Users/Administrator/Downloads/minhquan_ttcs/supabase_schema.sql)
+- Phân hệ quản lý & lọc lead chuyên biệt: [`LeadManagement.html`](file:///c:/Users/Administrator/Downloads/minhquan_ttcs/LeadManagement.html)
