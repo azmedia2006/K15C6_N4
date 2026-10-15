@@ -1275,6 +1275,99 @@
             #view-leads .metric-value { font-size: 1.625rem; }
         }
 
+        .lead-row-actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        @media (max-width: 640px) {
+            #lead-table-wrap {
+                overflow: visible;
+                border: 0;
+            }
+
+            #lead-table-wrap table.data-table,
+            #lead-table-wrap tbody {
+                display: block;
+                width: 100%;
+                background: transparent;
+            }
+
+            #lead-table-wrap thead {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                white-space: nowrap;
+            }
+
+            #lead-table-wrap tbody {
+                display: grid;
+                gap: 12px;
+            }
+
+            #lead-table-wrap tbody tr {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                overflow: hidden;
+                border: 1px solid var(--border);
+                border-radius: var(--radius-md);
+                background: var(--bg-card);
+                box-shadow: var(--shadow-card);
+            }
+
+            #lead-table-wrap tbody td {
+                display: flex;
+                min-width: 0;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+                padding: 12px 14px;
+                border-bottom: 1px solid var(--border);
+                overflow-wrap: anywhere;
+            }
+
+            #lead-table-wrap tbody td::before {
+                content: attr(data-label);
+                color: var(--text-muted);
+                font-size: 0.65rem;
+                font-weight: 700;
+                letter-spacing: 0.045em;
+                line-height: 1.3;
+                text-transform: uppercase;
+            }
+
+            #lead-table-wrap tbody td:nth-child(2),
+            #lead-table-wrap tbody td:nth-child(4),
+            #lead-table-wrap tbody td:nth-child(5),
+            #lead-table-wrap tbody td:last-child {
+                grid-column: 1 / -1;
+            }
+
+            #lead-table-wrap tbody td:last-child {
+                border-bottom: 0;
+            }
+
+            #lead-table-wrap tbody td[colspan] {
+                display: block;
+                grid-column: 1 / -1;
+                text-align: center;
+            }
+
+            #lead-table-wrap tbody td[colspan]::before {
+                content: none;
+            }
+
+            #lead-table-wrap .lead-row-actions {
+                justify-content: flex-start;
+                width: 100%;
+            }
+        }
+
         /* Print Styles for Clean Report Export */
         @media print {
             aside.sidebar,
@@ -3261,24 +3354,26 @@
 
                 return `
                     <tr>
-                        <td><strong>${escapeLeadHtml(lead.code || lead.id)}</strong></td>
-                        <td><strong>${escapeLeadHtml(lead.fullName || lead.name)}</strong></td>
-                        <td>${escapeLeadHtml(lead.phone)}</td>
-                        <td>${escapeLeadHtml(lead.email)}</td>
-                        <td>${escapeLeadHtml(lead.course || "Chưa chọn khóa học cụ thể")}</td>
-                        <td>${escapeLeadHtml(lead.source || "—")}</td>
-                        <td><span class="badge" style="${badgeStyle}; font-weight: 700; padding: 3px 8px; border-radius: 999px;">${escapeLeadHtml(lead.status || "Mới")}</span></td>
-                        <td><small style="color: var(--text-muted);">${createdDate}</small></td>
+                        <td data-label="Mã Lead"><strong>${escapeLeadHtml(lead.code || lead.id)}</strong></td>
+                        <td data-label="Họ và tên"><strong>${escapeLeadHtml(lead.fullName || lead.name)}</strong></td>
+                        <td data-label="Số điện thoại">${escapeLeadHtml(lead.phone)}</td>
+                        <td data-label="Email">${escapeLeadHtml(lead.email)}</td>
+                        <td data-label="Chương trình quan tâm">${escapeLeadHtml(lead.course || "Chưa chọn khóa học cụ thể")}</td>
+                        <td data-label="Nguồn">${escapeLeadHtml(lead.source || "—")}</td>
+                        <td data-label="Trạng thái"><span class="badge" style="${badgeStyle}; font-weight: 700; padding: 3px 8px; border-radius: 999px;">${escapeLeadHtml(lead.status || "Mới")}</span></td>
+                        <td data-label="Thời gian gửi"><small style="color: var(--text-muted);">${createdDate}</small></td>
                         <td>
-                            <button type="button" class="btn btn-secondary" data-lead-id="${escapeLeadHtml(lead.id)}" onclick="openLeadForm(this.dataset.leadId)" style="padding: 4px 8px; font-size: 0.75rem;">Sửa</button>
-                            ${canDelete ? `<button type="button" class="btn btn-secondary" data-lead-id="${escapeLeadHtml(lead.id)}" onclick="deleteDashboardLead(this.dataset.leadId)" style="padding: 4px 8px; font-size: 0.75rem; color:#dc2626;">Xóa</button>` : ""}
-                            <select onchange="updateDashboardLeadStatus('${escapeLeadHtml(lead.id)}', this.value)" style="padding: 4px 8px; font-size: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main);">
-                                <option value="" disabled selected>Đổi trạng thái</option>
-                                <option value="Mới">Mới</option>
-                                <option value="Đang tư vấn">Đang tư vấn</option>
-                                <option value="Đã ghi danh">Đã ghi danh</option>
-                                <option value="Hủy">Hủy</option>
-                            </select>
+                            <div class="lead-row-actions">
+                                <button type="button" class="btn btn-secondary" data-lead-id="${escapeLeadHtml(lead.id)}" onclick="openLeadForm(this.dataset.leadId)" style="padding: 4px 8px; font-size: 0.75rem;">Sửa</button>
+                                ${canDelete ? `<button type="button" class="btn btn-secondary" data-lead-id="${escapeLeadHtml(lead.id)}" onclick="deleteDashboardLead(this.dataset.leadId)" style="padding: 4px 8px; font-size: 0.75rem; color:#dc2626;">Xóa</button>` : ""}
+                                <select onchange="updateDashboardLeadStatus('${escapeLeadHtml(lead.id)}', this.value)" style="padding: 4px 8px; font-size: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main);">
+                                    <option value="" disabled selected>Đổi trạng thái</option>
+                                    <option value="Mới">Mới</option>
+                                    <option value="Đang tư vấn">Đang tư vấn</option>
+                                    <option value="Đã ghi danh">Đã ghi danh</option>
+                                    <option value="Hủy">Hủy</option>
+                                </select>
+                            </div>
                         </td>
                     </tr>
                 `;
