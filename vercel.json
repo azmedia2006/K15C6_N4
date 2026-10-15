@@ -17,6 +17,8 @@
     { "source": "/users", "destination": "/UserManagement.html" },
     { "source": "/roles", "destination": "/RoleManagement.html" },
     { "source": "/subjects", "destination": "/SubjectManagement.html" },
+    { "source": "/leads", "destination": "/LeadManagement.html" },
+    { "source": "/lead-management", "destination": "/LeadManagement.html" },
     { "source": "/tu-van", "destination": "/LeadForm.html" },
     { "source": "/lead", "destination": "/LeadForm.html" },
     { "source": "/consultation", "destination": "/LeadForm.html" },
