@@ -68,6 +68,10 @@ const {
     getLeadById,
     updateLeadStatus,
     addConsultation,
+    addCareLog,
+    getCareLogs,
+    completeCallback,
+    getReminderStats,
     deleteLead,
     getLeadStats,
     getLeadSources,
@@ -1369,7 +1373,18 @@ app.get("/api/leads/counselors",
     }
 );
 
-// KN-76: API Lấy danh sách Lead có phân trang, lọc đa điều kiện và tìm nhanh
+// KN-122: API Thống kê lịch nhắc gọi lại (Quá hạn, hôm nay, tuần sau)
+app.get("/api/leads/reminders/summary",
+    authenticateToken,
+    requireRole("admissions", "training_manager", "administrator"),
+    (req, res) => {
+        const counselorId = req.query.counselorId || (req.user && req.user.role === "admissions" ? req.user.id : null);
+        const stats = getReminderStats(counselorId);
+        return res.status(200).json(stats);
+    }
+);
+
+// KN-76 & KN-122: API Lấy danh sách Lead có phân trang, lọc đa điều kiện và tìm nhanh
 app.get("/api/leads",
     authenticateToken,
     requireRole("admissions", "training_manager", "administrator"),
@@ -1386,7 +1401,9 @@ app.get("/api/leads",
             endDate,
             timePreset,
             sortBy,
-            sortOrder
+            sortOrder,
+            callbackFilter,
+            interactionType
         } = req.query;
 
         const result = getLeads({
@@ -1401,7 +1418,9 @@ app.get("/api/leads",
             endDate,
             timePreset,
             sortBy,
-            sortOrder
+            sortOrder,
+            callbackFilter,
+            interactionType
         });
         return res.status(200).json(result);
     }
@@ -1461,6 +1480,71 @@ app.post("/api/leads/:id/consultations",
 
         supabaseService.syncLeadsDatabase(leads).catch(() => {});
         return res.status(201).json(result);
+    }
+);
+
+// KN-122: API Ghi nhận nhật ký chăm sóc (gọi điện, nhắn tin, gặp trực tiếp) và đặt lịch nhắc gọi lại
+app.post(["/api/leads/:id/care-logs", "/api/leads/:id/interactions"],
+    authenticateToken,
+    requireRole("admissions", "training_manager", "administrator"),
+    (req, res) => {
+        const result = addCareLog(req.params.id, req.body || {}, req.user || {});
+        if (!result.success) {
+            return res.status(400).json(result);
+        }
+
+        supabaseService.syncLeadsDatabase(leads).catch(() => {});
+        return res.status(201).json(result);
+    }
+);
+
+// KN-122: API Lấy danh sách nhật ký chăm sóc của Lead
+app.get("/api/leads/:id/care-logs",
+    authenticateToken,
+    requireRole("admissions", "training_manager", "administrator"),
+    (req, res) => {
+        const lead = getLeadById(req.params.id);
+        if (!lead) {
+            return res.status(404).json({
+                success: false,
+                message: "Không tìm thấy thông tin hồ sơ Lead."
+            });
+        }
+        const logs = getCareLogs(req.params.id);
+        return res.status(200).json({
+            success: true,
+            lead: {
+                id: lead.id,
+                code: lead.code,
+                fullName: lead.fullName || lead.name,
+                phone: lead.phone,
+                email: lead.email,
+                course: lead.course,
+                status: lead.status,
+                nextCallbackDate: lead.nextCallbackDate,
+                callbackNote: lead.callbackNote,
+                callbackStatus: lead.callbackStatus,
+                isOverdue: lead.isOverdue,
+                overdueDays: lead.overdueDays,
+                callbackUrgency: lead.callbackUrgency
+            },
+            data: logs
+        });
+    }
+);
+
+// KN-122: API Hoàn thành lịch nhắc gọi lại cho Lead
+app.all(["/api/leads/:id/callbacks/complete"],
+    authenticateToken,
+    requireRole("admissions", "training_manager", "administrator"),
+    (req, res) => {
+        const result = completeCallback(req.params.id, req.body || {}, req.user || {});
+        if (!result.success) {
+            return res.status(400).json(result);
+        }
+
+        supabaseService.syncLeadsDatabase(leads).catch(() => {});
+        return res.status(200).json(result);
     }
 );
 

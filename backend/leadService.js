@@ -277,12 +277,297 @@ function buildDefaultLeads() {
             consultationHistory: [],
             contactCommitment: "Cam kết liên hệ lại trong vòng 24 giờ làm việc",
             thankYouMessage: "Cảm ơn bạn đã quan tâm và đăng ký tư vấn tại Hệ Thống Đào Tạo TMS!"
+        },
+        // KN-122 USER STORY: Nhật ký chăm sóc (gọi, nhắn, gặp) & Đặt lịch nhắc gọi lại
+        {
+            id: "lead_kn122_001",
+            code: "LD-202610-020",
+            fullName: "Phan Đình Trọng",
+            name: "Phan Đình Trọng",
+            phone: "0971234999",
+            email: "trong.phan@gmail.com",
+            course: "Lập trình Web Frontend với React",
+            notes: "Học viên quan tâm khóa React ca tối, xin giảm giá 20% theo chương trình sinh viên.",
+            status: "Đang tư vấn",
+            statusCode: "CONSULTING",
+            source: "Hotline (Tổng đài tư vấn)",
+            ip: "127.0.0.1",
+            createdAt: new Date(now - dayMs * 6).toISOString(),
+            updatedAt: new Date(now - dayMs * 4).toISOString(),
+            lastContactedAt: new Date(now - dayMs * 4).toISOString(),
+            assignedTo: "usr_admissions",
+            assignedToName: "Minh Quân",
+            counselorNotes: "Đã gọi tư vấn chi tiết học phí. Hẹn gọi lại vào 2 ngày trước để chốt ca học nhưng bận chưa gọi được (Quá hạn 2 ngày).",
+            nextCallbackDate: new Date(now - dayMs * 2).toISOString(),
+            callbackNote: "Gọi lại báo chương trình ưu đãi học phí 20% và chốt ca học tối cuối tuần",
+            callbackStatus: "pending",
+            careLogs: [
+                {
+                    id: "care_kn122_001_1",
+                    type: "call",
+                    typeLabel: "Gọi điện",
+                    content: "Tư vấn chương trình ReactJS và điều kiện nhận học bổng sinh viên. Khách dặn gọi lại sau 2 ngày để gia đình chuẩn bị học phí.",
+                    notes: "Tư vấn chương trình ReactJS và điều kiện nhận học bổng sinh viên. Khách dặn gọi lại sau 2 ngày để gia đình chuẩn bị học phí.",
+                    interactedAt: new Date(now - dayMs * 4).toISOString(),
+                    timestamp: new Date(now - dayMs * 4).toISOString(),
+                    counselorId: "usr_admissions",
+                    counselorName: "Minh Quân",
+                    hasCallback: true,
+                    callbackDate: new Date(now - dayMs * 2).toISOString(),
+                    callbackNote: "Gọi lại báo chương trình ưu đãi học phí 20% và chốt ca học tối cuối tuần",
+                    callbackStatus: "pending"
+                }
+            ],
+            consultationHistory: [
+                {
+                    id: "care_kn122_001_1",
+                    timestamp: new Date(now - dayMs * 4).toISOString(),
+                    counselorId: "usr_admissions",
+                    counselorName: "Minh Quân",
+                    channel: "Gọi điện",
+                    type: "call",
+                    result: "Hẹn gọi lại sau",
+                    notes: "Tư vấn chương trình ReactJS và điều kiện nhận học bổng sinh viên. Khách dặn gọi lại sau 2 ngày để gia đình chuẩn bị học phí.",
+                    nextFollowUp: new Date(now - dayMs * 2).toISOString(),
+                    callbackNote: "Gọi lại báo chương trình ưu đãi học phí 20% và chốt ca học tối cuối tuần"
+                }
+            ],
+            contactCommitment: "Cam kết liên hệ lại trong vòng 24 giờ làm việc",
+            thankYouMessage: "Cảm ơn bạn đã quan tâm và đăng ký tư vấn tại Hệ Thống Đào Tạo TMS!"
+        },
+        {
+            id: "lead_kn122_002",
+            code: "LD-202610-021",
+            fullName: "Hoàng Mai Linh",
+            name: "Hoàng Mai Linh",
+            phone: "0982345888",
+            email: "mailinh.hoang@gmail.com",
+            course: "Thiết kế Giao diện UI/UX Chuyên nghiệp",
+            notes: "Quan tâm khóa học UI/UX Figma từ căn bản.",
+            status: "Đang tư vấn",
+            statusCode: "CONSULTING",
+            source: "Facebook (Quảng cáo & Fanpage)",
+            ip: "127.0.0.1",
+            createdAt: new Date(now - dayMs * 3).toISOString(),
+            updatedAt: new Date(now - dayMs * 1).toISOString(),
+            lastContactedAt: new Date(now - dayMs * 1).toISOString(),
+            assignedTo: "usr_admissions",
+            assignedToName: "Minh Quân",
+            counselorNotes: "Nhắn tin qua Zalo gửi đề cương. Khách hẹn gọi lại vào tuần sau vì tuần này bận thi học kỳ.",
+            nextCallbackDate: new Date(now + dayMs * 7).toISOString(),
+            callbackNote: "Lời hứa gọi lại cho khách vào tuần sau sau khi khách thi xong để xếp lớp khai giảng",
+            callbackStatus: "pending",
+            careLogs: [
+                {
+                    id: "care_kn122_002_1",
+                    type: "message",
+                    typeLabel: "Nhắn tin",
+                    content: "Đã gửi đề cương chi tiết môn UI/UX và đồ án tốt nghiệp qua Zalo. Khách dặn gọi lại vào thứ 5 tuần sau sau khi thi tốt nghiệp.",
+                    notes: "Đã gửi đề cương chi tiết môn UI/UX và đồ án tốt nghiệp qua Zalo. Khách dặn gọi lại vào thứ 5 tuần sau sau khi thi tốt nghiệp.",
+                    interactedAt: new Date(now - dayMs * 1).toISOString(),
+                    timestamp: new Date(now - dayMs * 1).toISOString(),
+                    counselorId: "usr_admissions",
+                    counselorName: "Minh Quân",
+                    hasCallback: true,
+                    callbackDate: new Date(now + dayMs * 7).toISOString(),
+                    callbackNote: "Lời hứa gọi lại cho khách vào tuần sau sau khi khách thi xong để xếp lớp khai giảng",
+                    callbackStatus: "pending"
+                }
+            ],
+            consultationHistory: [
+                {
+                    id: "care_kn122_002_1",
+                    timestamp: new Date(now - dayMs * 1).toISOString(),
+                    counselorId: "usr_admissions",
+                    counselorName: "Minh Quân",
+                    channel: "Nhắn tin (Zalo)",
+                    type: "message",
+                    result: "Hẹn tuần sau",
+                    notes: "Đã gửi đề cương chi tiết môn UI/UX và đồ án tốt nghiệp qua Zalo. Khách dặn gọi lại vào thứ 5 tuần sau sau khi thi tốt nghiệp.",
+                    nextFollowUp: new Date(now + dayMs * 7).toISOString(),
+                    callbackNote: "Lời hứa gọi lại cho khách vào tuần sau sau khi khách thi xong để xếp lớp khai giảng"
+                }
+            ],
+            contactCommitment: "Cam kết liên hệ lại trong vòng 24 giờ làm việc",
+            thankYouMessage: "Cảm ơn bạn đã quan tâm và đăng ký tư vấn tại Hệ Thống Đào Tạo TMS!"
+        },
+        {
+            id: "lead_kn122_003",
+            code: "LD-202610-022",
+            fullName: "Trần Tuấn Kiệt",
+            name: "Trần Tuấn Kiệt",
+            phone: "0934567111",
+            email: "tuankiet.tran@gmail.com",
+            course: "Backend Java Spring Boot Doanh nghiệp",
+            notes: "Đến trung tâm tham quan và tìm hiểu khóa Java Backend.",
+            status: "Đang tư vấn",
+            statusCode: "CONSULTING",
+            source: "Website (Biểu mẫu công khai)",
+            ip: "127.0.0.1",
+            createdAt: new Date(now - dayMs * 2).toISOString(),
+            updatedAt: new Date(now - dayMs * 1).toISOString(),
+            lastContactedAt: new Date(now - dayMs * 1).toISOString(),
+            assignedTo: "usr_admissions",
+            assignedToName: "Minh Quân",
+            counselorNotes: "Gặp trực tiếp tại cơ sở đào tạo. Hẹn hôm nay gọi lại chốt thông tin đóng học phí.",
+            nextCallbackDate: new Date(now + dayMs * 0.1).toISOString(),
+            callbackNote: "Gọi lại hôm nay hướng dẫn học viên đóng học phí đợt 1 và nhận tài liệu",
+            callbackStatus: "pending",
+            careLogs: [
+                {
+                    id: "care_kn122_003_1",
+                    type: "meeting",
+                    typeLabel: "Gặp trực tiếp",
+                    content: "Học viên đến văn phòng gặp trực tiếp tư vấn viên, đã kiểm tra phòng thực hành và giáo trình.",
+                    notes: "Học viên đến văn phòng gặp trực tiếp tư vấn viên, đã kiểm tra phòng thực hành và giáo trình.",
+                    interactedAt: new Date(now - dayMs * 1).toISOString(),
+                    timestamp: new Date(now - dayMs * 1).toISOString(),
+                    counselorId: "usr_admissions",
+                    counselorName: "Minh Quân",
+                    hasCallback: true,
+                    callbackDate: new Date(now + dayMs * 0.1).toISOString(),
+                    callbackNote: "Gọi lại hôm nay hướng dẫn học viên đóng học phí đợt 1 và nhận tài liệu",
+                    callbackStatus: "pending"
+                }
+            ],
+            consultationHistory: [
+                {
+                    id: "care_kn122_003_1",
+                    timestamp: new Date(now - dayMs * 1).toISOString(),
+                    counselorId: "usr_admissions",
+                    counselorName: "Minh Quân",
+                    channel: "Gặp trực tiếp",
+                    type: "meeting",
+                    result: "Hẹn hôm nay",
+                    notes: "Học viên đến văn phòng gặp trực tiếp tư vấn viên, đã kiểm tra phòng thực hành và giáo trình.",
+                    nextFollowUp: new Date(now + dayMs * 0.1).toISOString(),
+                    callbackNote: "Gọi lại hôm nay hướng dẫn học viên đóng học phí đợt 1 và nhận tài liệu"
+                }
+            ],
+            contactCommitment: "Cam kết liên hệ lại trong vòng 24 giờ làm việc",
+            thankYouMessage: "Cảm ơn bạn đã quan tâm và đăng ký tư vấn tại Hệ Thống Đào Tạo TMS!"
         }
     ];
 }
 
 // Kho lưu trữ Lead trong bộ nhớ (In-memory Relational Store)
 let leads = buildDefaultLeads();
+
+/**
+ * KN-122: Chuẩn hóa loại hình tương tác chăm sóc khách hàng
+ * Hỗ trợ 3 loại chính: Gọi điện ('call'), Nhắn tin ('message'), Gặp trực tiếp ('meeting')
+ */
+function normalizeInteractionType(type) {
+    if (!type) return "call";
+    const t = String(type).trim().toLowerCase();
+    if (t.includes("gặp") || t.includes("meeting") || t.includes("trực tiếp") || t.includes("direct") || t.includes("mặt")) {
+        return "meeting";
+    }
+    if (t.includes("nhắn") || t.includes("message") || t.includes("sms") || t.includes("zalo") || t.includes("chat") || t.includes("tin nhắn") || t === "tin") {
+        return "message";
+    }
+    if (t.includes("gọi") || t.includes("call") || t.includes("phone") || t.includes("hotline") || t.includes("thoại")) {
+        return "call";
+    }
+    return "call";
+}
+
+function getInteractionTypeLabel(type) {
+    const norm = normalizeInteractionType(type);
+    if (norm === "call") return "Gọi điện";
+    if (norm === "message") return "Nhắn tin";
+    if (norm === "meeting") return "Gặp trực tiếp";
+    return "Gọi điện";
+}
+
+/**
+ * KN-122: Tính toán trạng thái lịch nhắc gọi lại và phát hiện quá hạn
+ */
+function enrichLeadCallback(lead) {
+    if (!lead) return lead;
+    const now = new Date();
+
+    // Đồng bộ careLogs và consultationHistory
+    if (!Array.isArray(lead.careLogs)) {
+        lead.careLogs = [];
+    }
+
+    if (Array.isArray(lead.consultationHistory) && lead.careLogs.length === 0) {
+        lead.careLogs = lead.consultationHistory.map(c => ({
+            id: c.id,
+            type: normalizeInteractionType(c.type || c.channel),
+            typeLabel: getInteractionTypeLabel(c.type || c.channel),
+            content: c.notes || c.content || "",
+            notes: c.notes || c.content || "",
+            interactedAt: c.timestamp || c.interactedAt || lead.createdAt,
+            timestamp: c.timestamp || c.interactedAt || lead.createdAt,
+            counselorId: c.counselorId || lead.assignedTo || "usr_admissions",
+            counselorName: c.counselorName || lead.assignedToName || "Minh Quân",
+            callbackDate: c.nextFollowUp || c.callbackDate || null,
+            callbackNote: c.callbackNote || "",
+            callbackStatus: c.callbackStatus || (c.nextFollowUp ? "pending" : "none")
+        }));
+    }
+
+    // Xác định lịch hẹn mới nhất
+    let nextCallbackDate = lead.nextCallbackDate || null;
+    let callbackNote = lead.callbackNote || "";
+    let callbackStatus = lead.callbackStatus || "none";
+
+    // Nếu chưa gán ở cấp lead, tìm trong careLogs
+    if (!nextCallbackDate && Array.isArray(lead.careLogs)) {
+        const pendingLog = lead.careLogs.find(l => l.callbackDate && l.callbackStatus === "pending");
+        if (pendingLog) {
+            nextCallbackDate = pendingLog.callbackDate;
+            callbackNote = pendingLog.callbackNote || pendingLog.content;
+            callbackStatus = "pending";
+        }
+    }
+
+    let isOverdue = false;
+    let overdueDays = 0;
+    let callbackUrgency = "none"; // 'overdue' | 'today' | 'this_week' | 'next_week' | 'future' | 'none'
+
+    if (nextCallbackDate && callbackStatus === "pending") {
+        const cbDate = new Date(nextCallbackDate);
+        if (!isNaN(cbDate.getTime())) {
+            const nowTime = now.getTime();
+            const cbTime = cbDate.getTime();
+
+            // Nếu hạn gọi trước thời điểm hiện tại và chưa hoàn tất -> QUÁ HẠN!
+            if (cbTime < nowTime) {
+                if (cbDate.toDateString() === now.toDateString()) {
+                    callbackUrgency = "today";
+                } else {
+                    isOverdue = true;
+                    overdueDays = Math.max(1, Math.ceil((nowTime - cbTime) / (1000 * 60 * 60 * 24)));
+                    callbackUrgency = "overdue";
+                }
+            } else if (cbDate.toDateString() === now.toDateString()) {
+                callbackUrgency = "today";
+            } else {
+                const diffMs = cbTime - nowTime;
+                const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+                if (diffDays <= 7) {
+                    callbackUrgency = "next_week";
+                } else if (diffDays <= 14) {
+                    callbackUrgency = "next_week";
+                } else {
+                    callbackUrgency = "future";
+                }
+            }
+        }
+    }
+
+    lead.nextCallbackDate = nextCallbackDate;
+    lead.callbackNote = callbackNote;
+    lead.callbackStatus = callbackStatus;
+    lead.isOverdue = isOverdue;
+    lead.overdueDays = overdueDays;
+    lead.callbackUrgency = callbackUrgency;
+
+    return lead;
+}
 
 // Bộ nhớ theo dõi chống spam theo IP và thời gian (Rate Limiting & Anti-Spam Store)
 const ipSubmissionTimestamps = new Map(); // IP -> Array<timestamps>
@@ -617,7 +902,9 @@ function getLeads(options = {}) {
         endDate = "",
         timePreset = "",
         sortBy = "createdAt",
-        sortOrder = "desc"
+        sortOrder = "desc",
+        callbackFilter = "",
+        interactionType = ""
     } = options;
 
     let filtered = [...leads];
@@ -768,12 +1055,42 @@ function getLeads(options = {}) {
         });
     }
 
-    // 7. SẮP XẾP KẾT QUẢ (Sorting)
+    // 7. KN-122: LỌC THEO LỊCH HẸN NHẮC GỌI LẠI (callbackFilter: overdue | today | next_week | pending | completed)
+    if (callbackFilter && callbackFilter.trim() !== "" && callbackFilter !== "all") {
+        const cf = callbackFilter.trim().toLowerCase();
+        filtered = filtered.filter(lead => {
+            enrichLeadCallback(lead);
+            if (cf === "overdue") {
+                return lead.isOverdue === true;
+            } else if (cf === "today") {
+                return lead.callbackUrgency === "today" && lead.callbackStatus === "pending";
+            } else if (cf === "next_week" || cf === "nextweek" || cf === "upcoming") {
+                return (lead.callbackUrgency === "next_week" || lead.callbackUrgency === "this_week") && lead.callbackStatus === "pending";
+            } else if (cf === "pending" || cf === "scheduled" || cf === "has_callback") {
+                return lead.callbackStatus === "pending";
+            } else if (cf === "completed") {
+                return lead.callbackStatus === "completed";
+            }
+            return true;
+        });
+    }
+
+    // 8. KN-122: LỌC THEO HÌNH THỨC TƯƠNG TÁC (interactionType: call | message | meeting)
+    if (interactionType && interactionType.trim() !== "" && interactionType !== "all") {
+        const it = normalizeInteractionType(interactionType);
+        filtered = filtered.filter(lead => {
+            enrichLeadCallback(lead);
+            if (!Array.isArray(lead.careLogs) || lead.careLogs.length === 0) return false;
+            return lead.careLogs.some(log => log.type === it);
+        });
+    }
+
+    // 9. SẮP XẾP KẾT QUẢ (Sorting)
     filtered.sort((a, b) => {
         let valA = a[sortBy];
         let valB = b[sortBy];
 
-        if (sortBy === "createdAt" || sortBy === "updatedAt" || sortBy === "lastContactedAt") {
+        if (sortBy === "createdAt" || sortBy === "updatedAt" || sortBy === "lastContactedAt" || sortBy === "nextCallbackDate") {
             valA = valA ? new Date(valA).getTime() : 0;
             valB = valB ? new Date(valB).getTime() : 0;
         } else if (typeof valA === "string") {
@@ -789,23 +1106,26 @@ function getLeads(options = {}) {
         }
     });
 
-    // 8. TÍNH TOÁN BÁO CÁO TÓM TẮT DỮ LIỆU ĐÃ LỌC
+    // 10. TÍNH TOÁN BÁO CÁO TÓM TẮT DỮ LIỆU ĐÃ LỌC
     const summary = {
         total: filtered.length,
         new: filtered.filter(l => l.status === "Mới").length,
         consulting: filtered.filter(l => l.status === "Đang tư vấn").length,
         enrolled: filtered.filter(l => l.status === "Đã ghi danh").length,
         unreachable: filtered.filter(l => l.status === "Không liên lạc được").length,
-        cancelled: filtered.filter(l => l.status === "Hủy").length
+        cancelled: filtered.filter(l => l.status === "Hủy").length,
+        overdueCount: filtered.filter(l => enrichLeadCallback(l).isOverdue).length,
+        todayCallbackCount: filtered.filter(l => enrichLeadCallback(l).callbackUrgency === "today" && enrichLeadCallback(l).callbackStatus === "pending").length,
+        nextWeekCallbackCount: filtered.filter(l => enrichLeadCallback(l).callbackUrgency === "next_week" && enrichLeadCallback(l).callbackStatus === "pending").length
     };
 
-    // 9. PHÂN TRANG (Pagination)
+    // 11. PHÂN TRANG (Pagination)
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
     const limitNum = Math.max(1, parseInt(limit, 10) || 20);
     const total = filtered.length;
     const totalPages = Math.ceil(total / limitNum) || 1;
     const startIndex = (pageNum - 1) * limitNum;
-    const paginatedLeads = filtered.slice(startIndex, startIndex + limitNum);
+    const paginatedLeads = filtered.slice(startIndex, startIndex + limitNum).map(l => enrichLeadCallback(l));
 
     return {
         success: true,
@@ -821,11 +1141,12 @@ function getLeads(options = {}) {
 }
 
 /**
- * Lấy chi tiết một Lead theo ID hoặc Mã
+ * Lấy chi tiết một Lead theo ID hoặc Mã (KN-122: tự động enrich dữ liệu lịch nhắc)
  */
 function getLeadById(id) {
     if (!id) return null;
-    return leads.find(l => l.id === id || l.code === id) || null;
+    const lead = leads.find(l => l.id === id || l.code === id) || null;
+    return lead ? enrichLeadCallback(lead) : null;
 }
 
 /**
@@ -964,6 +1285,243 @@ function addConsultation(leadId, data = {}, user = {}) {
 }
 
 /**
+ * KN-122: Ghi nhật ký chăm sóc khách hàng và đặt lịch nhắc gọi lại
+ * Hỗ trợ 3 loại hình: Gọi điện, Nhắn tin, Gặp trực tiếp
+ * Lưu vết loại hình, nội dung, thời điểm tương tác và lịch nhắc gọi lại
+ */
+function addCareLog(leadId, data = {}, user = {}) {
+    const lead = getLeadById(leadId);
+    if (!lead) {
+        return {
+            success: false,
+            code: "LEAD_NOT_FOUND",
+            message: "Không tìm thấy hồ sơ Lead cần ghi nhật ký chăm sóc."
+        };
+    }
+
+    const rawType = data.type || data.interactionType || data.channel || "";
+    if (!rawType || String(rawType).trim() === "") {
+        return {
+            success: false,
+            code: "MISSING_INTERACTION_TYPE",
+            message: "Vui lòng chọn loại hình tương tác: Gọi điện, Nhắn tin, hoặc Gặp trực tiếp."
+        };
+    }
+
+    const content = (data.content || data.notes || "").trim();
+    if (!content) {
+        return {
+            success: false,
+            code: "MISSING_CONTENT",
+            message: "Vui lòng nhập nội dung chi tiết tương tác chăm sóc."
+        };
+    }
+
+    const normType = normalizeInteractionType(rawType);
+    const typeLabel = getInteractionTypeLabel(normType);
+
+    // Thời điểm tương tác
+    let interactedAt = data.interactedAt || data.timestamp || new Date().toISOString();
+    const interactedDate = new Date(interactedAt);
+    if (isNaN(interactedDate.getTime())) {
+        interactedAt = new Date().toISOString();
+    } else {
+        interactedAt = interactedDate.toISOString();
+    }
+
+    const counselorId = user.id || lead.assignedTo || "usr_admissions";
+    const counselorName = user.name || lead.assignedToName || "Minh Quân";
+    const nowIso = new Date().toISOString();
+
+    // Xử lý lịch nhắc gọi lại
+    let callbackDate = data.callbackDate || data.nextFollowUp || null;
+    let callbackNote = (data.callbackNote || "").trim();
+    let callbackStatus = "none";
+
+    if (callbackDate) {
+        const cbDate = new Date(callbackDate);
+        if (!isNaN(cbDate.getTime())) {
+            callbackDate = cbDate.toISOString();
+            callbackStatus = "pending";
+            if (!callbackNote) {
+                callbackNote = `Nhắc gọi lại: ${content.substring(0, 80)}`;
+            }
+        } else {
+            callbackDate = null;
+        }
+    }
+
+    const careRecord = {
+        id: `care_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+        type: normType,
+        typeLabel: typeLabel,
+        content: content,
+        notes: content,
+        interactedAt: interactedAt,
+        timestamp: interactedAt,
+        counselorId: counselorId,
+        counselorName: counselorName,
+        result: data.result || "Đang chăm sóc",
+        callbackDate: callbackDate,
+        callbackNote: callbackNote,
+        callbackStatus: callbackStatus
+    };
+
+    if (!Array.isArray(lead.careLogs)) {
+        lead.careLogs = [];
+    }
+    lead.careLogs.unshift(careRecord);
+
+    // Đồng bộ với consultationHistory để tương thích KN-76
+    if (!Array.isArray(lead.consultationHistory)) {
+        lead.consultationHistory = [];
+    }
+    lead.consultationHistory.unshift({
+        id: careRecord.id,
+        timestamp: careRecord.interactedAt,
+        counselorId: careRecord.counselorId,
+        counselorName: careRecord.counselorName,
+        channel: typeLabel,
+        type: normType,
+        result: careRecord.result,
+        notes: careRecord.notes,
+        nextFollowUp: careRecord.callbackDate || "",
+        callbackNote: careRecord.callbackNote
+    });
+
+    // Cập nhật thông tin nhắc hẹn trực tiếp trên Lead
+    if (callbackDate) {
+        lead.nextCallbackDate = callbackDate;
+        lead.callbackNote = callbackNote;
+        lead.callbackStatus = "pending";
+    }
+
+    lead.lastContactedAt = interactedAt;
+    lead.updatedAt = nowIso;
+    lead.counselorNotes = content;
+
+    if (!lead.assignedTo) {
+        lead.assignedTo = counselorId;
+        lead.assignedToName = counselorName;
+    }
+
+    // Cập nhật trạng thái Lead nếu được truyền vào
+    if (data.newStatus && ["Mới", "Đang tư vấn", "Đã ghi danh", "Không liên lạc được", "Hủy"].includes(data.newStatus)) {
+        lead.status = data.newStatus;
+        if (data.newStatus === "Đang tư vấn") lead.statusCode = "CONSULTING";
+        else if (data.newStatus === "Đã ghi danh") lead.statusCode = "ENROLLED";
+        else if (data.newStatus === "Không liên lạc được") lead.statusCode = "UNREACHABLE";
+        else if (data.newStatus === "Hủy") lead.statusCode = "CANCELLED";
+    } else if (lead.status === "Mới") {
+        lead.status = "Đang tư vấn";
+        lead.statusCode = "CONSULTING";
+    }
+
+    return {
+        success: true,
+        message: "Đã lưu nhật ký chăm sóc và đặt lịch nhắc thành công!",
+        log: careRecord,
+        lead: enrichLeadCallback(lead)
+    };
+}
+
+/**
+ * KN-122: Lấy danh sách nhật ký chăm sóc của một Lead
+ */
+function getCareLogs(leadId) {
+    const lead = getLeadById(leadId);
+    if (!lead) return [];
+    if (!Array.isArray(lead.careLogs)) {
+        lead.careLogs = [];
+    }
+    return lead.careLogs;
+}
+
+/**
+ * KN-122: Đánh dấu đã hoàn thành lịch nhắc gọi lại
+ */
+function completeCallback(leadId, data = {}, user = {}) {
+    const lead = getLeadById(leadId);
+    if (!lead) {
+        return {
+            success: false,
+            code: "LEAD_NOT_FOUND",
+            message: "Không tìm thấy hồ sơ Lead."
+        };
+    }
+
+    const nowIso = new Date().toISOString();
+    lead.callbackStatus = "completed";
+    lead.isOverdue = false;
+    lead.overdueDays = 0;
+    lead.callbackUrgency = "none";
+    lead.updatedAt = nowIso;
+
+    if (Array.isArray(lead.careLogs)) {
+        lead.careLogs.forEach(cl => {
+            if (cl.callbackStatus === "pending") {
+                cl.callbackStatus = "completed";
+                cl.completedAt = nowIso;
+                cl.completedBy = user.name || "Minh Quân";
+            }
+        });
+    }
+
+    // Nếu có ghi chú hoàn tất
+    if (data.note) {
+        const completionLog = {
+            id: `care_done_${Date.now()}`,
+            type: "call",
+            typeLabel: "Gọi điện",
+            content: `[Hoàn thành lịch nhắc gọi lại]: ${data.note}`,
+            notes: `[Hoàn thành lịch nhắc gọi lại]: ${data.note}`,
+            interactedAt: nowIso,
+            timestamp: nowIso,
+            counselorId: user.id || lead.assignedTo || "usr_admissions",
+            counselorName: user.name || lead.assignedToName || "Minh Quân",
+            result: "Đã liên hệ lại",
+            callbackDate: null,
+            callbackNote: "",
+            callbackStatus: "completed"
+        };
+        lead.careLogs.unshift(completionLog);
+    }
+
+    return {
+        success: true,
+        message: "Đã đánh dấu hoàn tất cuộc gọi hẹn lại thành công!",
+        lead: enrichLeadCallback(lead)
+    };
+}
+
+/**
+ * KN-122: Thống kê số lượng nhắc gọi lại (Quá hạn, hôm nay, tuần sau)
+ */
+function getReminderStats(counselorId = null) {
+    let targetLeads = leads;
+    if (counselorId) {
+        targetLeads = leads.filter(l => l.assignedTo === counselorId);
+    }
+
+    const enriched = targetLeads.map(l => enrichLeadCallback(l));
+    const overdueCount = enriched.filter(l => l.isOverdue).length;
+    const todayCount = enriched.filter(l => l.callbackUrgency === "today" && l.callbackStatus === "pending").length;
+    const nextWeekCount = enriched.filter(l => (l.callbackUrgency === "next_week" || l.callbackUrgency === "this_week") && l.callbackStatus === "pending").length;
+    const pendingCallbacksCount = enriched.filter(l => l.callbackStatus === "pending").length;
+    const completedCallbacksCount = enriched.filter(l => l.callbackStatus === "completed").length;
+
+    return {
+        success: true,
+        totalLeads: targetLeads.length,
+        overdueCount,
+        todayCount,
+        nextWeekCount,
+        pendingCallbacksCount,
+        completedCallbacksCount
+    };
+}
+
+/**
  * Xóa một Lead (Dành cho Quản trị viên)
  */
 function deleteLead(id) {
@@ -1049,6 +1607,13 @@ module.exports = {
     getLeadById,
     updateLeadStatus,
     addConsultation,
+    addCareLog,
+    getCareLogs,
+    completeCallback,
+    getReminderStats,
+    normalizeInteractionType,
+    getInteractionTypeLabel,
+    enrichLeadCallback,
     deleteLead,
     getLeadStats,
     getLeadSources,
