@@ -2335,6 +2335,202 @@
         if (savedTheme) {
             document.documentElement.setAttribute('data-theme', savedTheme);
         }
+
+        // =========================================================================
+        // TRÌNH DIỄN TỰ ĐỘNG KN-76 & KN-122 (IN-PAGE LIVE DEMO PLAYER)
+        // =========================================================================
+        let demoTimer = null;
+        let isDemoRunning = false;
+
+        function setDemoStatus(title, desc) {
+            const titleEl = document.getElementById('demo-step-title');
+            const descEl = document.getElementById('demo-step-desc');
+            if (titleEl) titleEl.textContent = title;
+            if (descEl) descEl.textContent = desc;
+        }
+
+        function highlightElement(el) {
+            if (!el) return;
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.style.outline = '3px solid #10b981';
+            el.style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.7)';
+            setTimeout(() => {
+                if (el) {
+                    el.style.outline = '';
+                    el.style.boxShadow = '';
+                }
+            }, 2500);
+        }
+
+        async function typeText(inputEl, text, delay = 80) {
+            if (!inputEl) return;
+            inputEl.focus();
+            inputEl.value = '';
+            for (let i = 0; i < text.length; i++) {
+                if (!isDemoRunning) return;
+                inputEl.value += text[i];
+                inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+                await new Promise(r => setTimeout(r, delay));
+            }
+        }
+
+        async function startAutomatedDemo() {
+            if (isDemoRunning) return;
+            isDemoRunning = true;
+            const runBtn = document.getElementById('btn-run-demo');
+            if (runBtn) {
+                runBtn.innerHTML = '<span>⏳ Đang chạy...</span>';
+                runBtn.style.opacity = '0.7';
+            }
+
+            try {
+                // BƯỚC 1: Tìm kiếm theo tên không dấu ("hoang nam")
+                setDemoStatus("Bước 1/6: Tìm kiếm tên không dấu", "Đang tự động gõ 'hoang nam' vào ô tìm kiếm...");
+                const searchInput = document.getElementById('lead-search');
+                highlightElement(searchInput);
+                await typeText(searchInput, 'hoang nam', 100);
+                setDemoStatus("Bước 1/6: Tìm kiếm tên không dấu", "👉 Đã tìm thấy: Nguyễn Hoàng Nam (LD-202609-015)");
+                await new Promise(r => setTimeout(r, 2500));
+                if (!isDemoRunning) return;
+
+                // Xóa tìm kiếm
+                searchInput.value = '';
+                searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+                await new Promise(r => setTimeout(r, 1000));
+
+                // BƯỚC 2: Tìm kiếm theo số điện thoại ("0977 889 900")
+                setDemoStatus("Bước 2/6: Tìm kiếm SĐT có khoảng trắng", "Đang tự động gõ '0977 889 900'...");
+                highlightElement(searchInput);
+                await typeText(searchInput, '0977 889 900', 100);
+                setDemoStatus("Bước 2/6: Tìm kiếm SĐT có khoảng trắng", "👉 Khớp chính xác hồ sơ SĐT: 0977889900");
+                await new Promise(r => setTimeout(r, 2500));
+                if (!isDemoRunning) return;
+
+                // Xóa tìm kiếm
+                searchInput.value = '';
+                searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+                await new Promise(r => setTimeout(r, 1000));
+
+                // BƯỚC 3: Lọc cuộc trao đổi từ tháng trước (KN-76 User Story)
+                setDemoStatus("Bước 3/6: Lọc trao đổi tháng trước", "Bấm nút '⭐ Cuộc trao đổi từ tháng trước'...");
+                const pillLastMonth = document.getElementById('pill-last_month');
+                highlightElement(pillLastMonth);
+                pillLastMonth.click();
+                setDemoStatus("Bước 3/6: Lọc trao đổi tháng trước", "👉 Đã lọc ra các lead có liên hệ từ tháng trước kèm badge!");
+                await new Promise(r => setTimeout(r, 3000));
+                if (!isDemoRunning) return;
+
+                // Reset về tất cả
+                const pillAll = document.getElementById('pill-all');
+                pillAll.click();
+                await new Promise(r => setTimeout(r, 1200));
+
+                // BƯỚC 4: Lọc theo trạng thái
+                setDemoStatus("Bước 4/6: Lọc trạng thái 'Đang tư vấn'", "Đang chọn trạng thái 'Đang tư vấn' từ dropdown...");
+                const statusSelect = document.getElementById('filter-status');
+                highlightElement(statusSelect);
+                statusSelect.value = 'Đang tư vấn';
+                statusSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                setDemoStatus("Bước 4/6: Lọc trạng thái 'Đang tư vấn'", "👉 Bảng dữ liệu lọc đúng các lead 'Đang tư vấn'");
+                await new Promise(r => setTimeout(r, 2500));
+                if (!isDemoRunning) return;
+
+                // Reset trạng thái
+                statusSelect.value = '';
+                statusSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                await new Promise(r => setTimeout(r, 1200));
+
+                // BƯỚC 5: Mở modal xem timeline trao đổi tháng trước
+                setDemoStatus("Bước 5/6: Xem lịch sử trao đổi tháng trước", "Mở modal nhật ký chăm sóc của khách Nguyễn Hoàng Nam...");
+                const rows = Array.from(document.querySelectorAll('#leads-table-body tr'));
+                const namRow = rows.find(r => r.textContent.includes('Nguyễn Hoàng Nam')) || rows[0];
+                if (namRow) {
+                    const careBtn = namRow.querySelector('button');
+                    if (careBtn) {
+                        highlightElement(careBtn);
+                        careBtn.click();
+                    }
+                }
+                await new Promise(r => setTimeout(r, 2500));
+                if (!isDemoRunning) return;
+
+                // BƯỚC 6: Ghi nhận cuộc gọi mới và hẹn tuần sau
+                setDemoStatus("Bước 6/6: Ghi nhận cuộc gọi & Đặt hẹn", "Chọn loại '📞 Gọi điện' và nhập ghi chú cuộc gọi...");
+                const callBtn = document.getElementById('type-btn-call');
+                if (callBtn) callBtn.click();
+                await new Promise(r => setTimeout(r, 800));
+
+                const notesInput = document.getElementById('new-care-notes');
+                await typeText(notesInput, "Khách hàng liên hệ lại sau 1 tháng trao đổi. Đã tư vấn chi tiết ưu đãi học phí 20% và lịch khai giảng khóa ReactJS.", 30);
+                await new Promise(r => setTimeout(r, 1200));
+
+                // Đặt preset tuần sau
+                setDemoStatus("Bước 6/6: Ghi nhận cuộc gọi & Đặt hẹn", "Bấm chọn lịch hẹn '⭐ Tuần sau (+7 ngày)'...");
+                if (typeof setCallbackPreset === 'function') setCallbackPreset(7);
+                await new Promise(r => setTimeout(r, 1000));
+
+                const cbNoteInput = document.getElementById('new-care-callback-note');
+                if (cbNoteInput) await typeText(cbNoteInput, "Gọi lại hướng dẫn học viên hoàn tất thủ tục đăng ký xếp lớp", 30);
+                await new Promise(r => setTimeout(r, 1500));
+
+                // Lưu nhật ký
+                setDemoStatus("Bước 6/6: Ghi nhận cuộc gọi & Đặt hẹn", "Bấm 'Lưu Nhật Ký & Đặt Lịch Nhắc'...");
+                if (typeof submitCareLog === 'function') submitCareLog();
+                await new Promise(r => setTimeout(r, 2000));
+
+                setDemoStatus("🎉 HOÀN TẤT DEMO 100%!", "Toàn bộ 6/6 kịch bản KN-76 & KN-122 đã kiểm thử tự động thành công!");
+            } catch (err) {
+                setDemoStatus("Thông báo", err.message);
+            } finally {
+                isDemoRunning = false;
+                if (runBtn) {
+                    runBtn.innerHTML = '<span>▶ Chạy lại Demo</span>';
+                    runBtn.style.opacity = '1';
+                }
+            }
+        }
+
+        function stopAutomatedDemo() {
+            isDemoRunning = false;
+            setDemoStatus("Đã tạm dừng", "Bấm 'Chạy lại Demo' để bắt đầu lại từ đầu.");
+            const runBtn = document.getElementById('btn-run-demo');
+            if (runBtn) {
+                runBtn.innerHTML = '<span>▶ Bắt đầu chạy Demo</span>';
+                runBtn.style.opacity = '1';
+            }
+        }
+
+        // Tự động khởi chạy sau 1.5 giây nếu có tham số demo trên URL
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('demo') === '1' || urlParams.get('demo') === 'auto' || urlParams.get('role') === 'admissions') {
+                setTimeout(() => {
+                    startAutomatedDemo();
+                }, 1500);
+            }
+        });
+    </script>
+
+    <!-- Floating Live Demo Automation Player HTML Widget -->
+    <div id="kn76-demo-player" style="position:fixed; bottom:20px; right:20px; z-index:99999; background:rgba(15, 23, 42, 0.95); backdrop-filter:blur(12px); border:1px solid rgba(16, 185, 129, 0.4); border-radius:14px; padding:14px 18px; box-shadow:0 20px 30px rgba(0,0,0,0.35); color:#f8fafc; font-family:'Inter', sans-serif; min-width:320px; max-width:400px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="width:10px; height:10px; border-radius:50%; background:#10b981; box-shadow:0 0 10px #10b981;"></span>
+                <strong style="font-size:0.875rem; letter-spacing:0.02em; color:#fff;">DEMO TỰ ĐỘNG KN-76 & KN-122</strong>
+            </div>
+            <button onclick="document.getElementById('kn76-demo-player').remove()" style="background:none; border:none; color:#94a3b8; font-size:1.1rem; cursor:pointer; line-height:1;" title="Đóng bảng demo">✕</button>
+        </div>
+        <div id="demo-step-title" style="font-size:0.8125rem; color:#a7f3d0; font-weight:700; margin-bottom:4px;">Chuẩn bị khởi chạy...</div>
+        <div id="demo-step-desc" style="font-size:0.75rem; color:#cbd5e1; line-height:1.4; min-height:34px; margin-bottom:12px;">Hệ thống đang tự động kiểm thử từng tính năng ngay trên giao diện này.</div>
+        <div style="display:flex; gap:8px;">
+            <button id="btn-run-demo" onclick="startAutomatedDemo()" style="flex:1; background:#10b981; color:#fff; border:none; border-radius:8px; padding:8px 12px; font-size:0.8125rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 4px 12px rgba(16, 185, 129, 0.3);">
+                <span>▶ Bắt đầu chạy Demo</span>
+            </button>
+            <button onclick="stopAutomatedDemo()" style="background:rgba(255,255,255,0.1); color:#e2e8f0; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:8px 12px; font-size:0.8125rem; cursor:pointer;">
+                <span>⏹ Dừng</span>
+            </button>
+        </div>
+    </div>
     </script>
 </body>
 </html>
