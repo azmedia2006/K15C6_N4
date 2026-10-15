@@ -236,6 +236,21 @@ function isValidEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 }
 
+function normalizePhone(phone) {
+    const digits = String(phone || "").replace(/\D/g, "");
+    return digits.startsWith("84") ? `0${digits.slice(2)}` : digits;
+}
+
+function findDuplicateLeadPhones(phone, excludeId = "") {
+    const normalizedPhone = normalizePhone(phone);
+    if (!normalizedPhone) return [];
+
+    return leads.filter(lead =>
+        lead.id !== excludeId &&
+        normalizePhone(lead.phone) === normalizedPhone
+    );
+}
+
 /**
  * Tạo một Lead mới từ biểu mẫu tư vấn công khai (Không yêu cầu đăng nhập)
  * Gửi thành công tạo một lead ở trạng thái "Mới"
@@ -247,6 +262,7 @@ function createLead(leadData = {}, clientMeta = {}) {
         phone,
         email,
         course,
+        source,
         notes,
         message,
         honeypot,
@@ -279,7 +295,7 @@ function createLead(leadData = {}, clientMeta = {}) {
     }
 
     // 2. Validate dữ liệu đầu vào
-    const leadName = (fullName || name || "").trim();
+    const leadName = (typeof fullName === "string" ? fullName : typeof name === "string" ? name : "").trim();
     if (!leadName || leadName.length < 2) {
         return {
             success: false,
@@ -296,7 +312,7 @@ function createLead(leadData = {}, clientMeta = {}) {
         };
     }
 
-    const leadPhone = (phone || "").trim();
+    const leadPhone = typeof phone === "string" ? phone.trim() : "";
     if (!leadPhone) {
         return {
             success: false,
@@ -313,7 +329,7 @@ function createLead(leadData = {}, clientMeta = {}) {
         };
     }
 
-    const leadEmail = (email || "").trim().toLowerCase();
+    const leadEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
     if (!leadEmail) {
         return {
             success: false,
@@ -330,8 +346,24 @@ function createLead(leadData = {}, clientMeta = {}) {
         };
     }
 
-    const leadCourse = (course || "").trim() || "Chưa chọn khóa học cụ thể";
-    const leadNotes = (notes || message || "").trim();
+    const leadCourse = (typeof course === "string" ? course.trim() : "") || "Chưa chọn khóa học cụ thể";
+    if (leadCourse.length > 200) {
+        return {
+            success: false,
+            code: "COURSE_TOO_LONG",
+            message: "Chương trình quan tâm không được vượt quá 200 ký tự."
+        };
+    }
+
+    const leadSource = typeof source === "string" ? source.trim() : "";
+    if (leadSource.length > 100) {
+        return {
+            success: false,
+            code: "INVALID_SOURCE",
+            message: "Nguồn lead không được vượt quá 100 ký tự."
+        };
+    }
+    const leadNotes = typeof notes === "string" ? notes.trim() : typeof message === "string" ? message.trim() : "";
 
     // 3. Khởi tạo đối tượng Lead với trạng thái "Mới" (Theo đặc tả nghiệp vụ)
     const nowIso = new Date().toISOString();
@@ -355,7 +387,9 @@ function createLead(leadData = {}, clientMeta = {}) {
         message: leadNotes, // alias
         status: "Mới", // TIÊU CHÍ CỐT LÕI: Gửi thành công tạo một lead ở trạng thái Mới
         statusCode: "NEW",
-        source: "Website (Biểu mẫu công khai)",
+        source: leadSource
+            ? leadSource
+            : "Website (Biểu mẫu công khai)",
         ip: ip,
         createdAt: nowIso,
         updatedAt: nowIso,
@@ -376,6 +410,74 @@ function createLead(leadData = {}, clientMeta = {}) {
         contactCommitment: contactCommitment,
         commitment: contactCommitment,
         lead: newLead
+    };
+}
+
+function updateLead(id, leadData = {}) {
+    const lead = getLeadById(id);
+    if (!lead) {
+        return {
+            success: false,
+            code: "LEAD_NOT_FOUND",
+            message: "Không tìm thấy hồ sơ Lead trong hệ thống."
+        };
+    }
+
+    const { fullName, phone, email, source, course } = leadData;
+    const leadName = typeof fullName === "string" ? fullName.trim() : "";
+    const leadPhone = typeof phone === "string" ? phone.trim() : "";
+    const leadEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+    const leadSource = typeof source === "string" ? source.trim() : "";
+    const leadCourse = typeof course === "string" ? course.trim() : "";
+
+    if (leadName.length < 2 || leadName.length > 100) {
+        return {
+            success: false,
+            code: "INVALID_NAME",
+            message: "Họ và tên phải có từ 2 đến 100 ký tự."
+        };
+    }
+    if (!isValidPhone(leadPhone)) {
+        return {
+            success: false,
+            code: "INVALID_PHONE",
+            message: "Số điện thoại không đúng định dạng. Vui lòng nhập số điện thoại Việt Nam hợp lệ."
+        };
+    }
+    if (!isValidEmail(leadEmail)) {
+        return {
+            success: false,
+            code: "INVALID_EMAIL",
+            message: "Địa chỉ email không đúng định dạng. Vui lòng kiểm tra lại."
+        };
+    }
+    if (!leadSource || leadSource.length > 100) {
+        return {
+            success: false,
+            code: "INVALID_SOURCE",
+            message: "Nguồn lead là bắt buộc và không được vượt quá 100 ký tự."
+        };
+    }
+    if (leadCourse.length > 200) {
+        return {
+            success: false,
+            code: "COURSE_TOO_LONG",
+            message: "Chương trình quan tâm không được vượt quá 200 ký tự."
+        };
+    }
+
+    lead.fullName = leadName;
+    lead.name = leadName;
+    lead.phone = leadPhone;
+    lead.email = leadEmail;
+    lead.source = leadSource;
+    lead.course = leadCourse || "Chưa chọn khóa học cụ thể";
+    lead.updatedAt = new Date().toISOString();
+
+    return {
+        success: true,
+        message: "Đã cập nhật thông tin Lead thành công.",
+        lead
     };
 }
 
@@ -557,7 +659,9 @@ module.exports = {
     createLead,
     getLeads,
     getLeadById,
+    updateLead,
     updateLeadStatus,
+    findDuplicateLeadPhones,
     deleteLead,
     getLeadStats,
     generateAntiSpamChallenge,

@@ -1198,6 +1198,83 @@
             .header-search { max-width: 100%; }
         }
 
+        #view-leads > .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 24px !important;
+        }
+
+        #view-leads .metric-card {
+            position: relative;
+            min-width: 0;
+            min-height: 112px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            padding: 18px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            transition: var(--transition);
+        }
+
+        #view-leads .metric-card::before {
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 4px;
+            background: var(--primary);
+            content: "";
+        }
+
+        #view-leads .metric-card:nth-child(2)::before { background: #10b981; }
+        #view-leads .metric-card:nth-child(3)::before { background: #f59e0b; }
+        #view-leads .metric-card:nth-child(4)::before { background: #3b82f6; }
+
+        #view-leads .metric-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary-border);
+            box-shadow: var(--shadow-hover);
+        }
+
+        #view-leads .metric-info { min-width: 0; }
+
+        #view-leads .metric-label {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 700;
+            line-height: 1.45;
+            letter-spacing: 0.035em;
+        }
+
+        #view-leads .metric-value {
+            display: block;
+            margin-top: 8px;
+            color: var(--text-main);
+            font-size: 1.875rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        #view-leads .metric-card:nth-child(2) .metric-value { color: #059669 !important; }
+        #view-leads .metric-card:nth-child(3) .metric-value { color: #d97706 !important; }
+        #view-leads .metric-card:nth-child(4) .metric-value { color: #2563eb !important; }
+
+        #lead-table-wrap { scroll-behavior: auto; }
+        #lead-table-wrap td:last-child { white-space: nowrap; }
+
+        @media (max-width: 1024px) {
+            #view-leads > .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @media (max-width: 480px) {
+            #view-leads > .metrics-grid { grid-template-columns: 1fr; gap: 10px; }
+            #view-leads .metric-card { min-height: 88px; padding: 14px 16px; }
+            #view-leads .metric-value { font-size: 1.625rem; }
+        }
+
         /* Print Styles for Clean Report Export */
         @media print {
             aside.sidebar,
@@ -2338,6 +2415,9 @@
                             </p>
                         </div>
                         <div style="display: flex; gap: 8px; align-items: center;">
+                            <button id="lead-create-button" class="btn btn-primary" onclick="openLeadForm()" style="font-size: 0.8125rem; display: none;">
+                                + Thêm Lead
+                            </button>
                             <a href="./LeadForm.html" target="_blank" class="btn btn-secondary" style="font-size: 0.8125rem; display: flex; align-items: center; gap: 6px; text-decoration: none;">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                                 <span>Mở Biểu Mẫu Công Khai</span>
@@ -2360,7 +2440,7 @@
                         </select>
                     </div>
 
-                    <div class="table-responsive">
+                    <div class="table-responsive" id="lead-table-wrap">
                         <table class="data-table">
                             <thead>
                                 <tr>
@@ -2368,14 +2448,15 @@
                                     <th>Họ và Tên</th>
                                     <th>Số điện thoại</th>
                                     <th>Email</th>
-                                    <th>Khóa học quan tâm</th>
+                                    <th>Chương trình quan tâm</th>
+                                    <th>Nguồn</th>
                                     <th>Trạng thái</th>
                                     <th>Thời gian gửi</th>
                                     <th>Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody id="leads-table-body">
-                                <tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">Đang tải dữ liệu hồ sơ Lead...</td></tr>
+                                <tr><td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-muted);">Đang tải dữ liệu hồ sơ Lead...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -2540,6 +2621,44 @@
                 <button class="btn btn-secondary" onclick="closeModal()">Đóng</button>
                 <button class="btn btn-primary" onclick="confirmModalAction()">Xác nhận</button>
             </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="lead-form-modal">
+        <div class="modal-card" style="max-width: 620px;">
+            <div class="modal-header">
+                <h3 id="lead-form-title">Thêm Lead</h3>
+                <button type="button" onclick="closeLeadForm()" style="font-size: 20px; color: var(--text-muted);">&times;</button>
+            </div>
+            <form id="lead-form" onsubmit="saveLeadForm(event)">
+                <div class="modal-body" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+                    <div class="form-group">
+                        <label for="lead-form-name">Họ và tên *</label>
+                        <input class="form-control" id="lead-form-name" name="fullName" required minlength="2" maxlength="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="lead-form-phone">Số điện thoại *</label>
+                        <input class="form-control" id="lead-form-phone" name="phone" required inputmode="tel" onblur="checkLeadPhoneDuplicate(this.value)">
+                        <small id="lead-phone-warning" style="display:none; color:#b45309;"></small>
+                    </div>
+                    <div class="form-group">
+                        <label for="lead-form-email">Email *</label>
+                        <input class="form-control" id="lead-form-email" name="email" type="email" required maxlength="254">
+                    </div>
+                    <div class="form-group">
+                        <label for="lead-form-source">Nguồn lead *</label>
+                        <input class="form-control" id="lead-form-source" name="source" required maxlength="100" placeholder="Ví dụ: Facebook, Website, Sự kiện">
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label for="lead-form-course">Chương trình quan tâm</label>
+                        <input class="form-control" id="lead-form-course" name="course" maxlength="200">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeLeadForm()">Hủy</button>
+                    <button type="submit" class="btn btn-primary" id="lead-form-submit">Lưu Lead</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -3054,11 +3173,27 @@
         }
 
         let allDashboardLeads = [];
+        let editingLeadId = null;
+
+        function escapeLeadHtml(value) {
+            return String(value == null ? "" : value).replace(/[&<>"']/g, character => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                "\"": "&quot;",
+                "'": "&#39;"
+            })[character]);
+        }
 
         async function loadDashboardLeads() {
             const tableBody = document.getElementById("leads-table-body");
             if (!tableBody) return;
-            tableBody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">Đang tải danh sách hồ sơ Lead...</td></tr>`;
+            const tableWrap = document.getElementById("lead-table-wrap");
+            if (tableWrap) tableWrap.scrollLeft = 0;
+            tableBody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-muted);">Đang tải danh sách hồ sơ Lead...</td></tr>`;
+            const canManage = ["admissions", "training_manager", "administrator"].some(role => authorizedRoles.has(role));
+            const createButton = document.getElementById("lead-create-button");
+            if (createButton) createButton.style.display = canManage ? "" : "none";
 
             const token = localStorage.getItem("tms_token");
             try {
@@ -3092,14 +3227,14 @@
                         return;
                     }
                 }
+                const failedResponse = leadsRes.status === "fulfilled" ? leadsRes.value : null;
+                const errorData = failedResponse ? await failedResponse.json().catch(() => ({})) : {};
+                throw new Error(errorData.message || "Không thể tải danh sách Lead.");
             } catch (err) {
                 console.error("Lỗi tải leads:", err);
+                allDashboardLeads = [];
+                tableBody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 2rem; color: var(--error, #ef4444);">${escapeLeadHtml(err.message)}</td></tr>`;
             }
-
-            renderDashboardLeads([
-                { id: "lead_01", code: "LD-202610-001", fullName: "Trần Minh Quân", phone: "0912345678", email: "minhquan.tran@gmail.com", course: "Lập trình Web Fullstack", status: "Mới", createdAt: new Date().toISOString() },
-                { id: "lead_02", code: "LD-202610-002", fullName: "Lê Hoàng Yến", phone: "0988776655", email: "hoangyen.le@gmail.com", course: "Java Spring Boot", status: "Mới", createdAt: new Date().toISOString() }
-            ]);
         }
 
         function renderDashboardLeads(leadsList) {
@@ -3107,10 +3242,11 @@
             if (!tableBody) return;
 
             if (!leadsList || leadsList.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">Không tìm thấy hồ sơ Lead nào.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 2rem; color: var(--text-muted);">Không tìm thấy hồ sơ Lead nào.</td></tr>`;
                 return;
             }
 
+            const canDelete = authorizedRoles.has("training_manager");
             tableBody.innerHTML = leadsList.map(lead => {
                 let badgeStyle = "background: #10b981; color: white;";
                 if (lead.status === "Đang tư vấn") {
@@ -3125,15 +3261,18 @@
 
                 return `
                     <tr>
-                        <td><strong>${lead.code || lead.id}</strong></td>
-                        <td><strong>${lead.fullName || lead.name}</strong></td>
-                        <td>${lead.phone}</td>
-                        <td>${lead.email}</td>
-                        <td>${lead.course || "Chung"}</td>
-                        <td><span class="badge" style="${badgeStyle}; font-weight: 700; padding: 3px 8px; border-radius: 999px;">${lead.status || "Mới"}</span></td>
+                        <td><strong>${escapeLeadHtml(lead.code || lead.id)}</strong></td>
+                        <td><strong>${escapeLeadHtml(lead.fullName || lead.name)}</strong></td>
+                        <td>${escapeLeadHtml(lead.phone)}</td>
+                        <td>${escapeLeadHtml(lead.email)}</td>
+                        <td>${escapeLeadHtml(lead.course || "Chưa chọn khóa học cụ thể")}</td>
+                        <td>${escapeLeadHtml(lead.source || "—")}</td>
+                        <td><span class="badge" style="${badgeStyle}; font-weight: 700; padding: 3px 8px; border-radius: 999px;">${escapeLeadHtml(lead.status || "Mới")}</span></td>
                         <td><small style="color: var(--text-muted);">${createdDate}</small></td>
                         <td>
-                            <select onchange="updateDashboardLeadStatus('${lead.id}', this.value)" style="padding: 4px 8px; font-size: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main);">
+                            <button type="button" class="btn btn-secondary" data-lead-id="${escapeLeadHtml(lead.id)}" onclick="openLeadForm(this.dataset.leadId)" style="padding: 4px 8px; font-size: 0.75rem;">Sửa</button>
+                            ${canDelete ? `<button type="button" class="btn btn-secondary" data-lead-id="${escapeLeadHtml(lead.id)}" onclick="deleteDashboardLead(this.dataset.leadId)" style="padding: 4px 8px; font-size: 0.75rem; color:#dc2626;">Xóa</button>` : ""}
+                            <select onchange="updateDashboardLeadStatus('${escapeLeadHtml(lead.id)}', this.value)" style="padding: 4px 8px; font-size: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main);">
                                 <option value="" disabled selected>Đổi trạng thái</option>
                                 <option value="Mới">Mới</option>
                                 <option value="Đang tư vấn">Đang tư vấn</option>
@@ -3185,6 +3324,117 @@
                 }
             } catch (err) {
                 showToast("Lỗi kết nối: " + err.message, "error");
+            }
+        }
+
+        function openLeadForm(leadId = "") {
+            editingLeadId = leadId || null;
+            const lead = editingLeadId ? allDashboardLeads.find(item => item.id === editingLeadId) : null;
+            if (editingLeadId && !lead) {
+                showToast("Không tìm thấy Lead cần sửa. Vui lòng tải lại danh sách.", "error");
+                return;
+            }
+
+            document.getElementById("lead-form-title").textContent = lead ? "Cập nhật Lead" : "Thêm Lead";
+            document.getElementById("lead-form-submit").textContent = lead ? "Lưu thay đổi" : "Tạo Lead";
+            document.getElementById("lead-form-name").value = lead ? lead.fullName || lead.name || "" : "";
+            document.getElementById("lead-form-phone").value = lead ? lead.phone || "" : "";
+            document.getElementById("lead-form-email").value = lead ? lead.email || "" : "";
+            document.getElementById("lead-form-source").value = lead ? lead.source || "" : "";
+            document.getElementById("lead-form-course").value = lead ? lead.course || "" : "";
+            document.getElementById("lead-phone-warning").style.display = "none";
+            document.getElementById("lead-form-modal").style.display = "grid";
+            if (lead) checkLeadPhoneDuplicate(lead.phone);
+        }
+
+        function closeLeadForm() {
+            document.getElementById("lead-form-modal").style.display = "none";
+            document.getElementById("lead-form").reset();
+            editingLeadId = null;
+        }
+
+        async function checkLeadPhoneDuplicate(phone) {
+            const warning = document.getElementById("lead-phone-warning");
+            const normalizedPhone = String(phone || "").trim();
+            warning.style.display = "none";
+            if (!normalizedPhone) return [];
+
+            try {
+                const query = new URLSearchParams({ phone: normalizedPhone });
+                if (editingLeadId) query.set("excludeId", editingLeadId);
+                const token = localStorage.getItem("tms_token");
+                const response = await fetch(`/api/leads/check-phone?${query}`, {
+                    headers: token ? { "Authorization": token } : {}
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || "Không thể kiểm tra số điện thoại.");
+                }
+                if (data.duplicate) {
+                    warning.textContent = "Cảnh báo: số điện thoại đã có trong " +
+                        data.duplicates.map(item => item.code + " (" + item.fullName + ")").join(", ") + ".";
+                    warning.style.display = "block";
+                }
+                return data.duplicates || [];
+            } catch (err) {
+                showToast(err.message || "Không thể kiểm tra số điện thoại.", "error");
+                return null;
+            }
+        }
+
+        async function saveLeadForm(event) {
+            event.preventDefault();
+            const fields = new FormData(event.currentTarget);
+            const leadData = Object.fromEntries(fields.entries());
+            const duplicates = await checkLeadPhoneDuplicate(leadData.phone);
+            if (duplicates === null) return;
+            if (duplicates.length && !window.confirm("Số điện thoại này đã tồn tại. Bạn có chắc muốn tiếp tục lưu Lead?")) return;
+
+            const token = localStorage.getItem("tms_token");
+            const endpoint = editingLeadId ? `/api/leads/${encodeURIComponent(editingLeadId)}` : "/api/leads/manage";
+            try {
+                const response = await fetch(endpoint, {
+                    method: editingLeadId ? "PUT" : "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...(token ? { "Authorization": token } : {})
+                    },
+                    body: JSON.stringify(leadData)
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || "Không thể lưu thông tin Lead.");
+                }
+                closeLeadForm();
+                showToast(data.message || "Đã lưu thông tin Lead.");
+                await loadDashboardLeads();
+            } catch (err) {
+                showToast(err.message || "Không thể lưu thông tin Lead.", "error");
+            }
+        }
+
+        async function deleteDashboardLead(leadId) {
+            if (!authorizedRoles.has("training_manager")) {
+                showToast("Chỉ Quản lý đào tạo được xóa Lead.", "error");
+                return;
+            }
+            const lead = allDashboardLeads.find(item => item.id === leadId);
+            if (!window.confirm(`Bạn có chắc muốn xóa Lead ${lead ? lead.fullName || lead.name : leadId}?`)) return;
+
+            const token = localStorage.getItem("tms_token");
+            try {
+                const response = await fetch(`/api/leads/${encodeURIComponent(leadId)}`, {
+                    method: "DELETE",
+                    headers: token ? { "Authorization": token } : {}
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || "Không thể xóa Lead.");
+                }
+                showToast(data.message || "Đã xóa Lead.");
+                await loadDashboardLeads();
+            } catch (err) {
+                showToast(err.message || "Không thể xóa Lead.", "error");
             }
         }
 
@@ -3673,95 +3923,13 @@ try {
                 `
             }
         };
-        const rolePermissions = {
-    administrator: [
-        "dashboard", "courses", "classes", "students",
-        "instructors", "schedule", "attendance",
-        "scores", "tuition", "reports"
-    ],
-    training_manager: [
-        "dashboard", "courses", "classes", "students",
-        "instructors", "schedule", "attendance", "reports"
-    ],
-    instructor: [
-        "dashboard", "courses", "classes",
-        "schedule", "attendance", "scores"
-    ],
-    teaching_assistant: [
-        "dashboard", "courses", "classes",
-        "schedule", "attendance", "scores"
-    ],
-    student: [
-        "dashboard", "courses", "classes",
-        "schedule", "scores", "tuition"
-    ],
-    admissions: [
-        "dashboard", "courses", "students"
-    ],
-    accountant: [
-        "dashboard", "students", "tuition", "reports"
-    ],
-    visitor: [
-        "dashboard", "courses"
-    ]
-};
-    const allowedMenus = rolePermissions[role] || [];
-    document.querySelectorAll(".nav-item[data-menu]").forEach(menu => {
-    if (!allowedMenus.includes(menu.dataset.menu)) {
-        menu.style.display = "none";
-    } else {
-        menu.style.display = "";
-    }
-});
-
-document.querySelectorAll(".nav-label").forEach(label => {
-    let next = label.nextElementSibling;
-    let hasVisibleMenu = false;
-
-    while (next && !next.classList.contains("nav-label")) {
-        if (
-            next.classList.contains("nav-item") &&
-            next.style.display !== "none"
-        ) {
-            hasVisibleMenu = true;
-        }
-        next = next.nextElementSibling;
-    }
-
-    label.style.display = hasVisibleMenu ? "" : "none";
-});
-    if (role === "student" || role === "instructor") {
-    const bannerButtons = document.querySelector(".banner-buttons");
-    if (bannerButtons) {
-        bannerButtons.style.display = "none";
-    }
-}
-    if (role === "accountant") {
-    const bannerButtons = document.querySelector(".banner-buttons");
-
-    if (bannerButtons) {
-        const createButton = bannerButtons.querySelector("button");
-
-        if (createButton) {
-            createButton.style.display = "none";
-        }
-    }
-}
-
-        const currentProfile = roleTitles[role] || roleTitles.administrator;
-        document.getElementById("welcome-name").textContent = currentProfile.name;
-        document.getElementById("display-user-name").textContent = currentProfile.name;
-        
-        document.getElementById("display-user-role").textContent = currentProfile.role;
-        document.getElementById("avatar-letters").textContent = currentProfile.av;
-        const subEl = document.querySelector(".welcome-sub");
-        if (subEl) subEl.textContent = currentProfile.sub;
-
-        // Xử lý nút đăng xuất: xóa phiên làm việc
         document.querySelectorAll("a[href*='Login.html']").forEach(link => {
             link.addEventListener("click", () => {
                 localStorage.removeItem("tms_current_user");
                 localStorage.removeItem("tms_current_role");
+            });
+        });
+
         const prof = roleProfiles[role] || roleProfiles.administrator;
         document.getElementById("welcome-name").textContent = prof.name;
         document.getElementById("display-user-name").textContent = prof.name;

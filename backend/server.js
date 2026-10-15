@@ -66,7 +66,9 @@ const {
     createLead,
     getLeads,
     getLeadById,
+    updateLead,
     updateLeadStatus,
+    findDuplicateLeadPhones,
     deleteLead,
     getLeadStats,
     generateAntiSpamChallenge,
@@ -1327,6 +1329,58 @@ app.post(["/api/leads", "/api/admissions/leads", "/api/public/leads"], (req, res
     });
 });
 
+// API Tạo Lead thủ công từ giao diện nội bộ
+app.post("/api/leads/manage",
+    authenticateToken,
+    requireRole("admissions", "training_manager", "administrator"),
+    (req, res) => {
+        const leadData = req.body || {};
+        if (typeof leadData.source !== "string" || !leadData.source.trim() || leadData.source.trim().length > 100) {
+            return res.status(400).json({
+                success: false,
+                code: "INVALID_SOURCE",
+                message: "Nguồn lead là bắt buộc và không được vượt quá 100 ký tự."
+            });
+        }
+
+        const result = createLead({ ...leadData, bypassSpamCheck: true }, {
+            ip: req.headers["x-forwarded-for"] || req.socket.remoteAddress || "127.0.0.1"
+        });
+        if (!result.success) return res.status(400).json(result);
+
+        supabaseService.syncLeadsDatabase(leads).catch(() => {});
+        return res.status(201).json(result);
+    }
+);
+
+// API Cảnh báo lead trùng số điện thoại trước khi tạo hoặc cập nhật
+app.get("/api/leads/check-phone",
+    authenticateToken,
+    requireRole("admissions", "training_manager", "administrator"),
+    (req, res) => {
+        const phone = typeof req.query.phone === "string" ? req.query.phone.trim() : "";
+        if (!phone) {
+            return res.status(400).json({
+                success: false,
+                code: "MISSING_PHONE",
+                message: "Vui lòng cung cấp số điện thoại cần kiểm tra."
+            });
+        }
+
+        const duplicates = findDuplicateLeadPhones(phone, String(req.query.excludeId || ""));
+        return res.status(200).json({
+            success: true,
+            duplicate: duplicates.length > 0,
+            duplicates: duplicates.map(lead => ({
+                id: lead.id,
+                code: lead.code,
+                fullName: lead.fullName || lead.name,
+                phone: lead.phone
+            }))
+        });
+    }
+);
+
 // API Thống kê số lượng Lead (Quyền: Tư vấn tuyển sinh, Quản lý đào tạo hoặc Quản trị viên)
 app.get("/api/leads/stats",
     authenticateToken,
@@ -1370,6 +1424,22 @@ app.get("/api/leads/:id",
     }
 );
 
+// API Cập nhật thông tin liên hệ và chương trình quan tâm của Lead
+app.put("/api/leads/:id",
+    authenticateToken,
+    requireRole("admissions", "training_manager", "administrator"),
+    (req, res) => {
+        const result = updateLead(req.params.id, req.body || {});
+        if (!result.success) {
+            const status = result.code === "LEAD_NOT_FOUND" ? 404 : 400;
+            return res.status(status).json(result);
+        }
+
+        supabaseService.syncLeadsDatabase(leads).catch(() => {});
+        return res.status(200).json(result);
+    }
+);
+
 // API Cập nhật trạng thái Lead (vd: chuyển từ "Mới" sang "Đang tư vấn", "Đã ghi danh", "Hủy")
 app.put("/api/leads/:id/status",
     authenticateToken,
@@ -1397,10 +1467,10 @@ app.put("/api/leads/:id/status",
     }
 );
 
-// API Xóa Lead (Chỉ Quản trị viên)
+// API Xóa Lead (Chỉ Quản lý đào tạo)
 app.delete("/api/leads/:id",
     authenticateToken,
-    requireRole("administrator"),
+    requireRole("training_manager"),
     (req, res) => {
         const result = deleteLead(req.params.id);
         if (!result.success) {

@@ -39,8 +39,11 @@
   - `GET /api/leads`: Tra cứu danh sách Lead (Yêu cầu quyền `admissions`, `training_manager` hoặc `administrator`).
   - `GET /api/leads/stats`: Thống kê số lượng Lead (Yêu cầu quyền `admissions`, `administrator`).
   - `GET /api/leads/:id`: Xem chi tiết hồ sơ Lead.
+  - `POST /api/leads/manage`: Tạo Lead thủ công (quyền `admissions`, `training_manager` hoặc `administrator`).
+  - `PUT /api/leads/:id`: Sửa họ tên, số điện thoại, email, nguồn và chương trình quan tâm (cùng quyền trên).
+  - `GET /api/leads/check-phone`: Cảnh báo các Lead đã dùng số điện thoại, hỗ trợ loại trừ Lead đang sửa.
   - `PUT /api/leads/:id/status`: Cập nhật trạng thái hồ sơ Lead (`admissions`, `administrator`).
-  - `DELETE /api/leads/:id`: Xóa hồ sơ Lead (`administrator`).
+  - `DELETE /api/leads/:id`: Chỉ `training_manager` được phép xóa Lead.
 
 ### 2.2 Frontend (`LeadForm.html`, `Login.html`, `Dashboard.html`)
 - **Trang Biểu mẫu Tư vấn Công khai (`LeadForm.html` & `frontend/LeadForm.html`)**:
@@ -55,6 +58,8 @@
 - **Phân hệ Tuyển sinh trên Dashboard (`Dashboard.html` & `frontend/Index.html`)**:
   - Cán bộ Tuyển sinh (`admissions@tms.edu.vn`) đăng nhập thấy ngay menu `Quản lý Lead (Tuyển sinh)`.
   - Xem danh sách Lead mới được gửi về theo thời gian thực và cập nhật tiến trình tư vấn.
+  - Tạo và sửa Lead; cảnh báo khi trùng số điện thoại và yêu cầu xác nhận trước khi tiếp tục.
+  - Chỉ Quản lý đào tạo được xóa Lead; quyền này được kiểm tra ở cả giao diện và API.
 
 ---
 
