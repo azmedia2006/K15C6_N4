@@ -1283,7 +1283,65 @@
             gap: 8px;
         }
 
+        .student-search {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .student-search input {
+            flex: 1;
+            min-width: 0;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            color: var(--text-main);
+        }
+
+        .student-profile-section {
+            margin-top: 18px;
+        }
+
+        .student-profile-section h4 {
+            margin: 0 0 10px;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .student-course-list {
+            display: grid;
+            gap: 8px;
+        }
+
+        .student-course-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-body);
+        }
+
         @media (max-width: 640px) {
+            .student-search { flex-direction: column; }
+            #student-table-wrap { overflow: visible; border: 0; }
+            #student-table-wrap table.data-table,
+            #student-table-wrap tbody { display: block; width: 100%; background: transparent; }
+            #student-table-wrap thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+            #student-table-wrap tbody { display: grid; gap: 12px; }
+            #student-table-wrap tbody tr { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-card); box-shadow: var(--shadow-card); }
+            #student-table-wrap tbody td { display: flex; min-width: 0; flex-direction: column; align-items: flex-start; gap: 6px; padding: 12px 14px; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
+            #student-table-wrap tbody td::before { content: attr(data-label); color: var(--text-muted); font-size: 0.65rem; font-weight: 700; letter-spacing: 0.045em; text-transform: uppercase; }
+            #student-table-wrap tbody td:nth-child(2),
+            #student-table-wrap tbody td:last-child { grid-column: 1 / -1; }
+            #student-table-wrap tbody td:last-child { border-bottom: 0; }
+            #student-table-wrap tbody td[colspan] { display: block; grid-column: 1 / -1; text-align: center; }
+            #student-table-wrap tbody td[colspan]::before { content: none; }
             #lead-table-wrap {
                 overflow: visible;
                 border: 0;
@@ -2429,37 +2487,24 @@
                 <div class="ui-card">
                     <div class="card-head">
                         <h2>Hồ sơ & Danh sách Học viên</h2>
-                        <button class="btn btn-primary" onclick="openActionModal('Tiếp nhận hồ sơ học viên mới', 'Nhập thông tin học viên để ghi danh vào lớp.')">+ Thêm học viên</button>
+                        <span id="student-count" class="badge badge-neutral">Đang tải...</span>
                     </div>
-                    <div class="table-responsive">
+                    <div class="student-search">
+                        <input id="student-search-input" type="search" placeholder="Tìm theo mã học viên, họ tên hoặc số điện thoại..." oninput="searchStudents()">
+                    </div>
+                    <div class="table-responsive" id="student-table-wrap">
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Mã SV</th>
-                                    <th>Họ và Tên</th>
-                                    <th>Lớp</th>
+                                    <th>Mã học viên</th>
+                                    <th>Học viên</th>
+                                    <th>Lớp đang học</th>
                                     <th>Email</th>
-                                    <th>SĐT</th>
-                                    <th>Học phí</th>
+                                    <th>Thao tác</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr>
-                                    <td><strong>SV001</strong></td>
-                                    <td>Lê Minh Tuấn</td>
-                                    <td>K15-PM01</td>
-                                    <td>student@tms.edu.vn</td>
-                                    <td>0978123456</td>
-                                    <td><span class="badge badge-success">Đã hoàn thành</span></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>SV002</strong></td>
-                                    <td>Hoàng Thùy Linh</td>
-                                    <td>K15-PM01</td>
-                                    <td>linh.hoang@gmail.com</td>
-                                    <td>0988112233</td>
-                                    <td><span class="badge badge-success">Đã hoàn thành</span></td>
-                                </tr>
+                            <tbody id="students-table-body">
+                                <tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">Đang tải hồ sơ học viên...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -2778,6 +2823,56 @@
                 <button class="btn btn-secondary" onclick="closeModal()">Đóng</button>
                 <button class="btn btn-primary" onclick="confirmModalAction()">Xác nhận</button>
             </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="student-profile-modal" style="display:none; align-items:center; justify-content:center; z-index:9999;">
+        <div class="modal-card" style="width:min(720px, 96vw); max-height:90vh; overflow:auto;">
+            <div class="modal-header">
+                <div>
+                    <h3 id="student-profile-title">Hồ sơ học viên</h3>
+                    <span id="student-profile-code" class="badge badge-neutral"></span>
+                </div>
+                <button type="button" onclick="closeStudentProfile()" aria-label="Đóng" style="font-size:20px; color:var(--text-muted);">&times;</button>
+            </div>
+            <form id="student-profile-form" onsubmit="saveStudentProfile(event)">
+                <div class="modal-body">
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px;">
+                        <div class="form-group">
+                            <label for="student-profile-name">Họ và tên</label>
+                            <input class="form-control" id="student-profile-name" name="name" required minlength="2" maxlength="100">
+                        </div>
+                        <div class="form-group">
+                            <label for="student-profile-phone">Số điện thoại</label>
+                            <input class="form-control" id="student-profile-phone" name="phone" inputmode="tel" maxlength="30">
+                        </div>
+                        <div class="form-group" style="grid-column:1 / -1;">
+                            <label for="student-profile-email">Email</label>
+                            <input class="form-control" id="student-profile-email" name="email" type="email" required maxlength="254">
+                        </div>
+                        <div class="form-group" style="grid-column:1 / -1;">
+                            <label for="student-profile-qualification">Trình độ đầu vào</label>
+                            <textarea class="form-control" id="student-profile-qualification" name="entryQualification" rows="2" maxlength="2000"></textarea>
+                        </div>
+                        <div class="form-group" style="grid-column:1 / -1;">
+                            <label for="student-profile-notes">Ghi chú</label>
+                            <textarea class="form-control" id="student-profile-notes" name="notes" rows="3" maxlength="5000"></textarea>
+                        </div>
+                    </div>
+                    <div class="student-profile-section">
+                        <h4>Lớp đang học</h4>
+                        <div id="student-current-classes" class="student-course-list"></div>
+                    </div>
+                    <div class="student-profile-section">
+                        <h4>Lịch sử khóa học</h4>
+                        <div id="student-course-history" class="student-course-list"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeStudentProfile()">Đóng</button>
+                    <button type="submit" class="btn btn-primary" id="student-profile-save">Lưu hồ sơ</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -3454,6 +3549,9 @@
             if (viewName === "leads") {
                 loadDashboardLeads();
             }
+            if (viewName === "students") {
+                loadStudents();
+            }
         }
 
         let allDashboardLeads = [];
@@ -3467,6 +3565,152 @@
                 "\"": "&quot;",
                 "'": "&#39;"
             })[character]);
+        }
+
+        let allStudents = [];
+        let activeStudentProfileId = null;
+        let studentSearchRequestId = 0;
+
+        async function loadStudents(search = "") {
+            const tableBody = document.getElementById("students-table-body");
+            if (!tableBody) return;
+            const requestId = ++studentSearchRequestId;
+            tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:2rem; color:var(--text-muted);">Đang tải hồ sơ học viên...</td></tr>`;
+            const token = localStorage.getItem("tms_token");
+            try {
+                const query = new URLSearchParams();
+                if (search.trim()) query.set("search", search.trim());
+                const response = await fetch(`/api/students?${query.toString()}`, {
+                    headers: token ? { "Authorization": `Bearer ${token}` } : {}
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success || !Array.isArray(result.data)) {
+                    throw new Error(result.message || "Không thể tải danh sách học viên.");
+                }
+                if (requestId !== studentSearchRequestId) return;
+                allStudents = result.data;
+                renderStudents(allStudents);
+            } catch (err) {
+                if (requestId !== studentSearchRequestId) return;
+                tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:2rem; color:var(--error, #ef4444);">${escapeLeadHtml(err.message)}</td></tr>`;
+            }
+        }
+
+        function searchStudents() {
+            loadStudents(document.getElementById("student-search-input")?.value || "");
+        }
+
+        function renderStudents(students) {
+            const tableBody = document.getElementById("students-table-body");
+            const count = document.getElementById("student-count");
+            if (!tableBody) return;
+            if (count) count.textContent = `${students.length} học viên`;
+            if (!students.length) {
+                tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:2rem; color:var(--text-muted);">Không tìm thấy hồ sơ học viên phù hợp.</td></tr>`;
+                return;
+            }
+
+            tableBody.innerHTML = students.map(student => {
+                const classes = student.currentClasses.length
+                    ? student.currentClasses.map(item => `${item.className} · ${item.courseName}`).join(", ")
+                    : "Chưa ghi danh lớp";
+                return `
+                    <tr>
+                        <td data-label="Mã học viên"><strong>${escapeLeadHtml(student.studentCode)}</strong></td>
+                        <td data-label="Học viên">
+                            <strong>${escapeLeadHtml(student.name)}</strong>
+                            <small style="display:block; margin-top:4px; color:var(--text-muted);">${escapeLeadHtml(student.phone || "Chưa có số điện thoại")}</small>
+                        </td>
+                        <td data-label="Lớp đang học">${escapeLeadHtml(classes)}</td>
+                        <td data-label="Email">${escapeLeadHtml(student.email)}</td>
+                        <td data-label="Thao tác">
+                            <button type="button" class="btn btn-secondary" data-student-id="${escapeLeadHtml(student.id)}" onclick="openStudentProfile(this.dataset.studentId)">Xem hồ sơ</button>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        async function openStudentProfile(studentId) {
+            const token = localStorage.getItem("tms_token");
+            try {
+                const response = await fetch(`/api/students/${encodeURIComponent(studentId)}`, {
+                    headers: token ? { "Authorization": `Bearer ${token}` } : {}
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success || !result.data) {
+                    throw new Error(result.message || "Không thể tải hồ sơ học viên.");
+                }
+                const student = result.data;
+                activeStudentProfileId = student.id;
+                const canEdit = authorizedRoles.has("training_manager") || authorizedRoles.has("administrator");
+                document.getElementById("student-profile-title").textContent = student.name;
+                document.getElementById("student-profile-code").textContent = student.studentCode;
+                document.getElementById("student-profile-name").value = student.name || "";
+                document.getElementById("student-profile-phone").value = student.phone || "";
+                document.getElementById("student-profile-email").value = student.email || "";
+                document.getElementById("student-profile-qualification").value = student.entryQualification || "";
+                document.getElementById("student-profile-notes").value = student.notes || "";
+                for (const field of document.querySelectorAll("#student-profile-form input, #student-profile-form textarea")) {
+                    field.readOnly = !canEdit;
+                }
+                document.getElementById("student-profile-save").style.display = canEdit ? "" : "none";
+                renderStudentCourses("student-current-classes", student.currentClasses, "Chưa ghi danh lớp hiện tại");
+                renderStudentCourses("student-course-history", student.courseHistory, "Chưa có lịch sử khóa học");
+                document.getElementById("student-profile-modal").style.display = "flex";
+            } catch (err) {
+                showToast(err.message || "Không thể tải hồ sơ học viên.", "error");
+            }
+        }
+
+        function renderStudentCourses(containerId, courses, emptyMessage) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            if (!courses.length) {
+                container.innerHTML = `<div style="padding:12px; color:var(--text-muted);">${escapeLeadHtml(emptyMessage)}</div>`;
+                return;
+            }
+            container.innerHTML = courses.map(course => `
+                <div class="student-course-item">
+                    <div>
+                        <strong>${escapeLeadHtml(course.courseName)}</strong>
+                        <small style="display:block; margin-top:4px; color:var(--text-muted);">${escapeLeadHtml(course.className)}</small>
+                    </div>
+                    <span class="badge ${course.status === "Hoàn thành" ? "badge-success" : "badge-blue"}">${escapeLeadHtml(course.status)}</span>
+                </div>
+            `).join("");
+        }
+
+        function closeStudentProfile() {
+            document.getElementById("student-profile-modal").style.display = "none";
+            document.getElementById("student-profile-form").reset();
+            activeStudentProfileId = null;
+        }
+
+        async function saveStudentProfile(event) {
+            event.preventDefault();
+            if (!activeStudentProfileId) return;
+            const formData = new FormData(event.currentTarget);
+            const token = localStorage.getItem("tms_token");
+            try {
+                const response = await fetch(`/api/students/${encodeURIComponent(activeStudentProfileId)}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...(token ? { "Authorization": `Bearer ${token}` } : {})
+                    },
+                    body: JSON.stringify(Object.fromEntries(formData.entries()))
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || "Không thể lưu hồ sơ học viên.");
+                }
+                showToast(result.message || "Đã cập nhật hồ sơ học viên.");
+                closeStudentProfile();
+                await loadStudents(document.getElementById("student-search-input")?.value || "");
+            } catch (err) {
+                showToast(err.message || "Không thể lưu hồ sơ học viên.", "error");
+            }
         }
 
         let activeModalLead = null;

@@ -40,6 +40,11 @@ const {
 } = require("./roleService");
 
 const supabaseService = require("./supabaseService");
+const {
+    getStudentProfiles,
+    getStudentProfile,
+    updateStudentProfile
+} = require("./studentService");
 
 const {
     VALID_ROLES,
@@ -1007,6 +1012,59 @@ app.delete(
 );
 
 // API Danh sách học viên lớp học kèm ảnh nhận diện phục vụ điểm danh lớp đông (KN-68)
+app.get(
+    "/api/students",
+    authenticateToken,
+    requireRole("training_manager", "administrator", "admissions", "accountant"),
+    (req, res) => {
+        const data = getStudentProfiles(req.query.search);
+        return res.status(200).json({
+            success: true,
+            total: data.length,
+            data
+        });
+    }
+);
+
+app.get(
+    "/api/students/:id",
+    authenticateToken,
+    requireRole("training_manager", "administrator", "admissions", "accountant"),
+    (req, res) => {
+        const student = getStudentProfile(req.params.id);
+        if (!student) {
+            return res.status(404).json({
+                success: false,
+                message: "Không tìm thấy hồ sơ học viên."
+            });
+        }
+        return res.status(200).json({ success: true, data: student });
+    }
+);
+
+app.put(
+    "/api/students/:id",
+    authenticateToken,
+    requireRole("training_manager", "administrator"),
+    async (req, res) => {
+        try {
+            const profile = updateStudentProfile(req.params.id, req.body || {});
+            const studentUser = users.find(user => user.id === profile.id);
+            await supabaseService.syncSingleUser(studentUser, null, users);
+            return res.status(200).json({
+                success: true,
+                message: "Đã cập nhật hồ sơ học viên.",
+                data: profile
+            });
+        } catch (err) {
+            return res.status(err.status || 500).json({
+                success: false,
+                message: err.message || "Không thể cập nhật hồ sơ học viên."
+            });
+        }
+    }
+);
+
 app.get("/api/attendance/students", (req, res) => {
     const studentUsers = users.filter(u => u.role === "student");
     const sv001 = studentUsers.find(u => u.id === "usr_student" || u.email === "student@tms.edu.vn") || {};
