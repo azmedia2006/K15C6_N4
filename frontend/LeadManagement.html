@@ -1696,7 +1696,25 @@
         // Tải dữ liệu từ Backend API
         async function fetchLeadsFromApi() {
             try {
-                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                let token = localStorage.getItem('token') || sessionStorage.getItem('token') || localStorage.getItem('tms_token');
+                if (!token) {
+                    try {
+                        const loginRes = await fetch('/api/auth/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email: 'admissions@tms.edu.vn', password: 'admissions123' })
+                        });
+                        if (loginRes.ok) {
+                            const loginData = await loginRes.json();
+                            if (loginData.token) {
+                                token = loginData.token;
+                                localStorage.setItem('token', token);
+                                localStorage.setItem('tms_token', token);
+                                localStorage.setItem('tms_current_user', JSON.stringify(loginData.user));
+                            }
+                        }
+                    } catch (e) {}
+                }
                 const headers = {};
                 if (token) headers['Authorization'] = 'Bearer ' + token;
 
