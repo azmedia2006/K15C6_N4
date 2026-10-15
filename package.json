@@ -18,6 +18,7 @@
     "test:import": "cd backend && npm run test:import",
     "test:kn68": "cd backend && npm run test:kn68",
     "test:kn70": "cd backend && npm run test:kn70",
+    "test:kn76": "cd backend && npm run test:kn76",
     "test:forgot": "cd backend && npm run test:forgot"
   },
   "dependencies": {
