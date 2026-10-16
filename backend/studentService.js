@@ -176,8 +176,51 @@ function updateStudentProfile(idOrCode, profile = {}) {
     return toStudentProfile(student);
 }
 
+function addStudentCurrentClass(studentId, classData = {}) {
+    const students = ensureStudentProfiles();
+    const student = students.find(user =>
+        user.id === studentId || user.studentCode.toLowerCase() === String(studentId).toLowerCase()
+    );
+    if (!student) return false;
+    if (!Array.isArray(student.currentClasses)) {
+        student.currentClasses = [];
+    }
+    const exists = student.currentClasses.some(c =>
+        c.className === classData.className || (classData.classId && c.classId === classData.classId)
+    );
+    if (!exists) {
+        student.currentClasses.push({
+            classId: classData.classId || "",
+            className: classData.className || "",
+            courseName: classData.courseName || "",
+            status: classData.status || "Đang học",
+            enrolledAt: classData.enrolledAt || new Date().toISOString(),
+            enrolledBy: classData.enrolledBy || "",
+            enrolledByName: classData.enrolledByName || ""
+        });
+        student.updatedAt = new Date().toISOString();
+    }
+    return true;
+}
+
+function removeStudentCurrentClass(studentId, classIdentifier) {
+    const students = ensureStudentProfiles();
+    const student = students.find(user =>
+        user.id === studentId || user.studentCode.toLowerCase() === String(studentId).toLowerCase()
+    );
+    if (!student || !Array.isArray(student.currentClasses)) return false;
+    student.currentClasses = student.currentClasses.filter(c =>
+        c.className !== classIdentifier && c.classId !== classIdentifier
+    );
+    student.updatedAt = new Date().toISOString();
+    return true;
+}
+
 module.exports = {
+    ensureStudentProfiles,
     getStudentProfiles,
     getStudentProfile,
-    updateStudentProfile
+    updateStudentProfile,
+    addStudentCurrentClass,
+    removeStudentCurrentClass
 };

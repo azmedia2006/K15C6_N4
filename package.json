@@ -22,6 +22,7 @@
     "test:kn76": "cd backend && npm run test:kn76",
     "test:kn122": "cd backend && npm run test:kn122",
     "test:kn124": "cd backend && npm run test:kn124",
+    "test:enrollment": "cd backend && npm run test:enrollment",
     "test:forgot": "cd backend && npm run test:forgot"
   },
   "dependencies": {

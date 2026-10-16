@@ -187,6 +187,7 @@ function recordAuditLog({ adminId, targetUserId, action, roleId, ip = "127.0.0.1
         id: `log_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
         timestamp: new Date().toISOString(),
         adminId: adminId || "system",
+        performed_by: adminId || "system",
         targetUserId: targetUserId || "",
         action: action, // "ASSIGN_ROLE" | "REVOKE_ROLE"
         roleId: roleId,
