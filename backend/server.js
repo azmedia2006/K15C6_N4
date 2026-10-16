@@ -47,6 +47,15 @@ const {
 } = require("./studentService");
 
 const {
+    getAllClasses,
+    getClassDetail,
+    getEnrollmentsList,
+    batchEnrollStudents,
+    unenrollStudent,
+    resetEnrollmentData
+} = require("./enrollmentService");
+
+const {
     VALID_ROLES,
     createUser,
     updateUser,
@@ -1060,6 +1069,130 @@ app.put(
             return res.status(err.status || 500).json({
                 success: false,
                 message: err.message || "Không thể cập nhật hồ sơ học viên."
+            });
+        }
+    }
+);
+
+// ========================================================
+// QUẢN LÝ LỚP HỌC & GHI DANH HÀNG LOẠT (BATCH ENROLLMENT)
+// 1. Chọn nhiều học viên để ghi danh cùng lúc
+// 2. Chặn ghi danh khi lớp đã đủ sĩ số hoặc học viên đã ở trong lớp
+// 3. Ghi nhận ngày ghi danh và người thực hiện
+// ========================================================
+
+// API Lấy danh sách toàn bộ lớp học kèm sĩ số động và trạng thái
+app.get(
+    "/api/classes",
+    authenticateToken,
+    (req, res) => {
+        const list = getAllClasses();
+        return res.status(200).json({
+            success: true,
+            total: list.length,
+            data: list
+        });
+    }
+);
+
+// API Lấy chi tiết lớp học và danh sách học viên trong lớp
+app.get(
+    "/api/classes/:id",
+    authenticateToken,
+    (req, res) => {
+        const cls = getClassDetail(req.params.id);
+        if (!cls) {
+            return res.status(404).json({
+                success: false,
+                message: "Không tìm thấy thông tin lớp học."
+            });
+        }
+        return res.status(200).json({
+            success: true,
+            data: cls
+        });
+    }
+);
+
+// Handler xử lý ghi danh (đơn lẻ hoặc hàng loạt)
+const handleEnrollment = async (req, res) => {
+    try {
+        const classId = req.params.classId || req.body.classId;
+        const studentIds = req.body.studentIds || (req.body.studentId ? [req.body.studentId] : []);
+        const { notes } = req.body || {};
+
+        const result = batchEnrollStudents({
+            classId,
+            studentIds,
+            performer: req.user,
+            notes
+        });
+
+        // Đồng bộ dữ liệu sang Supabase nếu có
+        try {
+            await supabaseService.syncUsersDatabase(users);
+        } catch (_) {}
+
+        return res.status(201).json(result);
+    } catch (err) {
+        return res.status(err.statusCode || 400).json({
+            success: false,
+            code: err.code || "ENROLLMENT_ERROR",
+            message: err.message || "Không thể thực hiện ghi danh.",
+            details: err.details || null
+        });
+    }
+};
+
+// API Ghi danh học viên (hỗ trợ nhiều học viên cùng lúc)
+app.post(
+    "/api/enrollments",
+    authenticateToken,
+    requireRole("administrator", "training_manager", "admissions"),
+    handleEnrollment
+);
+
+// Alias: POST /api/classes/:classId/enrollments
+app.post(
+    "/api/classes/:classId/enrollments",
+    authenticateToken,
+    requireRole("administrator", "training_manager", "admissions"),
+    handleEnrollment
+);
+
+// API Lấy lịch sử và danh sách bản ghi ghi danh
+app.get(
+    "/api/enrollments",
+    authenticateToken,
+    requireRole("administrator", "training_manager", "admissions", "accountant"),
+    (req, res) => {
+        const { classId, studentId, search } = req.query;
+        const list = getEnrollmentsList({ classId, studentId, search });
+        return res.status(200).json({
+            success: true,
+            total: list.length,
+            data: list
+        });
+    }
+);
+
+// API Hủy ghi danh / Xóa học viên khỏi lớp học (giải phóng sĩ số)
+app.delete(
+    "/api/classes/:classId/students/:studentId",
+    authenticateToken,
+    requireRole("administrator", "training_manager"),
+    (req, res) => {
+        try {
+            const result = unenrollStudent({
+                classId: req.params.classId,
+                studentId: req.params.studentId,
+                performer: req.user
+            });
+            return res.status(200).json(result);
+        } catch (err) {
+            return res.status(err.statusCode || 400).json({
+                success: false,
+                message: err.message || "Không thể hủy ghi danh học viên."
             });
         }
     }
