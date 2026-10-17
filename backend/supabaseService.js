@@ -526,6 +526,66 @@ async function loadUserProfiles() {
     return rows;
 }
 
+/**
+ * KN-128: Lưu phân công giảng dạy trong Supabase Storage.
+ * Không sử dụng chung file users.json của các chức năng khác.
+ */
+const KN128_STORAGE_FILE = "kn128-teaching-assignments.json";
+
+// Đọc danh sách phân công, phân biệt lỗi kết nối với file chưa tồn tại
+async function loadKN128AssignmentsSnapshot() {
+    const response = await supabaseRequest(
+        `/storage/v1/object/${BUCKET_NAME}/${KN128_STORAGE_FILE}`
+    );
+
+    if (!response) {
+        throw new Error("Không kết nối được Supabase Storage.");
+    }
+
+    // File chưa được tạo: chưa có phân công nào
+   if (!response.ok) {
+    const detail = await response.json().catch(() => ({}));
+
+    const objectNotFound =
+        (response.status === 400 || response.status === 404) &&
+        String(detail.message || "").trim().toLowerCase() === "object not found";
+
+    if (objectNotFound) {
+        return [];
+    }
+
+    throw new Error(
+        `Không thể đọc phân công KN-128: HTTP ${response.status} - ${detail.message || "Unknown error"}`
+    );
+}
+
+    const data = await response.json();
+
+    if (!Array.isArray(data)) {
+        throw new Error("Dữ liệu phân công KN-128 không hợp lệ.");
+    }
+
+    return data;
+}
+
+// Lưu toàn bộ danh sách phân công
+async function saveKN128AssignmentsSnapshot(assignments) {
+    if (!Array.isArray(assignments)) {
+        throw new Error("Danh sách phân công phải là một mảng.");
+    }
+
+    const saved = await saveToStorage(
+        KN128_STORAGE_FILE,
+        assignments
+    );
+
+    if (!saved) {
+        throw new Error("Không thể lưu phân công KN-128 lên Storage.");
+    }
+
+    return true;
+}
+
 module.exports = {
     SUPABASE_URL,
     SUPABASE_PUBLISHABLE_KEY,
@@ -545,5 +605,7 @@ module.exports = {
     syncLeadsDatabase,
     checkSupabaseHealth,
     saveUserProfile,
-    loadUserProfiles
+    loadUserProfiles,
+    loadKN128AssignmentsSnapshot,
+    saveKN128AssignmentsSnapshot
 };
