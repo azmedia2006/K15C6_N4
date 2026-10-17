@@ -36,7 +36,8 @@ const {
     recordAuditLog,
     removeAllUserRoles,
     syncUserRole,
-    getAllUserRolesAssignments
+    getAllUserRolesAssignments,
+    userHasRole
 } = require("./roleService");
 
 const supabaseService = require("./supabaseService");
@@ -111,6 +112,14 @@ const {
     getClassesBySubjectId,
     addClassForSubject
 } = require("./subjectService");
+// KN-128: Phân công giảng viên và trợ giảng
+const {
+    getEligibleStaff,
+    saveTeachingAssignment,
+    getTeachingAssignment,
+    getInstructorClasses,
+    hydrateTeachingAssignments
+} = require("./teachingAssignmentService");
 
 const {
     DEFAULT_HOLIDAYS,
@@ -1135,6 +1144,131 @@ app.get(
         });
     }
 );
+
+
+/* ========================================================
+   KN-128: PHAN CONG GIANG VIEN VA TRO GIANG
+   ======================================================== */
+
+// Chi Quan ly dao tao hoac Quan tri vien duoc phan cong
+function requireTeachingAssignmentManager(req, res, next) {
+    const userId = req.user?.id;
+
+    if (
+        !userId ||
+        (
+            !userHasRole(userId, "training_manager") &&
+            !userHasRole(userId, "administrator")
+        )
+    ) {
+        return res.status(403).json({
+            success: false,
+            message: "Ban khong co quyen phan cong giang vien."
+        });
+    }
+
+    next();
+}
+
+// Lay danh sach giang vien hoac tro giang theo vai tro
+app.get(
+    "/api/teaching-assignments/eligible-staff",
+    authenticateToken,
+    requireTeachingAssignmentManager,
+    (req, res) => {
+        try {
+            const staff = getEligibleStaff(req.query.role);
+
+            return res.status(200).json({
+                success: true,
+                total: staff.length,
+                data: staff
+            });
+        } catch (error) {
+            return res.status(400).json({
+                success: false,
+                message: error.message
+            });
+        }
+    }
+);
+
+// Giang vien xem danh sach lop minh duoc phan cong
+app.get(
+    "/api/teaching-assignments/my-classes",
+    authenticateToken,
+    (req, res) => {
+        if (!userHasRole(req.user.id, "instructor")) {
+            return res.status(403).json({
+                success: false,
+                message: "Chi giang vien duoc xem danh sach nay."
+            });
+        }
+
+        const classes = getInstructorClasses(req.user.id);
+
+        return res.status(200).json({
+            success: true,
+            total: classes.length,
+            data: classes
+        });
+    }
+);
+
+// Xem phan cong cua mot mon trong mot lop
+app.get(
+    "/api/teaching-assignments/:classId/:subjectId",
+    authenticateToken,
+    requireTeachingAssignmentManager,
+    async (req, res) => {
+        const { classId, subjectId } = req.params;
+        const assignment = getTeachingAssignment(classId, subjectId);
+
+        if (!assignment) {
+            return res.status(404).json({
+                success: false,
+                message: "Chua co phan cong cho lop va mon nay."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: assignment
+        });
+    }
+);
+
+// Tao hoac cap nhat phan cong giang day
+app.put(
+    "/api/teaching-assignments/:classId/:subjectId",
+    authenticateToken,
+    requireTeachingAssignmentManager,
+    async (req, res) => {
+        try {
+            const { classId, subjectId } = req.params;
+            const { instructorId, assistantIds } = req.body || {};
+
+            const assignment = await saveTeachingAssignment({
+                classId,
+                subjectId,
+                instructorId,
+                assistantIds
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: "Phan cong giang day thanh cong.",
+                data: assignment
+            });
+        } catch (error) {
+            return res.status(error.statusCode || 400).json({
+                success: false,
+                message: error.message
+            });
+        }
+    }
+);
+
 
 // Handler xử lý ghi danh (đơn lẻ hoặc hàng loạt)
 const handleEnrollment = async (req, res) => {
@@ -2607,6 +2741,7 @@ async function hydrateUsersFromSupabase() {
 // KN-67: Tải dữ liệu đã lưu trước khi khởi động server
 if (require.main === module) {
     hydrateUsersFromSupabase()
+        .then(() => hydrateTeachingAssignments())
         .then(() => {
             app.listen(PORT, () => {
                 console.log(

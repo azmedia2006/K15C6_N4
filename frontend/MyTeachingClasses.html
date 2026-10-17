@@ -1,0 +1,254 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lớp học của tôi | TMS - KN-128</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f6fb;
+            color: #1e293b;
+        }
+
+        header {
+            background: #1d4ed8;
+            color: white;
+            padding: 24px 35px;
+        }
+
+        header h1 {
+            margin: 0 0 8px;
+            font-size: 25px;
+        }
+
+        header p {
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: 32px auto;
+            padding: 0 20px;
+        }
+
+        .back {
+            display: inline-block;
+            margin-bottom: 22px;
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 14px;
+            padding: 28px;
+            box-shadow: 0 4px 20px #0000000d;
+        }
+
+        .panel-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 22px;
+        }
+
+        .panel-heading h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .count {
+            background: #dbeafe;
+            color: #1d4ed8;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 13px;
+            padding: 15px;
+        }
+
+        td {
+            padding: 16px 15px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+
+        tr:hover td {
+            background: #f8fafc;
+        }
+
+        .class-code {
+            color: #2563eb;
+            font-weight: bold;
+        }
+
+        .status {
+            padding: 15px;
+            color: #64748b;
+        }
+
+        .error {
+            color: #b91c1c;
+            background: #fee2e2;
+            padding: 14px;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 600px) {
+            header { padding: 20px; }
+            .panel { padding: 16px; }
+            .panel-heading { align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>📚 Lớp học của tôi</h1>
+    <p>Danh sách lớp và môn học giảng viên được phân công</p>
+</header>
+
+<main>
+    <a class="back" href="./Index.html">
+        ← Quay lại Dashboard
+    </a>
+
+    <section class="panel">
+        <div class="panel-heading">
+            <h2>Danh sách lớp đang phụ trách</h2>
+            <span id="classCount" class="count">0 lớp</span>
+        </div>
+
+        <div id="message" class="status">
+            Đang tải danh sách lớp...
+        </div>
+
+        <div class="table-wrapper">
+            <table id="classesTable" hidden>
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Mã lớp</th>
+                        <th>Tên lớp</th>
+                        <th>Môn học</th>
+                        <th>Vai trò</th>
+                    </tr>
+                </thead>
+                <tbody id="classesBody"></tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<script>
+    const token = localStorage.getItem("tms_token");
+
+    const message = document.getElementById("message");
+    const table = document.getElementById("classesTable");
+    const tableBody = document.getElementById("classesBody");
+    const count = document.getElementById("classCount");
+
+    function addCell(row, value, className = "") {
+        const cell = document.createElement("td");
+        cell.textContent = String(value ?? "");
+
+        if (className) {
+            cell.className = className;
+        }
+
+        row.appendChild(cell);
+    }
+
+    async function loadMyTeachingClasses() {
+        try {
+            const response = await fetch(
+                "/api/teaching-assignments/my-classes",
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (response.status === 401) {
+                window.location.replace("./Login.html");
+                return;
+            }
+
+            const result = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message || `HTTP ${response.status}`
+                );
+            }
+
+            if (!Array.isArray(result.data)) {
+                throw new Error("Dữ liệu danh sách lớp không hợp lệ.");
+            }
+
+            const classes = result.data;
+
+            count.textContent = `${classes.length} lớp`;
+            tableBody.replaceChildren();
+
+            if (classes.length === 0) {
+                message.textContent =
+                    "Bạn chưa được phân công phụ trách lớp học nào.";
+                return;
+            }
+
+            classes.forEach((item, index) => {
+                const row = document.createElement("tr");
+
+                addCell(row, index + 1);
+                addCell(row, item.classCode, "class-code");
+                addCell(row, item.className);
+                addCell(row, item.subjectName);
+                addCell(row, "Giảng viên chính");
+
+                tableBody.appendChild(row);
+            });
+
+            message.hidden = true;
+            table.hidden = false;
+
+        } catch (error) {
+            message.hidden = false;
+            message.className = "error";
+            message.textContent =
+                "Không thể tải danh sách lớp: " + error.message;
+        }
+    }
+
+    if (!token) {
+        window.location.replace("./Login.html");
+    } else {
+        loadMyTeachingClasses();
+    }
+</script>
+
+</body>
+</html>
