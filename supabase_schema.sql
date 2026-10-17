@@ -192,3 +192,61 @@ CREATE POLICY "Service role full access subjects" ON public.subjects FOR ALL USI
 CREATE POLICY "Service role full access program_subjects" ON public.program_subjects FOR ALL USING (true);
 CREATE POLICY "Service role full access classes" ON public.classes FOR ALL USING (true);
 
+-- ========================================================
+-- KN-154: AUTO SCHEDULE GENERATOR & TIMETABLE MANAGEMENT
+-- Sinh thời khóa biểu tự động theo mẫu lặp cho lớp học (60 buổi)
+-- Tự động bỏ qua ngày nghỉ lễ, gắn bài học theo môn (Syllabus Mapping)
+-- ========================================================
+
+-- 16. Table: holidays (Danh mục ngày nghỉ lễ hệ thống & trường học)
+CREATE TABLE IF NOT EXISTS public.holidays (
+    id VARCHAR(64) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    date DATE NOT NULL,
+    recurring_month_day VARCHAR(8), -- vd: "01-01", "04-30", "05-01", "09-02"
+    description TEXT,
+    type VARCHAR(32) NOT NULL DEFAULT 'national', -- national | school | custom
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 17. Table: class_schedules (Thời khóa biểu chi tiết từng buổi học)
+CREATE TABLE IF NOT EXISTS public.class_schedules (
+    id VARCHAR(64) PRIMARY KEY,
+    class_id VARCHAR(64) NOT NULL REFERENCES public.classes(id) ON DELETE CASCADE,
+    session_number INT NOT NULL CHECK (session_number > 0),
+    total_sessions INT NOT NULL CHECK (total_sessions > 0),
+    date DATE NOT NULL,
+    day_of_week INT NOT NULL CHECK (day_of_week BETWEEN 0 AND 6),
+    day_of_week_name VARCHAR(32) NOT NULL,
+    shift VARCHAR(32) NOT NULL DEFAULT 'morning',
+    start_time VARCHAR(8) NOT NULL, -- vd: "08:00"
+    end_time VARCHAR(8) NOT NULL,   -- vd: "11:30"
+    room VARCHAR(128) NOT NULL,
+    instructor VARCHAR(255) NOT NULL,
+    lesson_number INT,
+    lesson_topic VARCHAR(255),
+    lesson_type VARCHAR(32) DEFAULT 'practice', -- theory | practice | assessment | workshop | exam
+    status VARCHAR(32) NOT NULL DEFAULT 'scheduled', -- scheduled | completed | cancelled | in_progress
+    note TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    CONSTRAINT uq_class_session UNIQUE (class_id, session_number)
+);
+
+-- 18. Chỉ mục tối ưu tốc độ tìm kiếm & tra cứu lịch học
+CREATE INDEX IF NOT EXISTS idx_class_schedules_class_id ON public.class_schedules(class_id);
+CREATE INDEX IF NOT EXISTS idx_class_schedules_date ON public.class_schedules(date);
+CREATE INDEX IF NOT EXISTS idx_class_schedules_instructor ON public.class_schedules(instructor);
+CREATE INDEX IF NOT EXISTS idx_holidays_date ON public.holidays(date);
+
+-- 19. RLS Policies for Schedules & Holidays
+ALTER TABLE public.holidays ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.class_schedules ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Public read holidays" ON public.holidays FOR SELECT USING (true);
+CREATE POLICY "Public read class_schedules" ON public.class_schedules FOR SELECT USING (true);
+
+CREATE POLICY "Service role full access holidays" ON public.holidays FOR ALL USING (true);
+CREATE POLICY "Service role full access class_schedules" ON public.class_schedules FOR ALL USING (true);
+
+

@@ -23,7 +23,8 @@
     "test:kn122": "cd backend && npm run test:kn122",
     "test:kn124": "cd backend && npm run test:kn124",
     "test:enrollment": "cd backend && npm run test:enrollment",
-    "test:forgot": "cd backend && npm run test:forgot"
+    "test:forgot": "cd backend && npm run test:forgot",
+    "test:kn154": "cd backend && npm run test:kn154"
   },
   "dependencies": {
     "cors": "^2.8.6",

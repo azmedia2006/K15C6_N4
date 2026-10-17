@@ -23,7 +23,8 @@
     "test:kn122": "node test/lead_care_log_kn122.test.js",
     "test:kn124": "node test/student_profile_kn124.test.js",
     "test:enrollment": "node test/batch_enrollment.test.js",
-    "test:forgot": "node test/forgot_password.test.js"
+    "test:forgot": "node test/forgot_password.test.js",
+    "test:kn154": "node test/schedule_auto_generate_kn154.test.js"
   },
   "keywords": [],
   "author": "",

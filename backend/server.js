@@ -112,6 +112,25 @@ const {
     addClassForSubject
 } = require("./subjectService");
 
+const {
+    DEFAULT_HOLIDAYS,
+    STANDARD_SHIFTS,
+    SUBJECT_SYLLABI,
+    initScheduleData,
+    generateSchedulePreview,
+    saveClassSchedule,
+    getClassSchedule,
+    getSchedules,
+    updateSession,
+    deleteSession,
+    clearClassSchedule,
+    getClassesWithScheduleStatus,
+    createClass,
+    getHolidays,
+    addHoliday,
+    deleteHoliday
+} = require("./scheduleService");
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -121,6 +140,9 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(express.static(path.join(__dirname, "..")));
 app.get(["/leads", "/lead-management"], (req, res) => {
     res.sendFile(path.join(__dirname, "../LeadManagement.html"));
+});
+app.get(["/schedules", "/schedule-management", "/ScheduleManagement.html"], (req, res) => {
+    res.sendFile(path.join(__dirname, "../ScheduleManagement.html"));
 });
 
 // KN-60: Middleware xác thực Token (Bearer Token)
@@ -2239,6 +2261,231 @@ app.delete("/api/programs/:programId/subjects/:subjectId",
             });
         } catch (err) {
             return res.status(err.statusCode || 400).json({
+                success: false,
+                message: err.message
+            });
+        }
+    }
+);
+
+// -------------------------------------------------------------
+// KN-154: SINH THỜI KHÓA BIỂU TỰ ĐỘNG THEO MẪU LẶP
+// Quyền: Quản lý đào tạo (training_manager) & Quản trị hệ thống (administrator)
+// Người thực hiện: Minh Quân (Sprint 4)
+// Subtasks: KN-159 -> KN-167
+// -------------------------------------------------------------
+
+// API Lấy danh sách lớp học kèm trạng thái thời khóa biểu
+app.get("/api/schedules/classes", authenticateToken, (req, res) => {
+    try {
+        const list = getClassesWithScheduleStatus();
+        return res.status(200).json({
+            success: true,
+            total: list.length,
+            classes: list
+        });
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: "Lỗi khi lấy danh sách lớp học: " + err.message
+        });
+    }
+});
+
+// API Thêm lớp học mới để chuẩn bị xếp thời khóa biểu
+app.post("/api/schedules/classes",
+    authenticateToken,
+    requireRole("training_manager", "administrator"),
+    (req, res) => {
+        try {
+            const newClass = createClass(req.body || {});
+            return res.status(201).json({
+                success: true,
+                message: "Tạo lớp học mới thành công!",
+                class: newClass
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message
+            });
+        }
+    }
+);
+
+// KN-161 & KN-160 & KN-167: API Sinh thời khóa biểu tự động (Preview)
+app.post("/api/schedules/generate",
+    authenticateToken,
+    requireRole("training_manager", "administrator"),
+    (req, res) => {
+        try {
+            const result = generateSchedulePreview(req.body || {});
+            return res.status(200).json(result);
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                code: "GENERATE_SCHEDULE_FAILED",
+                message: err.message
+            });
+        }
+    }
+);
+
+// KN-165: API Lưu chính thức thời khóa biểu đã sinh
+app.post("/api/schedules/save",
+    authenticateToken,
+    requireRole("training_manager", "administrator"),
+    (req, res) => {
+        try {
+            const { classId, sessions } = req.body || {};
+            const result = saveClassSchedule(classId, sessions, req.user);
+            return res.status(200).json(result);
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                code: "SAVE_SCHEDULE_FAILED",
+                message: err.message
+            });
+        }
+    }
+);
+
+// API Lấy danh sách lịch học hệ thống theo bộ lọc
+app.get("/api/schedules", authenticateToken, (req, res) => {
+    try {
+        const sessions = getSchedules(req.query || {});
+        return res.status(200).json({
+            success: true,
+            total: sessions.length,
+            sessions: sessions
+        });
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: "Lỗi khi tra cứu thời khóa biểu: " + err.message
+        });
+    }
+});
+
+// API Lấy thời khóa biểu chi tiết của một lớp học
+app.get("/api/schedules/:classId", authenticateToken, (req, res) => {
+    try {
+        const sessions = getClassSchedule(req.params.classId);
+        return res.status(200).json({
+            success: true,
+            classId: req.params.classId,
+            total: sessions.length,
+            sessions: sessions
+        });
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: "Lỗi khi lấy lịch học của lớp: " + err.message
+        });
+    }
+});
+
+// KN-163: API Cập nhật một buổi học cụ thể trong thời khóa biểu
+app.put("/api/schedules/session/:sessionId",
+    authenticateToken,
+    requireRole("training_manager", "administrator"),
+    (req, res) => {
+        try {
+            const result = updateSession(req.params.sessionId, req.body || {}, req.user);
+            return res.status(200).json(result);
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message
+            });
+        }
+    }
+);
+
+// KN-163: API Xóa một buổi học khỏi thời khóa biểu
+app.delete("/api/schedules/session/:sessionId",
+    authenticateToken,
+    requireRole("training_manager", "administrator"),
+    (req, res) => {
+        try {
+            const result = deleteSession(req.params.sessionId, req.user);
+            return res.status(200).json(result);
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message
+            });
+        }
+    }
+);
+
+// API Xóa toàn bộ thời khóa biểu của một lớp
+app.delete("/api/schedules/class/:classId",
+    authenticateToken,
+    requireRole("training_manager", "administrator"),
+    (req, res) => {
+        try {
+            const result = clearClassSchedule(req.params.classId, req.user);
+            return res.status(200).json(result);
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message
+            });
+        }
+    }
+);
+
+// KN-160: API Quản lý danh sách ngày nghỉ lễ
+app.get("/api/holidays", authenticateToken, (req, res) => {
+    try {
+        const list = getHolidays();
+        return res.status(200).json({
+            success: true,
+            total: list.length,
+            holidays: list
+        });
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: "Lỗi khi lấy danh sách ngày lễ: " + err.message
+        });
+    }
+});
+
+app.post("/api/holidays",
+    authenticateToken,
+    requireRole("training_manager", "administrator"),
+    (req, res) => {
+        try {
+            const newHoliday = addHoliday(req.body || {});
+            return res.status(201).json({
+                success: true,
+                message: "Thêm ngày nghỉ lễ thành công!",
+                holiday: newHoliday
+            });
+        } catch (err) {
+            return res.status(400).json({
+                success: false,
+                message: err.message
+            });
+        }
+    }
+);
+
+app.delete("/api/holidays/:id",
+    authenticateToken,
+    requireRole("training_manager", "administrator"),
+    (req, res) => {
+        try {
+            const deleted = deleteHoliday(req.params.id);
+            return res.status(200).json({
+                success: true,
+                message: `Đã xóa ngày nghỉ lễ "${deleted.name}".`,
+                deleted: deleted
+            });
+        } catch (err) {
+            return res.status(400).json({
                 success: false,
                 message: err.message
             });
