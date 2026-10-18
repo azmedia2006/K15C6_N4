@@ -132,6 +132,102 @@ async function loadFromStorage(filename) {
     return null;
 }
 
+async function loadRequiredStorageSnapshot(filename) {
+    const response = await supabaseRequest(
+        `/storage/v1/object/${BUCKET_NAME}/${filename}`
+    );
+
+    if (!response) {
+        throw new Error(`Không kết nối được Supabase Storage khi đọc ${filename}.`);
+    }
+
+    if (!response.ok) {
+        const detail = await response.json().catch(() => ({}));
+        const error = new Error(
+            `Không thể đọc ${filename} từ Supabase Storage: HTTP ${response.status}.`
+        );
+        error.objectNotFound =
+            (response.status === 400 || response.status === 404) &&
+            String(detail.message || "").trim().toLowerCase() === "object not found";
+        throw error;
+    }
+
+    return response.json();
+}
+
+async function saveRequiredStorageSnapshot(filename, data) {
+    const saved = await saveToStorage(filename, data);
+
+    if (!saved) {
+        throw new Error(`Không thể lưu ${filename} lên Supabase Storage.`);
+    }
+}
+
+async function loadPasswordRecoveryUsersSnapshot() {
+    const usersList = await loadRequiredStorageSnapshot("users.json");
+
+    if (
+        !Array.isArray(usersList) ||
+        !usersList.every(user =>
+            user &&
+            typeof user.id === "string" &&
+            typeof user.email === "string" &&
+            typeof user.salt === "string" &&
+            typeof user.passwordHash === "string"
+        )
+    ) {
+        throw new Error("Dữ liệu người dùng trên Supabase Storage không hợp lệ.");
+    }
+
+    return usersList;
+}
+
+async function loadPasswordResetTokensSnapshot() {
+    try {
+        const tokens = await loadRequiredStorageSnapshot(
+            "password-reset-tokens.json"
+        );
+
+        if (
+            !Array.isArray(tokens) ||
+            !tokens.every(entry =>
+                entry &&
+                typeof entry.token === "string" &&
+                typeof entry.userId === "string" &&
+                typeof entry.email === "string" &&
+                typeof entry.expiresAt === "number" &&
+                typeof entry.used === "boolean"
+            )
+        ) {
+            throw new Error("Dữ liệu token khôi phục mật khẩu không hợp lệ.");
+        }
+
+        return tokens;
+    } catch (error) {
+        if (error.objectNotFound) {
+            return [];
+        }
+
+        throw error;
+    }
+}
+
+async function savePasswordResetTokensSnapshot(tokens) {
+    if (!Array.isArray(tokens)) {
+        throw new Error("Danh sách token khôi phục phải là một mảng.");
+    }
+
+    await saveRequiredStorageSnapshot("password-reset-tokens.json", tokens);
+}
+
+async function savePasswordRecoveryUsersSnapshot(usersList) {
+    if (!Array.isArray(usersList)) {
+        throw new Error("Danh sách người dùng phải là một mảng.");
+    }
+
+    await saveRequiredStorageSnapshot("users.json", usersList);
+}
+
 /**
  * Đồng bộ người dùng sang Supabase Auth (auth.users)
  */
@@ -595,6 +691,10 @@ module.exports = {
     ensureBucket,
     saveToStorage,
     loadFromStorage,
+    loadPasswordRecoveryUsersSnapshot,
+    loadPasswordResetTokensSnapshot,
+    savePasswordResetTokensSnapshot,
+    savePasswordRecoveryUsersSnapshot,
     syncUserToAuth,
     deleteUserFromAuth,
     syncSingleUser,
