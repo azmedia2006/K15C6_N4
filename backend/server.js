@@ -2261,12 +2261,15 @@ app.get("/api/health", async (req, res) => {
             url: supabaseService.SUPABASE_URL
         },
         smtp: {
-            configured: Boolean(SMTP_CONFIG.host),
+            enabled: SMTP_CONFIG.enabled,
+            configured: SMTP_CONFIG.configured,
             host: SMTP_CONFIG.host,
             port: SMTP_CONFIG.port,
             user: SMTP_CONFIG.user,
             from: SMTP_CONFIG.fromEmail,
-            connected: smtpCheck.success
+            fromName: SMTP_CONFIG.fromName,
+            connected: smtpCheck.success,
+            error: smtpCheck.error || null
         },
         timestamp: new Date().toISOString()
     });
@@ -2281,6 +2284,8 @@ app.get("/api/admin/smtp/status",
         return res.status(200).json({
             success: true,
             smtp: {
+                enabled: SMTP_CONFIG.enabled,
+                configured: SMTP_CONFIG.configured,
                 host: SMTP_CONFIG.host,
                 port: SMTP_CONFIG.port,
                 user: SMTP_CONFIG.user,
@@ -2288,7 +2293,7 @@ app.get("/api/admin/smtp/status",
                 fromName: SMTP_CONFIG.fromName,
                 secure: SMTP_CONFIG.secure,
                 connected: smtpStatus.success,
-                error: smtpStatus.error || null,
+                error: smtpStatus.error || SMTP_CONFIG.configError || null,
                 totalSentEmails: sentEmails.length
             }
         });

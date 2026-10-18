@@ -12,36 +12,59 @@ require("dotenv").config({
 
 // Cấu hình SMTP
 const SMTP_CONFIG = {
-    host: process.env.SMTP_HOST || "smtp81196.bkns.com.vn",
+    enabled: process.env.SMTP_ENABLED === "true",
+    host: process.env.SMTP_HOST || "",
     port: parseInt(process.env.SMTP_PORT || "587", 10),
-    user: process.env.SMTP_USER || "support_it@quanit206.id.vn",
-    pass: process.env.SMTP_PASSWORD || process.env.SMTP_PASS || "Duong2006@",
-    fromEmail: process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || "support_it@quanit206.id.vn",
+    user: process.env.SMTP_USER || "",
+    pass: process.env.SMTP_PASSWORD || process.env.SMTP_PASS || "",
+    fromEmail: process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || "",
     fromName: process.env.SMTP_FROM_NAME || "Đào tạo TMS",
-    secure: process.env.SMTP_SECURE === "true" || process.env.SMTP_PORT === "465",
+    secure: process.env.SMTP_SECURE === "true",
     tls: process.env.SMTP_TLS !== "false"
 };
 
+const validSenderAddress =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(SMTP_CONFIG.fromEmail);
+const smtpMissingSettings = [
+    !SMTP_CONFIG.host && "SMTP_HOST",
+    !Number.isInteger(SMTP_CONFIG.port) && "SMTP_PORT",
+    !SMTP_CONFIG.user && "SMTP_USER",
+    !SMTP_CONFIG.pass && "SMTP_PASSWORD",
+    !SMTP_CONFIG.fromEmail && "SMTP_FROM_EMAIL",
+    SMTP_CONFIG.fromEmail && !validSenderAddress && "valid SMTP_FROM_EMAIL"
+].filter(Boolean);
+SMTP_CONFIG.configured = SMTP_CONFIG.enabled && smtpMissingSettings.length === 0;
+SMTP_CONFIG.configError = !SMTP_CONFIG.enabled
+    ? "SMTP is disabled. Set SMTP_ENABLED=true to enable email delivery."
+    : smtpMissingSettings.length > 0
+        ? `SMTP configuration is incomplete or invalid: ${smtpMissingSettings.join(", ")}.`
+        : null;
+
 // Khởi tạo nodemailer transporter
 let transporter = null;
-try {
-    transporter = nodemailer.createTransport({
-        host: SMTP_CONFIG.host,
-        port: SMTP_CONFIG.port,
-        secure: SMTP_CONFIG.secure,
-        auth: {
-            user: SMTP_CONFIG.user,
-            pass: SMTP_CONFIG.pass
-        },
-        tls: {
-            rejectUnauthorized: false
-        },
-        pool: true,
-        maxConnections: 5,
-        maxMessages: 100
-    });
-} catch (err) {
-    console.error("[EmailService] Khởi tạo SMTP Transporter thất bại:", err.message);
+if (SMTP_CONFIG.configured) {
+    try {
+        transporter = nodemailer.createTransport({
+            host: SMTP_CONFIG.host,
+            port: SMTP_CONFIG.port,
+            secure: SMTP_CONFIG.secure,
+            requireTLS: SMTP_CONFIG.tls && !SMTP_CONFIG.secure,
+            auth: {
+                user: SMTP_CONFIG.user,
+                pass: SMTP_CONFIG.pass
+            },
+            tls: {
+                rejectUnauthorized: true
+            },
+            pool: true,
+            maxConnections: 5,
+            maxMessages: 100
+        });
+    } catch (err) {
+        console.error("[EmailService] Khởi tạo SMTP Transporter thất bại:", err.message);
+    }
+} else {
+    console.warn(`[EmailService] ${SMTP_CONFIG.configError}`);
 }
 
 // Danh mục nhãn vai trò hiển thị tiếng Việt
@@ -219,11 +242,16 @@ function sendActivationEmail({ to, name, temporaryPassword, role = "instructor",
     let delivery;
     if (!transporter) {
         delivery = Promise.resolve(
-            markFailure(new Error("SMTP chưa được cấu hình để gửi email kích hoạt."))
+            markFailure(new Error(
+                SMTP_CONFIG.configError || "SMTP transporter could not be initialized."
+            ))
         );
     } else {
         const mailOptions = {
-            from: `"${SMTP_CONFIG.fromName}" <${SMTP_CONFIG.fromEmail}>`,
+            from: {
+                name: SMTP_CONFIG.fromName,
+                address: SMTP_CONFIG.fromEmail
+            },
             to,
             subject,
             text: `Kính gửi ${name},\n\nChào mừng bạn đến với Hệ thống Quản lý Đào tạo TMS!\n\nThông tin tài khoản công tác:\n- Họ và tên: ${name}\n- Tên đăng nhập / Email: ${to}\n- Vai trò: ${ROLE_NAMES[role] || role}\n- Mật khẩu tạm thời: ${temporaryPassword}\n- Địa chỉ đăng nhập: ${fullLoginUrl}\n\nVui lòng đăng nhập và đổi mật khẩu mới trong lần đầu tiên sử dụng.\n\nTrân trọng,\n${SMTP_CONFIG.fromName}`,
@@ -359,14 +387,19 @@ async function sendPasswordResetEmail({ to, name, resetToken, resetUrl = "" }) {
     sentEmails.push(emailRecord);
 
     if (!transporter) {
-        const error = new Error("SMTP chưa được cấu hình để gửi email khôi phục.");
+        const error = new Error(
+            SMTP_CONFIG.configError || "SMTP transporter could not be initialized."
+        );
         emailRecord.status = "FAILED";
         emailRecord.deliveryError = error.message;
         throw error;
     }
 
     const mailOptions = {
-        from: `"${SMTP_CONFIG.fromName}" <${SMTP_CONFIG.fromEmail}>`,
+        from: {
+            name: SMTP_CONFIG.fromName,
+            address: SMTP_CONFIG.fromEmail
+        },
         to,
         subject,
         text: `Kính gửi ${name || to},\n\nChúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản ${to}.\nVui lòng truy cập liên kết sau trong vòng 60 phút để đặt lại mật khẩu:\n${fullResetUrl}\n\nNếu bạn không yêu cầu, vui lòng bỏ qua email này.\n\nTrân trọng,\n${SMTP_CONFIG.fromName}`,
@@ -398,14 +431,33 @@ async function sendPasswordResetEmail({ to, name, resetToken, resetUrl = "" }) {
  */
 async function verifySmtp() {
     if (!transporter) {
-        return { success: false, message: "Transporter chưa được khởi tạo." };
+        return {
+            success: false,
+            enabled: SMTP_CONFIG.enabled,
+            configured: SMTP_CONFIG.configured,
+            error: SMTP_CONFIG.configError || "SMTP transporter could not be initialized."
+        };
     }
     return new Promise((resolve) => {
         transporter.verify((err, success) => {
             if (err) {
-                resolve({ success: false, error: err.message, host: SMTP_CONFIG.host, port: SMTP_CONFIG.port });
+                resolve({
+                    success: false,
+                    enabled: SMTP_CONFIG.enabled,
+                    configured: SMTP_CONFIG.configured,
+                    error: err.message,
+                    host: SMTP_CONFIG.host,
+                    port: SMTP_CONFIG.port
+                });
             } else {
-                resolve({ success: true, host: SMTP_CONFIG.host, port: SMTP_CONFIG.port, user: SMTP_CONFIG.user });
+                resolve({
+                    success: true,
+                    enabled: SMTP_CONFIG.enabled,
+                    configured: SMTP_CONFIG.configured,
+                    host: SMTP_CONFIG.host,
+                    port: SMTP_CONFIG.port,
+                    user: SMTP_CONFIG.user
+                });
             }
         });
     });

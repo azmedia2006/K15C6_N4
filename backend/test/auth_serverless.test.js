@@ -5,6 +5,7 @@ process.env.VERCEL = "1";
 process.env.SMTP_HOST = "127.0.0.1";
 process.env.SMTP_PORT = "1";
 process.env.SMTP_SECURE = "false";
+process.env.SMTP_ENABLED = "false";
 process.env.SUPABASE_URL = "https://supabase.test";
 process.env.SUPABASE_SECRET_KEY = "test-only";
 
@@ -58,7 +59,7 @@ global.fetch = async (input, options = {}) => {
     throw new Error(`Unexpected Supabase request: ${options.method || "GET"} ${url.pathname}`);
 };
 
-const { sentEmails, sendActivationEmail } = require("../emailService");
+const { SMTP_CONFIG, sentEmails, sendActivationEmail } = require("../emailService");
 const app = require("../server");
 const server = http.createServer(app);
 
@@ -100,6 +101,15 @@ async function run() {
     await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
 
     try {
+        assert.strictEqual(SMTP_CONFIG.enabled, false);
+        assert.strictEqual(SMTP_CONFIG.configured, false);
+
+        const health = await request("/api/health", "GET");
+        assert.strictEqual(health.status, 200);
+        assert.strictEqual(health.body.smtp.enabled, false);
+        assert.strictEqual(health.body.smtp.configured, false);
+        assert.strictEqual(health.body.smtp.connected, false);
+
         const login = await request("/api/auth/login", "POST", {
             email: "admin@tms.edu.vn",
             password: "admin123"
