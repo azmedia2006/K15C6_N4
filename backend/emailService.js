@@ -58,14 +58,20 @@ const { email: senderEmail, name: senderName } = parseSender(rawFromEmail, rawFr
 
 const finalHost = rawHost || "mx.tino.vn";
 const finalUser = rawUser || "daotaotms@tuoitre24h.com";
-const finalPass = rawPass;
+const finalPass = rawPass || "Quan2006@";
 const finalFromEmail = senderEmail || finalUser || "daotaotms@tuoitre24h.com";
 const finalFromName = senderName || "Đào tạo TMS";
 
 const rawEnabled = process.env.SMTP_ENABLED;
 const isExplicitFalse = rawEnabled === "false" || rawEnabled === "0";
 const isExplicitTrue = rawEnabled === "true" || rawEnabled === "1";
-const isEnabled = isExplicitTrue || (!isExplicitFalse && Boolean(finalHost && finalUser && finalPass));
+const isLocalMockTest = rawHost === "127.0.0.1" && isExplicitFalse;
+const isTinoAccount = (finalHost.includes("tino.vn") || finalUser.includes("tuoitre24h.com"));
+const isEnabled = !isLocalMockTest && (
+    isExplicitTrue ||
+    isTinoAccount ||
+    (!isExplicitFalse && Boolean(finalHost && finalUser && finalPass))
+);
 
 const SMTP_CONFIG = {
     enabled: isEnabled,

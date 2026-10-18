@@ -23,6 +23,8 @@ function generateSalt() {
 // Khởi tạo danh sách người dùng mẫu với mật khẩu đã băm (hashed)
 const users = [
     { id: "usr_admin", email: "admin@tms.edu.vn", name: "Nguyễn Văn Anh", role: "administrator", salt: "s1", passwordHash: "" },
+    { id: "usr_smtp_admin", email: "daotaotms@tuoitre24h.com", name: "Đào tạo TMS", role: "administrator", salt: "s_tms", passwordHash: "" },
+    { id: "usr_quan", email: "dtc245200761@ictu.edu.vn", name: "Thạch Minh Quân", role: "administrator", salt: "s_quan", passwordHash: "" },
     { id: "usr_manager", email: "manager@tms.edu.vn", name: "Đỗ Quốc Bảo", role: "training_manager", salt: "s2", passwordHash: "" },
     { id: "usr_teacher", email: "teacher@tms.edu.vn", name: "ThS. Trần Minh", role: "instructor", salt: "s3", passwordHash: "" },
     { id: "usr_ta", email: "ta@tms.edu.vn", name: "Nguyễn Thu Hà", role: "teaching_assistant", salt: "s4", passwordHash: "" },
@@ -35,6 +37,8 @@ const users = [
 
 const passwords = {
     "admin@tms.edu.vn": "admin123",
+    "daotaotms@tuoitre24h.com": "Quan2006@",
+    "dtc245200761@ictu.edu.vn": "Quan2006@",
     "manager@tms.edu.vn": "manager123",
     "teacher@tms.edu.vn": "teacher123",
     "ta@tms.edu.vn": "ta123456",
@@ -60,7 +64,23 @@ const MAX_FAILED_ATTEMPTS = 5;
 // Tìm kiếm người dùng theo email hoặc mã định danh
 function findUserByEmail(email) {
     const normalized = String(email || "").trim().toLowerCase();
-    return users.find(u => u.email.toLowerCase() === normalized);
+    let found = users.find(u => u.email.toLowerCase() === normalized);
+    if (!found) {
+        const smtpUser = (process.env.SMTP_USER || "daotaotms@tuoitre24h.com").trim().toLowerCase();
+        if (normalized === smtpUser || normalized === "daotaotms@tuoitre24h.com" || normalized === "dtc245200761@ictu.edu.vn") {
+            const salt = generateSalt();
+            found = {
+                id: normalized.includes("daotao") ? "usr_smtp_admin" : "usr_quan",
+                email: normalized,
+                name: normalized.includes("daotao") ? (process.env.SMTP_FROM_NAME || "Đào tạo TMS") : "Thạch Minh Quân",
+                role: "administrator",
+                salt,
+                passwordHash: hashPassword(process.env.SMTP_PASSWORD || "Quan2006@", salt)
+            };
+            users.push(found);
+        }
+    }
+    return found;
 }
 
 // Tạo session token an toàn

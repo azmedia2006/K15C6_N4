@@ -511,29 +511,45 @@ app.put(["/api/auth/me/profile", "/auth/me/profile"], authenticateToken, async (
 const isVercelRuntime = process.env.VERCEL === "1";
 
 async function hydrateUsersForVercel() {
-    if (!isVercelRuntime) return;
-    const [storedUsers, roleAssignments] = await Promise.all([
-        supabaseService.loadPasswordRecoveryUsersSnapshot(),
-        supabaseService.loadUserRoleAssignmentsSnapshot()
-    ]);
-    if (storedUsers) {
-        users.splice(0, users.length, ...storedUsers);
+    if (!supabaseService.SUPABASE_URL) return;
+    try {
+        const [storedUsers, roleAssignments] = await Promise.all([
+            supabaseService.loadPasswordRecoveryUsersSnapshot().catch(() => null),
+            supabaseService.loadUserRoleAssignmentsSnapshot().catch(() => null)
+        ]);
+        if (Array.isArray(storedUsers) && storedUsers.length > 0) {
+            storedUsers.forEach(su => {
+                const existingIdx = users.findIndex(u => u.email.toLowerCase() === su.email.toLowerCase() || u.id === su.id);
+                if (existingIdx !== -1) {
+                    users[existingIdx] = { ...users[existingIdx], ...su };
+                } else {
+                    users.push(su);
+                }
+            });
+        }
+        if (roleAssignments) {
+            hydrateUserRoleAssignments(roleAssignments);
+        }
+    } catch (err) {
+        console.warn("[Server] Không thể đồng bộ người dùng từ Supabase:", err.message);
     }
-    hydrateUserRoleAssignments(roleAssignments);
 }
 
 async function hydratePasswordRecoveryState() {
-    if (!isVercelRuntime) return;
-
-    await hydrateUsersForVercel();
-    const storedTokens =
-        await supabaseService.loadPasswordResetTokensSnapshot();
-    passwordResetTokens.clear();
-
-    for (const entry of storedTokens) {
-        if (entry.expiresAt > Date.now()) {
-            passwordResetTokens.set(entry.token, entry);
+    try {
+        if (supabaseService.SUPABASE_URL) {
+            await hydrateUsersForVercel();
+            const storedTokens = await supabaseService.loadPasswordResetTokensSnapshot().catch(() => []);
+            if (Array.isArray(storedTokens)) {
+                for (const entry of storedTokens) {
+                    if (entry && entry.expiresAt > Date.now()) {
+                        passwordResetTokens.set(entry.token, entry);
+                    }
+                }
+            }
         }
+    } catch (e) {
+        console.warn("[Server] Không thể đồng bộ trạng thái phục hồi từ Supabase:", e.message);
     }
 }
 
@@ -556,10 +572,20 @@ app.post(["/api/auth/forgot-password", "/auth/forgot-password"], async (req, res
         });
     }
 
+    const normalizedInputEmail = String(email).trim().toLowerCase();
+
     try {
         await hydratePasswordRecoveryState();
 
-        const result = createPasswordResetToken(email);
+        let result = createPasswordResetToken(normalizedInputEmail);
+
+        // Nếu email chưa có nhưng đúng định dạng email và khớp admin/smtp hoặc hồ sơ cần tạo
+        if (!result.userFound && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedInputEmail)) {
+            const user = findUserByEmail(normalizedInputEmail);
+            if (user) {
+                result = createPasswordResetToken(normalizedInputEmail);
+            }
+        }
 
         if (result.userFound && result.token) {
             await persistPasswordResetTokens();
@@ -581,9 +607,12 @@ app.post(["/api/auth/forgot-password", "/auth/forgot-password"], async (req, res
                     resetToken: result.token,
                     resetUrl
                 });
+                console.log(`[Server] ✔ Đã gửi email khôi phục mật khẩu tới: ${result.user.email}`);
             } catch (mailErr) {
-                console.warn("[Server] Gửi email đặt lại mật khẩu thất bại:", mailErr.message);
+                console.error("[Server] ⚠ Gửi email đặt lại mật khẩu thất bại:", mailErr.message);
             }
+        } else {
+            console.warn(`[Server] Yêu cầu quên mật khẩu cho email không tồn tại trong hệ thống: ${normalizedInputEmail}`);
         }
     } catch (error) {
         console.error("[Server] Không thể xử lý yêu cầu khôi phục mật khẩu:", error.message);
