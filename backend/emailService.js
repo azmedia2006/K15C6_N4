@@ -323,7 +323,7 @@ function buildPasswordResetEmailHtml({ name, email, resetUrl }) {
 /**
  * KN-42: Gửi email đặt lại mật khẩu chứa token qua SMTP thật
  */
-function sendPasswordResetEmail({ to, name, resetToken, resetUrl = "" }) {
+async function sendPasswordResetEmail({ to, name, resetToken, resetUrl = "" }) {
     const frontendUrl = resetUrl || process.env.FRONTEND_URL || "https://k15c6n4.vercel.app";
     const fullResetUrl = resetUrl && resetUrl.includes("token=")
         ? resetUrl
@@ -339,36 +339,42 @@ function sendPasswordResetEmail({ to, name, resetToken, resetUrl = "" }) {
         resetToken,
         resetUrl: fullResetUrl,
         sentAt: new Date().toISOString(),
-        status: "SENT",
+        status: "PENDING",
         provider: "BKNS_SMTP"
     };
 
     sentEmails.push(emailRecord);
 
-    if (transporter) {
-        const mailOptions = {
-            from: `"${SMTP_CONFIG.fromName}" <${SMTP_CONFIG.fromEmail}>`,
-            to,
-            subject,
-            text: `Kính gửi ${name || to},\n\nChúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản ${to}.\nVui lòng truy cập liên kết sau trong vòng 60 phút để đặt lại mật khẩu:\n${fullResetUrl}\n\nNếu bạn không yêu cầu, vui lòng bỏ qua email này.\n\nTrân trọng,\n${SMTP_CONFIG.fromName}`,
-            html: buildPasswordResetEmailHtml({
-                name: name || to,
-                email: to,
-                resetUrl: fullResetUrl
-            })
-        };
+    if (!transporter) {
+        const error = new Error("SMTP chưa được cấu hình để gửi email khôi phục.");
+        emailRecord.status = "FAILED";
+        emailRecord.deliveryError = error.message;
+        throw error;
+    }
 
-        transporter.sendMail(mailOptions)
-            .then(info => {
-                emailRecord.status = "DELIVERED";
-                emailRecord.messageId = info.messageId;
-                emailRecord.response = info.response;
-                console.log(`[EmailService] ✔ Đã gửi email khôi phục mật khẩu thành công tới: ${to} (MessageID: ${info.messageId})`);
-            })
-            .catch(err => {
-                emailRecord.deliveryError = err.message;
-                console.warn(`[EmailService] ⚠ Gửi email khôi phục mật khẩu tới ${to} gặp sự cố:`, err.message);
-            });
+    const mailOptions = {
+        from: `"${SMTP_CONFIG.fromName}" <${SMTP_CONFIG.fromEmail}>`,
+        to,
+        subject,
+        text: `Kính gửi ${name || to},\n\nChúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản ${to}.\nVui lòng truy cập liên kết sau trong vòng 60 phút để đặt lại mật khẩu:\n${fullResetUrl}\n\nNếu bạn không yêu cầu, vui lòng bỏ qua email này.\n\nTrân trọng,\n${SMTP_CONFIG.fromName}`,
+        html: buildPasswordResetEmailHtml({
+            name: name || to,
+            email: to,
+            resetUrl: fullResetUrl
+        })
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        emailRecord.status = "DELIVERED";
+        emailRecord.messageId = info.messageId;
+        emailRecord.response = info.response;
+        console.log(`[EmailService] ✔ Đã gửi email khôi phục mật khẩu thành công tới: ${to} (MessageID: ${info.messageId})`);
+    } catch (error) {
+        emailRecord.status = "FAILED";
+        emailRecord.deliveryError = error.message;
+        console.warn(`[EmailService] ⚠ Gửi email khôi phục mật khẩu tới ${to} gặp sự cố:`, error.message);
+        throw error;
     }
 
     return emailRecord;
@@ -402,4 +408,3 @@ module.exports = {
     buildActivationEmailHtml,
     buildPasswordResetEmailHtml
 };
-

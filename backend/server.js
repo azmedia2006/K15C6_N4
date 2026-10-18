@@ -21,6 +21,7 @@ const {
     recordFailedAttempt,
     recordSuccessfulLogin,
     users,
+    passwordResetTokens,
     createPasswordResetToken,
     verifyPasswordResetToken,
     resetPasswordWithToken
@@ -233,13 +234,23 @@ function requireRole(...allowedRoles) {
 
 // KN-31: API đăng nhập bằng email và mật khẩu
 // Cập nhật trả về danh sách vai trò N-N
-app.post("/api/auth/login", (req, res) => {
+app.post("/api/auth/login", async (req, res) => {
     const { email, password } = req.body || {};
 
     if (!email || !password) {
         return res.status(400).json({
             success: false,
             message: "Vui lòng nhập đầy đủ email và mật khẩu."
+        });
+    }
+
+    try {
+        await hydrateUsersForVercel();
+    } catch (error) {
+        console.error("[Server] Không thể tải người dùng để đăng nhập:", error.message);
+        return res.status(503).json({
+            success: false,
+            message: "Dịch vụ đăng nhập đang tạm thời không khả dụng. Vui lòng thử lại sau."
         });
     }
 
@@ -495,6 +506,37 @@ app.put("/api/auth/me/profile", authenticateToken, async (req, res) => {
 // Hỗ trợ cả tiền tố /api/auth/* và /auth/*
 // =========================================================================
 
+const isVercelRuntime = process.env.VERCEL === "1";
+
+async function hydrateUsersForVercel() {
+    if (!isVercelRuntime) return;
+    const storedUsers =
+        await supabaseService.loadPasswordRecoveryUsersSnapshot();
+    users.splice(0, users.length, ...storedUsers);
+}
+
+async function hydratePasswordRecoveryState() {
+    if (!isVercelRuntime) return;
+
+    await hydrateUsersForVercel();
+    const storedTokens =
+        await supabaseService.loadPasswordResetTokensSnapshot();
+    passwordResetTokens.clear();
+
+    for (const entry of storedTokens) {
+        if (entry.expiresAt > Date.now()) {
+            passwordResetTokens.set(entry.token, entry);
+        }
+    }
+}
+
+async function persistPasswordResetTokens() {
+    if (!isVercelRuntime) return;
+    await supabaseService.savePasswordResetTokensSnapshot(
+        [...passwordResetTokens.values()]
+    );
+}
+
 // KN-39 & KN-42: API Yêu cầu quên mật khẩu và phát hành liên kết gửi qua Email
 app.post(["/api/auth/forgot-password", "/auth/forgot-password"], async (req, res) => {
     const { email } = req.body || {};
@@ -507,37 +549,53 @@ app.post(["/api/auth/forgot-password", "/auth/forgot-password"], async (req, res
         });
     }
 
-    const clientIp = req.ip || req.headers["x-forwarded-for"] || (req.socket && req.socket.remoteAddress) || "127.0.0.1";
-    const result = createPasswordResetToken(email, clientIp);
+    try {
+        await hydratePasswordRecoveryState();
 
-    // Rate Limit: Quá 5 lần / giờ (KN-39)
-    if (result.rateLimited) {
-        return res.status(429).json({
-            success: false,
-            code: 429,
-            message: "Bạn đã yêu cầu đặt lại mật khẩu quá nhiều lần (tối đa 5 lần/giờ). Vui lòng thử lại sau.",
-            retryAfterSeconds: result.retryAfterSeconds
-        });
-    }
+        const clientIp = req.ip || req.headers["x-forwarded-for"] || (req.socket && req.socket.remoteAddress) || "127.0.0.1";
+        const result = createPasswordResetToken(email, clientIp);
 
-    // Nếu tài khoản tồn tại: Gửi email bất đồng bộ qua SMTP (Fire and forget, không làm chậm response)
-    if (result.userFound && result.token) {
-        const hostHeader = req.get("host") || "localhost:3000";
-        const protocol = req.protocol || "http";
-        const defaultBaseUrl = `${protocol}://${hostHeader}`;
-        const frontendUrl = process.env.FRONTEND_URL || defaultBaseUrl;
-        const resetUrl = `${frontendUrl.replace(/\/$/, "")}/ResetPassword.html?token=${result.token}`;
-
-        try {
-            sendPasswordResetEmail({
-                to: result.user.email,
-                name: result.user.name,
-                resetToken: result.token,
-                resetUrl
+        // Rate Limit: Quá 5 lần / giờ (KN-39)
+        if (result.rateLimited) {
+            return res.status(429).json({
+                success: false,
+                code: 429,
+                message: "Bạn đã yêu cầu đặt lại mật khẩu quá nhiều lần (tối đa 5 lần/giờ). Vui lòng thử lại sau.",
+                retryAfterSeconds: result.retryAfterSeconds
             });
-        } catch (mailErr) {
-            console.warn("[Server] Gửi email đặt lại mật khẩu thất bại:", mailErr.message);
         }
+
+        if (result.userFound && result.token) {
+            await persistPasswordResetTokens();
+
+            const hostHeader = req.get("host") || "localhost:3000";
+            const protocol = req.protocol || "http";
+            const defaultBaseUrl = `${protocol}://${hostHeader}`;
+            const vercelBaseUrl = process.env.VERCEL_URL
+                ? `https://${process.env.VERCEL_URL}`
+                : "";
+            const frontendUrl =
+                process.env.FRONTEND_URL || vercelBaseUrl || defaultBaseUrl;
+            const resetUrl = `${frontendUrl.replace(/\/$/, "")}/ResetPassword.html?token=${result.token}`;
+
+            try {
+                await sendPasswordResetEmail({
+                    to: result.user.email,
+                    name: result.user.name,
+                    resetToken: result.token,
+                    resetUrl
+                });
+            } catch (mailErr) {
+                console.warn("[Server] Gửi email đặt lại mật khẩu thất bại:", mailErr.message);
+            }
+        }
+    } catch (error) {
+        console.error("[Server] Không thể xử lý yêu cầu khôi phục mật khẩu:", error.message);
+        return res.status(503).json({
+            success: false,
+            code: 503,
+            message: "Dịch vụ khôi phục mật khẩu đang tạm thời không khả dụng. Vui lòng thử lại sau."
+        });
     }
 
     // KN-39: Luôn trả về 200 kèm thông báo bảo mật chung (chống rò rỉ sự tồn tại của email)
@@ -549,7 +607,7 @@ app.post(["/api/auth/forgot-password", "/auth/forgot-password"], async (req, res
 });
 
 // KN-43: API Xác thực tính hợp lệ của token đặt lại mật khẩu
-app.get(["/api/auth/verify-reset-token", "/auth/verify-reset-token"], (req, res) => {
+app.get(["/api/auth/verify-reset-token", "/auth/verify-reset-token"], async (req, res) => {
     const token = req.query.token;
 
     if (!token) {
@@ -558,6 +616,18 @@ app.get(["/api/auth/verify-reset-token", "/auth/verify-reset-token"], (req, res)
             valid: false,
             code: 400,
             message: "Yêu cầu cung cấp mã xác thực token."
+        });
+    }
+
+    try {
+        await hydratePasswordRecoveryState();
+    } catch (error) {
+        console.error("[Server] Không thể tải dữ liệu xác thực khôi phục:", error.message);
+        return res.status(503).json({
+            success: false,
+            valid: false,
+            code: 503,
+            message: "Dịch vụ xác thực khôi phục đang tạm thời không khả dụng. Vui lòng thử lại sau."
         });
     }
 
@@ -591,13 +661,24 @@ app.post(["/api/auth/reset-password", "/auth/reset-password"], async (req, res) 
     }
 
     try {
+        await hydratePasswordRecoveryState();
+    } catch (error) {
+        console.error("[Server] Không thể tải dữ liệu đặt lại mật khẩu:", error.message);
+        return res.status(503).json({
+            success: false,
+            code: 503,
+            message: "Dịch vụ đặt lại mật khẩu đang tạm thời không khả dụng. Vui lòng thử lại sau."
+        });
+    }
+
+    try {
         const resetResult = resetPasswordWithToken(token, newPassword);
 
-        // Đồng bộ dữ liệu người dùng sang Supabase
-        try {
+        if (isVercelRuntime) {
+            await persistPasswordResetTokens();
+            await supabaseService.savePasswordRecoveryUsersSnapshot(users);
+        } else {
             await supabaseService.syncUsersDatabase(users);
-        } catch (syncErr) {
-            // Không chặn tiến trình nếu offline
         }
 
         return res.status(200).json({
@@ -606,10 +687,13 @@ app.post(["/api/auth/reset-password", "/auth/reset-password"], async (req, res) 
             message: resetResult.message || "Đặt lại mật khẩu thành công! Bạn có thể sử dụng mật khẩu mới để đăng nhập."
         });
     } catch (err) {
-        return res.status(err.status || 400).json({
+        const status = err.status || (isVercelRuntime ? 503 : 400);
+        return res.status(status).json({
             success: false,
-            code: err.status || 400,
-            message: err.message || "Không thể đặt lại mật khẩu."
+            code: status,
+            message: status === 503
+                ? "Không thể lưu mật khẩu mới. Vui lòng thử lại sau."
+                : err.message || "Không thể đặt lại mật khẩu."
         });
     }
 });
