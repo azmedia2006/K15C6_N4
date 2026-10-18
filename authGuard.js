@@ -28,21 +28,7 @@
             if (rawUser) currentUser = JSON.parse(rawUser);
         } catch (e) {}
 
-        var urlParams = new URLSearchParams(window.location.search);
-        var urlRole = (urlParams.get("role") || "").toLowerCase().trim();
-        if (urlRole && (!currentUser || !currentUser.id)) {
-            currentUser = {
-                id: "usr_" + urlRole,
-                name: urlRole === "admissions" ? "Minh Quân" : urlRole,
-                role: urlRole,
-                roles: [urlRole, "usr_" + urlRole, urlRole + "_officer"]
-            };
-            token = "tms_session_" + urlRole;
-            localStorage.setItem("tms_token", token);
-            localStorage.setItem("token", token);
-            localStorage.setItem("tms_current_role", urlRole);
-            localStorage.setItem("tms_current_user", JSON.stringify(currentUser));
-        }
+
 
         var userRoles = [];
         if (currentUser && currentUser.role) {
