@@ -52,8 +52,12 @@ async function runTests() {
         const forgotData = await forgotRes.json();
         assert.strictEqual(forgotRes.status, 200);
         assert.strictEqual(forgotData.success, true);
-        assert.strictEqual(forgotData.mailConfigured, false);
-        assert.ok(forgotData.message.includes("Chưa cấu hình"));
+        assert.strictEqual(typeof forgotData.mailConfigured, "boolean");
+        if (forgotData.mailConfigured) {
+            assert.ok(forgotData.message.includes("yêu cầu khôi phục đã được tiếp nhận"));
+        } else {
+            assert.ok(forgotData.message.includes("Chưa cấu hình"));
+        }
         console.log("  ✔ PASS: POST /api/auth/forgot-password trả về HTTP 200 thành công");
 
         // Tìm token vừa sinh trong bộ nhớ

@@ -38,4 +38,6 @@ backend/node_modules/
 .env
 .env.local
 .env.*.local
+backend/data/
+*.tmp
 

@@ -172,6 +172,7 @@ function recordSuccessfulLogin(email) {
 
 // Lưu trữ token đặt lại mật khẩu trong bộ nhớ: token -> { email, userId, expiresAt, used, createdAt }
 const passwordResetTokens = new Map();
+const forgotRateLimits = new Map();
 
 const TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 60 phút
 
