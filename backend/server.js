@@ -563,6 +563,7 @@ app.post(["/api/auth/forgot-password", "/auth/forgot-password"], async (req, res
 
         // Rate Limit: Quá 5 lần / giờ (KN-39)
         if (result.rateLimited) {
+            res.set("Retry-After", String(result.retryAfterSeconds));
             return res.status(429).json({
                 success: false,
                 code: 429,

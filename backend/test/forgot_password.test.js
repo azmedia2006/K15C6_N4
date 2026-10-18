@@ -176,6 +176,30 @@ async function runTests() {
             });
         }
 
+        // --- TEST 8: Rate limit trả về thời gian chờ cho giao diện ---
+        for (let i = 0; i < 2; i += 1) {
+            const allowedRes = await fetch(`${baseUrl}/api/auth/forgot-password`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: `rate-limit-${i}@example.test` })
+            });
+            assert.strictEqual(allowedRes.status, 200);
+        }
+
+        const rateLimitedRes = await fetch(`${baseUrl}/api/auth/forgot-password`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: "rate-limit-final@example.test" })
+        });
+        const rateLimitedData = await rateLimitedRes.json();
+        assert.strictEqual(rateLimitedRes.status, 429);
+        assert.ok(Number(rateLimitedData.retryAfterSeconds) > 0);
+        assert.strictEqual(
+            rateLimitedRes.headers.get("retry-after"),
+            String(rateLimitedData.retryAfterSeconds)
+        );
+        console.log("  ✔ PASS: Rate limit HTTP 429 trả thời gian chờ qua JSON và Retry-After");
+
         console.log("\n=======================================================");
         console.log("✔ TẤT CẢ CÁC TIÊU CHÍ QUÊN VÀ ĐẶT LẠI MẬT KHẨU ĐẠT 100%!");
         console.log("=======================================================\n");
