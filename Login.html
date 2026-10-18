@@ -941,8 +941,8 @@
                     return;
                 }
 
-                if (!passInput.value || passInput.value.length < 6) {
-                    showMessage(registerMessage, "Mật khẩu phải có ít nhất 6 ký tự.");
+                if (!passInput.value || passInput.value.length < 8 || !/[A-Z]/.test(passInput.value) || !/[a-z]/.test(passInput.value) || !/[0-9]/.test(passInput.value)) {
+                    showMessage(registerMessage, "Mật khẩu cần ít nhất 8 ký tự, chữ hoa, chữ thường và số.");
                     passInput.focus();
                     return;
                 }
@@ -1085,7 +1085,7 @@
                 localStorage.setItem("tms_token", token);
                 localStorage.setItem("token", token);
             }
-            const destination = roleHome[cleanRole] || `./Index.html?role=${cleanRole}`;
+            const destination = "/Workspace.html";
             showMessage(loginMessage, "Đăng nhập thành công! Đang chuyển hướng...", true);
             setTimeout(() => {
                 window.location.assign(destination);
@@ -1134,11 +1134,7 @@
 
                 const role = String(result.role || "").trim().toLowerCase().replace(/^role_/, "").replace(/[\s-]+/g, "_");
                 handleSuccessfulLogin(role, result.user, result.token);
-            } catch {
-                showMessage(
-                    loginMessage,
-                    "Kh?ng th? k?t n?i m?y ch? ??ng nh?p. Vui l?ng ki?m tra k?t n?i v? th? l?i."
-                );
+            } catch { showMessage(loginMessage,'Không kết nối được máy chủ. Không thể xác thực, vui lòng thử lại.');
             } finally {
                 // Luôn dọn dẹp trạng thái busy/spinner trước, sau đó kiểm tra và áp dụng lockout
                 setBusy(loginSubmit, false, "Đang đăng nhập…", "Đăng nhập");
@@ -1160,7 +1156,7 @@
                     body: JSON.stringify({ email: document.querySelector("#recovery-email").value.trim() })
                 });
                 if (!response.ok) throw new Error("Request failed");
-                showMessage(recoveryMessage, "Nếu email thuộc tài khoản hợp lệ, hướng dẫn khôi phục sẽ được gửi đến hộp thư của bạn.", true);
+                const result=await response.json();showMessage(recoveryMessage,result.message,result.mailConfigured===true);
             } catch {
                 showMessage(recoveryMessage, "Chưa thể gửi yêu cầu. Vui lòng thử lại sau.");
             } finally {

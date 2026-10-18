@@ -1,0 +1,6 @@
+PASS: forgot-password form calls real API and displays generic acknowledgement
+PASS: local SMTP accepted one reset email containing usable link; no external mail sent
+PASS: emailed reset link opens form and sets new password through API
+PASS: old session revoked and reset link cannot be reused
+PASS: new password logs in after full server restart
+PASS: old password rejected after restart

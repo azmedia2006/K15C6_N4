@@ -63,32 +63,33 @@ function findUserByEmail(email) {
     return users.find(u => u.email.toLowerCase() === normalized);
 }
 
-// Tạo session token an toàn
+// Opaque, cryptographically random, server-side revocable sessions; only hashes are stored.
+const database = require('./localDatabase');
+const sessions = new Map();
+const digest = token => crypto.createHash('sha256').update(String(token)).digest('hex');
 function generateToken(user) {
-    const payload = {
-        userId: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        issuedAt: Date.now(),
-        expiresAt: Date.now() + (24 * 60 * 60 * 1000)
-    };
-    return Buffer.from(JSON.stringify(payload)).toString("base64");
+    const token=crypto.randomBytes(32).toString('base64url');
+    sessions.set(digest(token), {userId:user.id,issuedAt:Date.now(),expiresAt:Date.now()+24*60*60*1000,authVersion:user.authVersion||0});
+    database.commit(); return token;
 }
-
-// Xác thực và giải mã session token
-function verifyToken(tokenString) {
-    if (!tokenString) return null;
-    try {
-        const decoded = Buffer.from(tokenString, "base64").toString("utf-8");
-        const payload = JSON.parse(decoded);
-        if (!payload.userId || !payload.expiresAt) return null;
-        if (Date.now() > payload.expiresAt) return null;
-        return payload;
-    } catch {
-        return null;
-    }
+function verifyToken(token) {
+    if(typeof token!=='string'||token.length>256)return null;
+    const session=sessions.get(digest(token));if(!session||Date.now()>session.expiresAt)return null;
+    const user=users.find(u=>u.id===session.userId);
+    if(!user||!['active',undefined].includes(user.status)||(user.authVersion||0)!==session.authVersion)return null;
+    return {...session,email:user.email,name:user.name,role:user.role};
 }
+function revokeToken(token){sessions.delete(digest(token));database.commit();}
+function revokeUserSessions(id){const user=users.find(u=>u.id===id);if(user)user.authVersion=(user.authVersion||0)+1;for(const [key,v]of sessions)if(v.userId===id)sessions.delete(key);}
+function changePassword(userId,currentPassword,newPassword){
+    const user=users.find(u=>u.id===userId);
+    if(!user||!verifyPassword(currentPassword,user.salt,user.passwordHash))throw {status:400,message:'Mật khẩu hiện tại không đúng.'};
+    validatePassword(newPassword);
+    if(currentPassword===newPassword)throw {status:400,message:'Mật khẩu mới phải khác mật khẩu cũ.'};
+    user.salt=generateSalt();user.passwordHash=hashPassword(newPassword,user.salt);revokeUserSessions(user.id);database.commit();
+    return {success:true,message:'Đã đổi mật khẩu. Vui lòng đăng nhập lại.'};
+}
+function validatePassword(password){if(typeof password!=='string'||password.length<8||password.length>128||!/[A-Z]/.test(password)||!/[a-z]/.test(password)||!/[0-9]/.test(password))throw {status:400,message:'Mật khẩu cần 8–128 ký tự, gồm chữ hoa, chữ thường và số.'};}
 
 function getLockoutStatus(email) {
     const normalized = String(email || "").trim().toLowerCase();
@@ -289,6 +290,7 @@ function resetPasswordWithToken(token, newPassword) {
     user.salt = newSalt;
     user.passwordHash = newPasswordHash;
     user.updatedAt = new Date().toISOString();
+    revokeUserSessions(user.id);
 
     // Đánh dấu token đã được sử dụng (ngăn chặn replay attack)
     const entry = passwordResetTokens.get(token);
@@ -298,6 +300,7 @@ function resetPasswordWithToken(token, newPassword) {
 
     // Xóa trạng thái khóa và số lần đăng nhập sai nếu có
     recordSuccessfulLogin(user.email);
+    database.commit();
 
     return {
         success: true,
@@ -311,7 +314,18 @@ function resetPasswordWithToken(token, newPassword) {
     };
 }
 
-module.exports = {
+database.register('auth',()=>({users,sessions:[...sessions],resetTokens:[...passwordResetTokens],attempts:[...loginAttempts],forgotLimits:[...forgotRateLimits]}),v=>{
+    users.splice(0,users.length,...v.users);sessions.clear();for(const x of v.sessions||[])sessions.set(...x);
+    passwordResetTokens.clear();for(const x of v.resetTokens||[])passwordResetTokens.set(...x);
+    loginAttempts.clear();for(const x of v.attempts||[])loginAttempts.set(...x);
+    forgotRateLimits.clear();for(const x of v.forgotLimits||[])forgotRateLimits.set(...x);
+});
+if(process.env.NODE_ENV==='production'&&!require('fs').existsSync(database.file)){
+    if(!process.env.ADMIN_EMAIL||!process.env.ADMIN_PASSWORD)throw Error('Lần chạy production đầu tiên cần ADMIN_EMAIL và ADMIN_PASSWORD.');
+    validatePassword(process.env.ADMIN_PASSWORD);
+    const salt=generateSalt();users.splice(0,users.length,{id:'usr_admin',email:process.env.ADMIN_EMAIL,name:'Quản trị viên',role:'administrator',status:'active',salt,passwordHash:hashPassword(process.env.ADMIN_PASSWORD,salt)});
+}
+module.exports = { changePassword, revokeToken, revokeUserSessions, validatePassword,
     findUserByEmail,
     hashPassword,
     verifyPassword,

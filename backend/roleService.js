@@ -601,3 +601,5 @@ module.exports = {
     hydrateUserRoleAssignments,
     getAllUserRolesAssignments: () => userRoles
 };
+
+require('./localDatabase').register('roles',()=>({userRoles,auditLogs}),v=>{userRoles=v.userRoles;auditLogs=v.auditLogs;userRoleIndex.clear();for(const r of userRoles)userRoleIndex.add(`${r.userId}:${r.roleId}`);});

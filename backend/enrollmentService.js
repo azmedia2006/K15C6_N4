@@ -309,7 +309,7 @@ function getEnrollmentsList(filters = {}) {
         const cls = findClass(filters.classId);
         if (cls) {
             result = result.filter(e => e.classId === cls.id || e.classCode === cls.code);
-        }
+        } else { return []; }
     }
 
     if (filters.studentId) {
@@ -615,3 +615,13 @@ module.exports = {
     findClass,
     resetEnrollmentData
 };
+
+module.exports.exportState=()=>({classes,enrollments});
+module.exports.upsertSharedClass=cls=>{const old=classes.find(c=>c.id===cls.id);const value={maxCapacity:35,instructorName:cls.instructor||'',...cls};if(old)Object.assign(old,value);else classes.push(value);};
+require('./localDatabase').register('enrollments',()=>({classes,enrollments}),v=>{classes=v.classes;enrollments=v.enrollments;});
+
+module.exports.syncLinkedRoster=(classId,ids)=>{const cls=findClass(classId);if(!cls)return;for(const id of ids){if(!enrollments.some(e=>e.classId===classId&&e.studentId===id)){const u=users.find(u=>u.id===id);if(u)enrollments.push({id:require('crypto').randomUUID(),classId,classCode:cls.code,className:cls.name,studentId:id,studentName:u.name,studentEmail:u.email,enrolledAt:new Date().toISOString(),enrolledBy:'roster-link',status:'Đang học'});}}};
+
+module.exports.replaceLinkedRoster=(classId,ids)=>{const cls=findClass(classId);if(!cls)throw new Error('Không tìm thấy lớp.');if(ids.length>cls.maxCapacity)throw new Error('Danh sách vượt sĩ số lớp.');const removed=enrollments.filter(e=>e.classId===classId&&!ids.includes(e.studentId));enrollments=enrollments.filter(e=>e.classId!==classId||ids.includes(e.studentId));for(const row of removed)removeStudentCurrentClass(row.studentId,cls.code);module.exports.syncLinkedRoster(classId,ids);};
+
+module.exports.pruneOrphanedRoster=()=>{enrollments=enrollments.filter(row=>users.some(u=>u.id===row.studentId));};

@@ -15,6 +15,12 @@
  * - KN-167: Kiểm tra hợp lệ dữ liệu đầu vào (Validation)
  */
 
+// KN-156: keep regression fixtures isolated from the local persistent schedule store.
+const os = require("os");
+const path = require("path");
+const fs = require("fs");
+const testDataDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "tms-kn154-"));
+process.env.SCHEDULE_DATA_FILE = path.join(testDataDirectory, "schedules.json");
 const assert = require("assert");
 const http = require("http");
 const app = require("../server");
@@ -119,7 +125,7 @@ async function runAllScheduleTests() {
                 shift: "morning",
                 startTime: "08:00",
                 endTime: "11:30",
-                room: "Phòng Lab A1",
+                room: "Phòng Lab KN154 (độc lập với lịch mẫu)",
                 instructor: "Minh Quân",
                 totalSessions: 60,
                 skipHolidays: true
@@ -298,12 +304,14 @@ async function runAllScheduleTests() {
         const delSessId = queryData.sessions[59].id; // Buổi 60
         const delRes = await fetch(`${baseUrl}/api/schedules/session/${delSessId}`, {
             method: "DELETE",
-            headers: { "Authorization": `Bearer ${managerToken}` }
+            headers: { "Authorization": `Bearer ${managerToken}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ reason: "Kiểm thử hủy buổi theo KN-156" })
         });
         const delData = await delRes.json();
         assert.strictEqual(delRes.status, 200);
-        assert.strictEqual(delData.remainingSessionsCount, 59);
-        logPass("Xóa một buổi học thành công và tự động đánh số lại các buổi còn lại");
+        assert.strictEqual(delData.session.status, "cancelled");
+        assert.strictEqual(require("../scheduleService").getClassSchedule("cls_pmp_60").length, 60);
+        logPass("Hủy mềm buổi học kèm lý do; giữ nguyên 60 buổi và số thứ tự (KN-156)");
 
         // -------------------------------------------------------------
         // NHÓM 7: BỘ LỌC ĐA TIÊU CHÍ CHO THỜI KHÓA BIỂU
@@ -447,6 +455,7 @@ async function runAllScheduleTests() {
 
     } finally {
         await stopServer();
+        fs.rmSync(testDataDirectory, { recursive: true, force: true });
     }
 }
 

@@ -1,0 +1,13 @@
+PASS: real login lands on unified Workspace
+PASS: create course via API
+PASS: create class and refresh list
+PASS: bulk enrollment via real API
+PASS: assignment and grade saved
+PASS: receipt and actual debt 1,000,000 VND
+PASS: CSV report uses live values
+PASS: request and approval persistence
+PASS: KN156 edit, cancel, attendance lock
+PASS: wrong current password is rejected in UI
+PASS: duplicate registration shows actual backend error
+PASS: student sees inbox link after login and reads notifications
+PASS: no browser JavaScript errors

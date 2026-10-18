@@ -13,15 +13,15 @@ export class EmailService {
 
   constructor() {
     this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp81196.bkns.com.vn',
+      host: process.env.SMTP_HOST || '',
       port: parseInt(process.env.SMTP_PORT || '587', 10),
       secure: process.env.SMTP_SECURE === 'true',
       auth: {
-        user: process.env.SMTP_USER || 'support_it@quanit206.id.vn',
-        pass: process.env.SMTP_PASSWORD || process.env.SMTP_PASS || 'Duong2006@',
+        user: process.env.SMTP_USER || '',
+        pass: process.env.SMTP_PASSWORD || process.env.SMTP_PASS || '',
       },
       tls: {
-        rejectUnauthorized: false,
+        rejectUnauthorized: true,
       },
     });
   }
@@ -45,7 +45,7 @@ export class EmailService {
     );
 
     await this.transporter.sendMail({
-      from: process.env.SMTP_FROM || '"Đào tạo TMS" <support_it@quanit206.id.vn>',
+      from: process.env.SMTP_FROM || process.env.SMTP_USER,
       to,
       subject,
       html,
@@ -74,7 +74,7 @@ export class EmailService {
     const text = `Kính gửi ${name},\n\nTài khoản của bạn đã được khởi tạo trên Hệ thống Quản lý Đào tạo TMS.\nEmail đăng nhập: ${to}\nVai trò: ${role}\nMật khẩu tạm thời: ${tempPassword}\nĐịa chỉ đăng nhập: ${loginUrl}\n\nVui lòng đăng nhập và đổi mật khẩu trong lần đầu tiên sử dụng.\n\nTrân trọng,\nĐào tạo TMS`;
 
     await this.transporter.sendMail({
-      from: process.env.SMTP_FROM || '"Đào tạo TMS" <support_it@quanit206.id.vn>',
+      from: process.env.SMTP_FROM || process.env.SMTP_USER,
       to,
       subject,
       text,

@@ -58,14 +58,7 @@ function generateUserId() {
 }
 
 // Sinh mật khẩu tạm ngẫu nhiên an toàn nếu admin không chỉ định
-function generateRandomTempPassword() {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%";
-    let pass = "TMS@";
-    for (let i = 0; i < 6; i++) {
-        pass += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return pass;
-}
+function generateRandomTempPassword(){return 'TMS@Aa1'+require('crypto').randomBytes(15).toString('base64url');}
 
 // Kiểm tra định dạng email
 function isValidEmail(email) {
@@ -225,7 +218,7 @@ function createUser({
             updatedAt: newUser.updatedAt
         },
         temporaryPassword: rawPassword, // Trả về mật khẩu để Admin gửi cho nhân sự mới
-        emailSent: false,
+        emailSent: emailResult?.status === 'ACCEPTED',
         activationEmail: emailResult
     };
 }
@@ -265,6 +258,7 @@ function updateUser(id, { name, role, phone, status, password }) {
         if (!validStatuses.includes(s)) {
             throw { status: 400, message: `Trạng thái '${status}' không hợp lệ. (Hợp lệ: ${validStatuses.join(", ")})` };
         }
+        if(s !== 'active')require('./authService').revokeUserSessions(targetUser.id);
         targetUser.status = s;
         // Nếu chuyển sang active, mở khóa loginAttempts nếu có
         if (s === "active" && loginAttempts.has(targetUser.email.toLowerCase())) {
@@ -274,6 +268,8 @@ function updateUser(id, { name, role, phone, status, password }) {
 
     if (password && String(password).trim()) {
         const newPass = String(password).trim();
+        require('./authService').validatePassword(newPass);
+        require('./authService').revokeUserSessions(targetUser.id);
         targetUser.salt = generateSalt();
         targetUser.passwordHash = hashPassword(newPass, targetUser.salt);
         // Reset khóa đăng nhập khi đổi mật khẩu

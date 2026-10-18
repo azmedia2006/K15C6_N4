@@ -21,7 +21,6 @@ const {
     recordFailedAttempt,
     recordSuccessfulLogin,
     users,
-    passwordResetTokens,
     createPasswordResetToken,
     verifyPasswordResetToken,
     resetPasswordWithToken
@@ -145,9 +144,15 @@ const {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+app.disable('x-powered-by');
+app.use((req,res,next)=>{res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Referrer-Policy','same-origin');res.setHeader('X-Frame-Options','DENY');next();});
+app.use(cors({origin:process.env.FRONTEND_URL||false}));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(require('./localDatabase').middleware);
+// Do not expose source files, local schedule inboxes, or dependency folders via static hosting.
+app.use(["/backend", "/BE", "/node_modules", "/data", "/.git", "/docs", "/.mvn", "/kn72", "/src"], (req, res) => res.sendStatus(403));
+app.use((req,res,next)=>{let pathname;try{pathname=decodeURIComponent(req.path)}catch{return res.sendStatus(400)}pathname=path.posix.normalize(pathname.replace(/\\/g,'/'));if(/^\/(?:backend|BE|node_modules|data|\.git|docs|\.mvn|kn72|src)(?:\/|$)/i.test(pathname)||/\.(?:json|md|sql|java|ts|yml|yaml|properties|zip|patch|log|cjs|mjs|map|xml|jar|cmd|sh|env)$/i.test(pathname)||['/server.js','/mvnw','/api/index.js'].includes(pathname))return res.sendStatus(403);next();});
 app.use(express.static(path.join(__dirname, "..")));
 app.get(["/leads", "/lead-management"], (req, res) => {
     res.sendFile(path.join(__dirname, "../LeadManagement.html"));
@@ -235,23 +240,14 @@ function requireRole(...allowedRoles) {
 
 // KN-31: API đăng nhập bằng email và mật khẩu
 // Cập nhật trả về danh sách vai trò N-N
-app.post("/api/auth/login", async (req, res) => {
+require('./businessRoutes')(app,{authenticateToken,requireRole});
+app.post("/api/auth/login", (req, res) => {
     const { email, password } = req.body || {};
 
     if (!email || !password) {
         return res.status(400).json({
             success: false,
             message: "Vui lòng nhập đầy đủ email và mật khẩu."
-        });
-    }
-
-    try {
-        await hydrateUsersForVercel();
-    } catch (error) {
-        console.error("[Server] Không thể tải người dùng để đăng nhập:", error.message);
-        return res.status(503).json({
-            success: false,
-            message: "Dịch vụ đăng nhập đang tạm thời không khả dụng. Vui lòng thử lại sau."
         });
     }
 
@@ -349,6 +345,8 @@ if (user && (user.status || "active") === "inactive") {
 
 // KN-60: API lấy thông tin người dùng hiện tại
 // Đồng bộ tức thì trên Frontend
+app.post('/api/auth/logout',authenticateToken,(req,res)=>{require('./authService').revokeToken(req.headers.authorization.replace(/^Bearer\s+/i,''));res.json({success:true,message:'Đã đăng xuất.'});});
+app.post('/api/auth/change-password',authenticateToken,(req,res)=>{try{res.json(require('./authService').changePassword(req.user.id,req.body.currentPassword,req.body.newPassword));}catch(e){res.status(e.status||400).json({success:false,message:e.message});}});
 app.get("/api/auth/me", authenticateToken, (req, res) => {
     return res.status(200).json({
         success: true,
@@ -475,7 +473,7 @@ app.put("/api/auth/me/profile", authenticateToken, async (req, res) => {
     };
 
     // Lưu lên Supabase trước
-            await supabaseService.saveUserProfile(nextUser);
+            if(process.env.TMS_OFFLINE !== "true" && process.env.SUPABASE_URL) await supabaseService.saveUserProfile(nextUser);
 
     // Chỉ cập nhật RAM khi Supabase lưu thành công
         Object.assign(user, updated);
@@ -555,65 +553,50 @@ app.post(["/api/auth/forgot-password", "/auth/forgot-password"], async (req, res
         });
     }
 
-    try {
-        await hydratePasswordRecoveryState();
+    const clientIp = req.ip || req.headers["x-forwarded-for"] || (req.socket && req.socket.remoteAddress) || "127.0.0.1";
+    const result = createPasswordResetToken(email, clientIp);
 
-        const clientIp = req.ip || req.headers["x-forwarded-for"] || (req.socket && req.socket.remoteAddress) || "127.0.0.1";
-        const result = createPasswordResetToken(email, clientIp);
-
-        // Rate Limit: Quá 5 lần / giờ (KN-39)
-        if (result.rateLimited) {
-            return res.status(429).json({
-                success: false,
-                code: 429,
-                message: "Bạn đã yêu cầu đặt lại mật khẩu quá nhiều lần (tối đa 5 lần/giờ). Vui lòng thử lại sau.",
-                retryAfterSeconds: result.retryAfterSeconds
-            });
-        }
-
-        if (result.userFound && result.token) {
-            await persistPasswordResetTokens();
-
-            const hostHeader = req.get("host") || "localhost:3000";
-            const protocol = req.protocol || "http";
-            const defaultBaseUrl = `${protocol}://${hostHeader}`;
-            const vercelBaseUrl = process.env.VERCEL_URL
-                ? `https://${process.env.VERCEL_URL}`
-                : "";
-            const frontendUrl =
-                process.env.FRONTEND_URL || vercelBaseUrl || defaultBaseUrl;
-            const resetUrl = `${frontendUrl.replace(/\/$/, "")}/ResetPassword.html?token=${result.token}`;
-
-            try {
-                await sendPasswordResetEmail({
-                    to: result.user.email,
-                    name: result.user.name,
-                    resetToken: result.token,
-                    resetUrl
-                });
-            } catch (mailErr) {
-                console.warn("[Server] Gửi email đặt lại mật khẩu thất bại:", mailErr.message);
-            }
-        }
-    } catch (error) {
-        console.error("[Server] Không thể xử lý yêu cầu khôi phục mật khẩu:", error.message);
-        return res.status(503).json({
+    // Rate Limit: Quá 5 lần / giờ (KN-39)
+    if (result.rateLimited) {
+        return res.status(429).json({
             success: false,
-            code: 503,
-            message: "Dịch vụ khôi phục mật khẩu đang tạm thời không khả dụng. Vui lòng thử lại sau."
+            code: 429,
+            message: "Bạn đã yêu cầu đặt lại mật khẩu quá nhiều lần (tối đa 5 lần/giờ). Vui lòng thử lại sau.",
+            retryAfterSeconds: result.retryAfterSeconds
         });
+    }
+
+    // Nếu tài khoản tồn tại: Gửi email bất đồng bộ qua SMTP (Fire and forget, không làm chậm response)
+    if (result.userFound && result.token) {
+        const hostHeader = req.get("host") || "localhost:3000";
+        const protocol = req.protocol || "http";
+        const defaultBaseUrl = "http://localhost:3000";
+        const frontendUrl = process.env.FRONTEND_URL || defaultBaseUrl;
+        const resetUrl = `${frontendUrl.replace(/\/$/, "")}/ResetPassword.html?token=${result.token}`;
+
+        try {
+            sendPasswordResetEmail({
+                to: result.user.email,
+                name: result.user.name,
+                resetToken: result.token,
+                resetUrl
+            });
+        } catch (mailErr) {
+            console.warn("[Server] Gửi email đặt lại mật khẩu thất bại:", mailErr.message);
+        }
     }
 
     // KN-39: Luôn trả về 200 kèm thông báo bảo mật chung (chống rò rỉ sự tồn tại của email)
     return res.status(200).json({
         success: true,
         code: 200,
-        message: "Nếu email thuộc tài khoản hợp lệ, hướng dẫn khôi phục sẽ được gửi đến hộp thư của bạn."
+        message: require("./emailService").isConfigured() ? "Nếu email thuộc tài khoản hợp lệ, yêu cầu khôi phục đã được tiếp nhận. Vui lòng kiểm tra hộp thư." : "Chưa cấu hình gửi email. Vui lòng liên hệ quản trị viên để khôi phục mật khẩu.",
+        mailConfigured: require("./emailService").isConfigured()
     });
 });
 
 // KN-43: API Xác thực tính hợp lệ của token đặt lại mật khẩu
-app.get(["/api/auth/verify-reset-token", "/auth/verify-reset-token"], async (req, res) => {
+app.get(["/api/auth/verify-reset-token", "/auth/verify-reset-token"], (req, res) => {
     const token = req.query.token;
 
     if (!token) {
@@ -622,18 +605,6 @@ app.get(["/api/auth/verify-reset-token", "/auth/verify-reset-token"], async (req
             valid: false,
             code: 400,
             message: "Yêu cầu cung cấp mã xác thực token."
-        });
-    }
-
-    try {
-        await hydratePasswordRecoveryState();
-    } catch (error) {
-        console.error("[Server] Không thể tải dữ liệu xác thực khôi phục:", error.message);
-        return res.status(503).json({
-            success: false,
-            valid: false,
-            code: 503,
-            message: "Dịch vụ xác thực khôi phục đang tạm thời không khả dụng. Vui lòng thử lại sau."
         });
     }
 
@@ -667,24 +638,13 @@ app.post(["/api/auth/reset-password", "/auth/reset-password"], async (req, res) 
     }
 
     try {
-        await hydratePasswordRecoveryState();
-    } catch (error) {
-        console.error("[Server] Không thể tải dữ liệu đặt lại mật khẩu:", error.message);
-        return res.status(503).json({
-            success: false,
-            code: 503,
-            message: "Dịch vụ đặt lại mật khẩu đang tạm thời không khả dụng. Vui lòng thử lại sau."
-        });
-    }
-
-    try {
         const resetResult = resetPasswordWithToken(token, newPassword);
 
-        if (isVercelRuntime) {
-            await persistPasswordResetTokens();
-            await supabaseService.savePasswordRecoveryUsersSnapshot(users);
-        } else {
+        // Đồng bộ dữ liệu người dùng sang Supabase
+        try {
             await supabaseService.syncUsersDatabase(users);
+        } catch (syncErr) {
+            // Không chặn tiến trình nếu offline
         }
 
         return res.status(200).json({
@@ -693,13 +653,10 @@ app.post(["/api/auth/reset-password", "/auth/reset-password"], async (req, res) 
             message: resetResult.message || "Đặt lại mật khẩu thành công! Bạn có thể sử dụng mật khẩu mới để đăng nhập."
         });
     } catch (err) {
-        const status = err.status || (isVercelRuntime ? 503 : 400);
-        return res.status(status).json({
+        return res.status(err.status || 400).json({
             success: false,
-            code: status,
-            message: status === 503
-                ? "Không thể lưu mật khẩu mới. Vui lòng thử lại sau."
-                : err.message || "Không thể đặt lại mật khẩu."
+            code: err.status || 400,
+            message: err.message || "Không thể đặt lại mật khẩu."
         });
     }
 });
@@ -709,12 +666,7 @@ app.post("/api/auth/register", async (req, res) => {
     try {
         await hydrateUsersForVercel();
         const { name, email, phone, password } = req.body || {};
-        if (typeof password !== "string" || password.trim().length < 6) {
-            return res.status(400).json({
-                success: false,
-                message: "Mật khẩu phải có ít nhất 6 ký tự."
-            });
-        }
+        require("./authService").validatePassword(password);
 
         const result = createUser({
             name,
@@ -876,14 +828,12 @@ app.post(
                 temporaryPassword: result.temporaryPassword,
                 role: result.user.role
             });
-            await activationEmail.delivery;
-            const emailSent = activationEmail?.status === "DELIVERED";
+            await activationEmail.completion;
+            const emailSent = activationEmail?.status === "ACCEPTED";
 
             return res.status(201).json({
                 success: true,
-                message: emailSent
-                    ? `Tạo tài khoản người dùng '${result.user.name}' thành công. Đã gửi email kích hoạt kèm mật khẩu tạm.`
-                    : `Tạo tài khoản người dùng '${result.user.name}' thành công, nhưng chưa gửi được email kích hoạt. Vui lòng kiểm tra cấu hình SMTP.`,
+                message: `Đã tạo tài khoản '${result.user.name}'. Trạng thái email: ${activationEmail.status}. Chỉ coi đã gửi khi SMTP chấp nhận.`,
                 user: result.user,
                 temporaryPassword: result.temporaryPassword,
                 emailSent,
@@ -1139,9 +1089,12 @@ app.delete(
 // 2. Cắt vuông và tạo bản thu nhỏ (thumbnail) phục vụ điểm danh nhận diện khuôn mặt
 // =========================================================================
 
+function avatarOwner(req,res,next){req.body=req.body||{};const target=req.params.id||req.body.userId||req.user.id;const admin=req.user.role==='administrator'||(req.user.roles||[]).some(r=>r.code==='administrator');if(target!==req.user.id&&!admin)return res.status(403).json({success:false,message:'Chỉ được thay ảnh của chính bạn.'});req.body.userId=target;next();}
 // Cập nhật ảnh đại diện của người dùng (hỗ trợ cả /api/users/:id/avatar và /api/user/avatar)
 app.post(
     ["/api/users/:id/avatar", "/api/user/avatar"],
+    authenticateToken,
+    avatarOwner,
     async (req, res) => {
         try {
             // Xác định ID người dùng từ params hoặc body hoặc token
@@ -1232,6 +1185,8 @@ app.get(
 // Xóa ảnh đại diện (khôi phục về chữ cái mặc định)
 app.delete(
     ["/api/users/:id/avatar", "/api/user/avatar"],
+    authenticateToken,
+    avatarOwner,
     (req, res) => {
         try {
             const targetUserId = req.params.id || "usr_student";
@@ -1331,6 +1286,7 @@ app.get(
     "/api/classes/:id",
     authenticateToken,
     (req, res) => {
+        if(!require('./businessRoutes').canSeeClass(req.user,req.params.id))return res.status(403).json({success:false,message:'Bạn không thuộc lớp này.'});
         const cls = getClassDetail(req.params.id);
         if (!cls) {
             return res.status(404).json({
@@ -1554,52 +1510,6 @@ app.delete(
     }
 );
 
-app.get("/api/attendance/students", (req, res) => {
-    const studentUsers = users.filter(u => u.role === "student");
-    const sv001 = studentUsers.find(u => u.id === "usr_student" || u.email === "student@tms.edu.vn") || {};
-
-    const attendanceStudents = [
-        {
-            id: sv001.id || "usr_student",
-            studentCode: "SV001",
-            name: sv001.name || "Lê Minh Tuấn",
-            email: sv001.email || "student@tms.edu.vn",
-            className: "K15-PM01",
-            attendanceRate: 92,
-            status: "present",
-            avatar: sv001.avatar || "",
-            thumbnail: sv001.thumbnail || ""
-        },
-        {
-            id: "usr_sv002",
-            studentCode: "SV002",
-            name: "Hoàng Thùy Linh",
-            email: "linh.ht@tms.edu.vn",
-            className: "K15-PM01",
-            attendanceRate: 88,
-            status: "present",
-            avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='50' fill='%236366f1'/><circle cx='50' cy='38' r='20' fill='%23ffffff'/><path d='M20 85 C20 62 35 56 50 56 C65 56 80 62 80 85 Z' fill='%23ffffff'/></svg>",
-            thumbnail: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='50' fill='%236366f1'/><circle cx='50' cy='38' r='20' fill='%23ffffff'/><path d='M20 85 C20 62 35 56 50 56 C65 56 80 62 80 85 Z' fill='%23ffffff'/></svg>"
-        },
-        {
-            id: "usr_sv003",
-            studentCode: "SV003",
-            name: "Trần Đình Trọng",
-            email: "trong.td@tms.edu.vn",
-            className: "K15-PM01",
-            attendanceRate: 74,
-            status: "absent",
-            avatar: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='50' fill='%23f59e0b'/><circle cx='50' cy='38' r='20' fill='%23ffffff'/><path d='M20 85 C20 62 35 56 50 56 C65 56 80 62 80 85 Z' fill='%23ffffff'/></svg>",
-            thumbnail: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='50' fill='%23f59e0b'/><circle cx='50' cy='38' r='20' fill='%23ffffff'/><path d='M20 85 C20 62 35 56 50 56 C65 56 80 62 80 85 Z' fill='%23ffffff'/></svg>"
-        }
-    ];
-
-    return res.status(200).json({
-        success: true,
-        data: attendanceStudents
-    });
-});
-
 // KN-58: Xây dựng API gán vai trò cho người dùng
 // POST /api/admin/users/:userId/roles
 // hoặc /admin/users/:userId/roles
@@ -1747,97 +1657,6 @@ app.get(
 // KN-8: PHÂN QUYỀN VAI TRÒ HỌC PHÍ & ĐIỂM SỐ
 // Đảm bảo: Giảng viên không sửa được học phí và Kế toán không sửa được điểm
 // ==========================================
-
-const mockScores = {
-    "scr_001": { id: "scr_001", studentId: "usr_student", courseId: "crs_react", score: 8.5, updatedBy: "usr_teacher" }
-};
-
-const mockTuition = {
-    "tui_001": { id: "tui_001", studentId: "usr_student", amount: 4500000, status: "paid", updatedBy: "usr_accountant" }
-};
-
-// 1. Nghiệp vụ Điểm số: Giảng viên và Admin được cập nhật; Kế toán & Học viên bị từ chối
-app.put(
-    "/api/scores/:scoreId",
-    authenticateToken,
-    requireRole("instructor", "administrator"),
-    (req, res) => {
-        const { scoreId } = req.params;
-        const { score } = req.body || {};
-        if (score === undefined || isNaN(score) || score < 0 || score > 10) {
-            return res.status(400).json({
-                success: false,
-                message: "Điểm số không hợp lệ (Phải là số từ 0 đến 10)."
-            });
-        }
-        mockScores[scoreId] = {
-            id: scoreId,
-            score: Number(score),
-            updatedBy: req.user.id,
-            updatedAt: new Date().toISOString()
-        };
-        return res.status(200).json({
-            success: true,
-            message: "Cập nhật điểm số thành công.",
-            data: mockScores[scoreId]
-        });
-    }
-);
-
-app.get(
-    "/api/scores/:scoreId",
-    authenticateToken,
-    requireRole("instructor", "student", "training_manager", "administrator"),
-    (req, res) => {
-        const { scoreId } = req.params;
-        return res.status(200).json({
-            success: true,
-            data: mockScores[scoreId] || { id: scoreId, score: 8.5 }
-        });
-    }
-);
-
-// 2. Nghiệp vụ Học phí: Kế toán và Admin được cập nhật; Giảng viên & Học viên bị từ chối
-app.put(
-    "/api/tuition/:tuitionId",
-    authenticateToken,
-    requireRole("accountant", "administrator"),
-    (req, res) => {
-        const { tuitionId } = req.params;
-        const { amount, status } = req.body || {};
-        if (amount !== undefined && (isNaN(amount) || amount < 0)) {
-            return res.status(400).json({
-                success: false,
-                message: "Số tiền học phí không hợp lệ."
-            });
-        }
-        mockTuition[tuitionId] = {
-            id: tuitionId,
-            amount: amount !== undefined ? Number(amount) : 4500000,
-            status: status || "paid",
-            updatedBy: req.user.id,
-            updatedAt: new Date().toISOString()
-        };
-        return res.status(200).json({
-            success: true,
-            message: "Cập nhật học phí thành công.",
-            data: mockTuition[tuitionId]
-        });
-    }
-);
-
-app.get(
-    "/api/tuition/:tuitionId",
-    authenticateToken,
-    requireRole("accountant", "student", "administrator"),
-    (req, res) => {
-        const { tuitionId } = req.params;
-        return res.status(200).json({
-            success: true,
-            data: mockTuition[tuitionId] || { id: tuitionId, amount: 4500000, status: "paid" }
-        });
-    }
-);
 
 // -------------------------------------------------------------
 // PHÂN HỆ TUYỂN SINH - TIẾP NHẬN LEAD TƯ VẤN (PUBLIC FORM & ADMISSIONS)
@@ -2243,23 +2062,10 @@ app.get("/api/supabase/status", async (req, res) => {
 });
 
 // API Kích hoạt đồng bộ thủ công toàn bộ dữ liệu TMS lên Supabase
-app.post("/api/supabase/sync", async (req, res) => {
-    try {
-        await supabaseService.syncUsersDatabase(users);
-        await supabaseService.syncRolesDatabase(getAllRoles(), getAllUserRolesAssignments(), getAuditLogs());
-        await supabaseService.syncBusinessDatabase(mockScores, mockTuition);
-        await supabaseService.syncLeadsDatabase(leads);
-        return res.status(200).json({
-            success: true,
-            message: "Đã đồng bộ toàn bộ cơ sở dữ liệu TMS lên Supabase thành công.",
-            timestamp: new Date().toISOString()
-        });
-    } catch (err) {
-        return res.status(500).json({
-            success: false,
-            message: "Lỗi đồng bộ Supabase: " + err.message
-        });
-    }
+app.post('/api/supabase/sync',authenticateToken,requireRole('administrator'),async(req,res)=>{
+    if(process.env.TMS_OFFLINE==='true'||!process.env.SUPABASE_URL||!process.env.SUPABASE_SECRET_KEY)return res.status(503).json({success:false,message:'Chưa cấu hình chế độ tích hợp Supabase. Dữ liệu cục bộ vẫn được lưu.'});
+    const state=require('./localDatabase').snapshot();const ok=await supabaseService.saveToStorage('tms-canonical-backup.json',state);
+    return res.status(ok?200:502).json({success:!!ok,message:ok?'Đã sao lưu snapshot lên Supabase Storage. Đây không phải đồng bộ các bảng quan hệ.':'Supabase không xác nhận lưu bản sao; không báo đồng bộ thành công.'});
 });
 
 // Health check endpoint
@@ -2268,7 +2074,7 @@ app.get("/api/health", async (req, res) => {
     res.json({
         status: "ok",
         supabase: {
-            configured: Boolean(supabaseService.SUPABASE_URL),
+            configured: Boolean(supabaseService.SUPABASE_URL && supabaseService.SUPABASE_SECRET_KEY),
             url: supabaseService.SUPABASE_URL
         },
         smtp: {
@@ -2318,15 +2124,9 @@ app.post("/api/admin/smtp/test",
                 temporaryPassword: "TMS@" + Math.random().toString(36).substring(2, 8),
                 role: "administrator"
             });
-            const deliveryResult = await emailResult.delivery;
-            const emailSent = deliveryResult.status === "DELIVERED";
-            return res.status(emailSent ? 200 : 503).json({
-                success: emailSent,
-                message: emailSent
-                    ? `Đã gửi email kích hoạt thử nghiệm tới ${targetEmail} thành công!`
-                    : `Không thể gửi email thử nghiệm tới ${targetEmail}. Vui lòng kiểm tra cấu hình SMTP.`,
-                emailRecord: deliveryResult
-            });
+            await emailResult.completion;
+            const accepted=emailResult.status==='ACCEPTED';
+            return res.status(accepted?200:503).json({success:accepted,message:accepted?'Máy chủ SMTP đã chấp nhận thư. Cần kiểm tra inbox để xác nhận nhận thư.':'Chưa gửi được email. Kiểm tra cấu hình SMTP.',emailRecord:emailResult});
         } catch (err) {
             return res.status(500).json({
                 success: false,
@@ -2613,10 +2413,12 @@ app.delete("/api/programs/:programId/subjects/:subjectId",
 // Subtasks: KN-159 -> KN-167
 // -------------------------------------------------------------
 
+require("./sessionRoutes")(app, { authenticateToken, requireRole });
+
 // API Lấy danh sách lớp học kèm trạng thái thời khóa biểu
 app.get("/api/schedules/classes", authenticateToken, (req, res) => {
     try {
-        const list = getClassesWithScheduleStatus();
+        const list = getClassesWithScheduleStatus().filter(cls=>require("./businessRoutes").canSeeClass(req.user,cls.id));
         return res.status(200).json({
             success: true,
             total: list.length,
@@ -2679,10 +2481,12 @@ app.post("/api/schedules/save",
             const result = saveClassSchedule(classId, sessions, req.user);
             return res.status(200).json(result);
         } catch (err) {
-            return res.status(400).json({
+            return res.status(err.status || 400).json({
                 success: false,
                 code: "SAVE_SCHEDULE_FAILED",
-                message: err.message
+                code: err.code || "SCHEDULE_ERROR",
+                message: err.status >= 500 ? "Không thể lưu dữ liệu. Thao tác chưa được áp dụng." : err.message,
+                details: err.details
             });
         }
     }
@@ -2691,7 +2495,7 @@ app.post("/api/schedules/save",
 // API Lấy danh sách lịch học hệ thống theo bộ lọc
 app.get("/api/schedules", authenticateToken, (req, res) => {
     try {
-        const sessions = getSchedules(req.query || {});
+        const sessions = getSchedules(req.query || {}).filter(item=>require("./businessRoutes").canSeeSession(req.user,item));
         return res.status(200).json({
             success: true,
             total: sessions.length,
@@ -2708,7 +2512,7 @@ app.get("/api/schedules", authenticateToken, (req, res) => {
 // API Lấy thời khóa biểu chi tiết của một lớp học
 app.get("/api/schedules/:classId", authenticateToken, (req, res) => {
     try {
-        const sessions = getClassSchedule(req.params.classId);
+        const sessions = getClassSchedule(req.params.classId).filter(item=>require("./businessRoutes").canSeeSession(req.user,item));
         return res.status(200).json({
             success: true,
             classId: req.params.classId,
@@ -2732,9 +2536,11 @@ app.put("/api/schedules/session/:sessionId",
             const result = updateSession(req.params.sessionId, req.body || {}, req.user);
             return res.status(200).json(result);
         } catch (err) {
-            return res.status(400).json({
+            return res.status(err.status || 400).json({
                 success: false,
-                message: err.message
+                code: err.code || "SCHEDULE_ERROR",
+                message: err.status >= 500 ? "Không thể lưu dữ liệu. Thao tác chưa được áp dụng." : err.message,
+                details: err.details
             });
         }
     }
@@ -2746,12 +2552,14 @@ app.delete("/api/schedules/session/:sessionId",
     requireRole("training_manager", "administrator"),
     (req, res) => {
         try {
-            const result = deleteSession(req.params.sessionId, req.user);
+            const result = deleteSession(req.params.sessionId, req.user, req.body || {});
             return res.status(200).json(result);
         } catch (err) {
-            return res.status(400).json({
+            return res.status(err.status || 400).json({
                 success: false,
-                message: err.message
+                code: err.code || "SCHEDULE_ERROR",
+                message: err.status >= 500 ? "Không thể lưu dữ liệu. Thao tác chưa được áp dụng." : err.message,
+                details: err.details
             });
         }
     }
@@ -2766,9 +2574,11 @@ app.delete("/api/schedules/class/:classId",
             const result = clearClassSchedule(req.params.classId, req.user);
             return res.status(200).json(result);
         } catch (err) {
-            return res.status(400).json({
+            return res.status(err.status || 400).json({
                 success: false,
-                message: err.message
+                code: err.code || "SCHEDULE_ERROR",
+                message: err.status >= 500 ? "Không thể lưu dữ liệu. Thao tác chưa được áp dụng." : err.message,
+                details: err.details
             });
         }
     }
@@ -2944,8 +2754,8 @@ async function hydrateUsersFromSupabase() {
 }
 // KN-67: Tải dữ liệu đã lưu trước khi khởi động server
 if (require.main === module) {
-    hydrateUsersFromSupabase()
-        .then(() => hydrateTeachingAssignments())
+    Promise.resolve()
+
         .then(() => {
             app.listen(PORT, () => {
                 console.log(

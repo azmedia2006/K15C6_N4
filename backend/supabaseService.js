@@ -27,10 +27,10 @@ function loadEnv(filepath) {
 loadEnv(path.join(__dirname, ".env"));
 loadEnv(path.join(__dirname, "../.env"));
 
-const SUPABASE_URL = process.env.SUPABASE_URL || "https://fljbbgqfgyyhvxhpflhg.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "sb_publishable_1mU5Pm0dovYQnFJg-TerMg_11Dxbtbo";
-const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY || Buffer.from("c2Jfc2VjcmV0X1MxWmljU2FfRjBuWkkzYVlhMTN5MmdfblNwUTBxVW8=", "base64").toString("utf-8");
-const SUPABASE_JWKS_URL = process.env.SUPABASE_JWKS_URL || "https://fljbbgqfgyyhvxhpflhg.supabase.co/auth/v1/.well-known/jwks.json";
+const SUPABASE_URL = process.env.SUPABASE_URL || "";
+const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || "";
+const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY || "";
+const SUPABASE_JWKS_URL = process.env.SUPABASE_JWKS_URL || "";
 
 const BUCKET_NAME = "tms-database";
 let isBucketReady = false;
@@ -39,6 +39,7 @@ let isBucketReady = false;
  * Gửi HTTP request đến Supabase API với Header bảo mật Admin / Service Role
  */
 async function supabaseRequest(endpoint, options = {}) {
+    if (process.env.TMS_OFFLINE === "true" || !SUPABASE_URL || !SUPABASE_SECRET_KEY) return null;
     const url = endpoint.startsWith("http") ? endpoint : `${SUPABASE_URL}${endpoint}`;
     const headers = {
         "apikey": SUPABASE_SECRET_KEY,
@@ -52,7 +53,7 @@ async function supabaseRequest(endpoint, options = {}) {
     }
 
     try {
-        const response = await fetch(url, { ...options, headers });
+        const response = await fetch(url, { ...options, headers, signal: AbortSignal.timeout(10000) });
         return response;
     } catch (err) {
         console.warn(`[Supabase] Network warning calling ${endpoint}:`, err.message);
@@ -572,7 +573,7 @@ async function checkSupabaseHealth() {
     }
 
     try {
-        const jwksRes = await fetch(SUPABASE_JWKS_URL);
+        const jwksRes = process.env.TMS_OFFLINE === "true" ? { ok: false, status: "OFFLINE" } : await fetch(SUPABASE_JWKS_URL);
         health.jwksStatus = jwksRes.ok ? "valid" : `error_${jwksRes.status}`;
     } catch (e) {
         health.jwksStatus = `error: ${e.message}`;

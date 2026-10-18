@@ -12,6 +12,38 @@
 
 const { getSubjectById, subjects, classes: initialSubjectClasses } = require("./subjectService");
 const { recordAuditLog } = require("./roleService");
+const fs = require("fs");
+const path = require("path");
+const { randomUUID } = require("crypto");
+const { users } = require("./authService");
+const { userHasRole } = require("./roleService");
+const DATA_FILE = process.env.SCHEDULE_DATA_FILE || path.join(__dirname, "data", "schedules-kn156.json");
+const clone = value => JSON.parse(JSON.stringify(value));
+let sessionHistory = [], notifications = [], attendanceRecords = [];
+function fail(message, status = 400, code = "INVALID_SESSION", details) {
+    const error = new Error(message); Object.assign(error, { status, code, details }); throw error;
+}
+function isStaff(user) { return user && (user.role === "instructor" || userHasRole(user.id, "instructor")); }
+function normalize(value) { return String(value || "").normalize("NFC").trim().replace(/\s+/g, " ").toLocaleLowerCase("vi"); }
+function findInstructor(session) {
+    return users.find(u => isStaff(u) && (session.instructorId ? u.id === session.instructorId : normalize(u.name) === normalize(session.instructor)));
+}
+function snapshot() { return clone({ holidays, classSchedules, activeClasses, sessionHistory, notifications, attendanceRecords }); }
+function restore(data) {
+    ({ holidays, classSchedules, activeClasses } = data);
+    sessionHistory = data.sessionHistory || []; notifications = data.notifications || []; attendanceRecords = data.attendanceRecords || [];
+}
+// Single-process demo: synchronous atomic rename commits session + history + inbox together.
+function transaction(fn) {
+    return (...args) => {
+        const before = snapshot();
+        try {
+            const result = fn(...args);
+            require('./localDatabase').commit();
+            return clone(result);
+        } catch (error) { restore(before); throw error; }
+    };
+}
 
 // 1. Danh sách Ngày nghỉ Lễ mặc định (Hệ thống TMS & Việt Nam)
 const DEFAULT_HOLIDAYS = [
@@ -184,11 +216,14 @@ let activeClasses = [];
  * Khởi tạo dữ liệu ban đầu
  */
 function initScheduleData() {
+    sessionHistory = []; notifications = []; attendanceRecords = [];
     holidays = JSON.parse(JSON.stringify(DEFAULT_HOLIDAYS));
     classSchedules = {};
     activeClasses = [
         {
             id: "cls_fs_01",
+            studentIds: ["usr_student"], // Explicit demo roster; editable by training manager.
+            instructorId: "usr_teacher",
             code: "WD-2026-01",
             name: "Lớp Fullstack Web K15 - Ca Sáng",
             subjectId: "sbj_js_core",
@@ -556,14 +591,26 @@ function saveClassSchedule(classId, sessionsList, user = {}) {
         throw new Error("Danh sách buổi học không được để trống.");
     }
 
-    // Đánh số thứ tự lại từ 1 đến N để đảm bảo tính nhất quán
-    const sanitizedSessions = sessionsList.map((s, idx) => ({
-        ...s,
-        sessionNumber: idx + 1,
-        totalSessions: sessionsList.length,
-        updatedAt: new Date().toISOString(),
-        updatedBy: user.name || "Minh Quân"
-    }));
+    if (!activeClasses.some(c => c.id === classId)) fail("Không tìm thấy lớp học.", 404, "CLASS_NOT_FOUND");
+    if ((classSchedules[classId] || []).length) fail("Lớp đã có lịch. Hãy sửa hoặc hủy từng buổi để giữ lịch sử và khóa điểm danh.", 409, "SCHEDULE_EXISTS");
+    const ids = new Set();
+    const sanitizedSessions = sessionsList.map((s, idx) => {
+        if (!s.id || typeof s.id !== "string" || ids.has(s.id) || getSchedules().some(existing => existing.id === s.id)) fail("Mã buổi học bị thiếu hoặc trùng.");
+        ids.add(s.id);
+        const session = {
+            id: s.id, classId, sessionNumber: idx + 1, totalSessions: sessionsList.length,
+            date: s.date, startTime: s.startTime, endTime: s.endTime, room: s.room, instructor: s.instructor,
+            instructorId: s.instructorId || null, shift: s.shift || "custom",
+            lessonNumber: s.lessonNumber, lessonTopic: s.lessonTopic || "", lessonType: s.lessonType || "theory",
+            note: s.note || "", status: "scheduled", version: 1,
+            updatedAt: new Date().toISOString(), updatedBy: user.id || user.name || "system"
+        };
+        validateSession(session);
+        session.dayOfWeek = new Date(session.date + "T12:00:00").getDay();
+        session.dayOfWeekName = getDayOfWeekName(session.dayOfWeek);
+        return session;
+    });
+    sanitizedSessions.forEach((session, index) => checkConflicts(session, sanitizedSessions.slice(0, index)));
 
     classSchedules[classId] = sanitizedSessions;
 
@@ -602,7 +649,7 @@ function saveClassSchedule(classId, sessionsList, user = {}) {
  */
 function getClassSchedule(classId) {
     if (!classId) return [];
-    return classSchedules[classId] || [];
+    return (classSchedules[classId] || []).map(decorateSession);
 }
 
 /**
@@ -620,14 +667,15 @@ function getSchedules(query = {}) {
     } = query;
 
     let allSessions = [];
-    if (classId && classSchedules[classId]) {
-        allSessions = [...classSchedules[classId]];
+    if (classId) {
+        allSessions = [...(classSchedules[classId] || [])];
     } else {
         Object.values(classSchedules).forEach(arr => {
             allSessions.push(...arr);
         });
     }
 
+    if (subjectId) allSessions = allSessions.filter(s => activeClasses.find(c => c.id === s.classId)?.subjectId === subjectId);
     // Áp dụng bộ lọc
     if (instructor) {
         const insLower = instructor.toLowerCase();
@@ -650,115 +698,130 @@ function getSchedules(query = {}) {
     // Sắp xếp theo ngày tăng dần
     allSessions.sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime));
 
-    return allSessions;
+    return allSessions.map(decorateSession);
 }
 
 /**
  * Cập nhật một buổi học cụ thể (KN-163: cho phép chỉnh sửa từng buổi)
  */
-function updateSession(sessionId, updateData, user = {}) {
-    let foundSession = null;
-    let foundClassId = null;
-
-    for (const [clsId, sessArr] of Object.entries(classSchedules)) {
-        const s = sessArr.find(item => item.id === sessionId);
-        if (s) {
-            foundSession = s;
-            foundClassId = clsId;
-            break;
-        }
+function findSession(id) {
+    const session = Object.values(classSchedules).flat().find(s => s.id === id);
+    if (!session) fail("Không tìm thấy buổi học.", 404, "SESSION_NOT_FOUND");
+    return session;
+}
+function lockReason(session) {
+    if (attendanceRecords.some(a => a.sessionId === session.id) || session.attendanceTaken || session.attendanceAt || session.status === "completed") return "Buổi học đã điểm danh, không được sửa hoặc hủy.";
+    if (session.status === "cancelled") return "Buổi học đã hủy, không được sửa tiếp.";
+    return null;
+}
+function decorateSession(session) {
+    const reason = lockReason(session);
+    return { ...clone(session), version: session.version || 1, editable: !reason, lockReason: reason };
+}
+function getSessionDetail(id) { return decorateSession(findSession(id)); }
+function assertEditable(session, version) {
+    const reason = lockReason(session);
+    if (reason) fail(reason, 409, "SESSION_LOCKED");
+    if (version !== undefined && version !== (session.version || 1)) fail("Buổi học đã thay đổi. Vui lòng tải lại trước khi lưu.", 409, "VERSION_CONFLICT");
+}
+function validateSession(session) {
+    if (typeof session.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(session.date) || isNaN(Date.parse(session.date)) || new Date(session.date + "T00:00:00Z").toISOString().slice(0,10) !== session.date) fail("Ngày học không hợp lệ (YYYY-MM-DD).");
+    for (const key of ["startTime", "endTime"]) if (typeof session[key] !== "string" || !/^([01]\d|2[0-3]):[0-5]\d$/.test(session[key])) fail("Giờ học không hợp lệ (HH:mm).");
+    if (session.startTime >= session.endTime) fail("Giờ kết thúc phải sau giờ bắt đầu; không hỗ trợ buổi qua ngày.");
+    for (const key of ["room", "instructor"]) {
+        if (typeof session[key] !== "string" || !session[key].trim() || session[key].length > 255) fail("Phòng và giảng viên phải có từ 1 đến 255 ký tự.");
+        session[key] = session[key].trim();
     }
-
-    if (!foundSession) {
-        throw new Error(`Không tìm thấy buổi học có mã ${sessionId}`);
-    }
-
-    // Cập nhật các trường được phép
-    if (updateData.date) {
-        foundSession.date = updateData.date;
-        const d = new Date(updateData.date + "T00:00:00");
-        foundSession.dayOfWeek = d.getDay();
-        foundSession.dayOfWeekName = getDayOfWeekName(d.getDay());
-    }
-    if (updateData.shift) foundSession.shift = updateData.shift;
-    if (updateData.startTime) foundSession.startTime = updateData.startTime;
-    if (updateData.endTime) foundSession.endTime = updateData.endTime;
-    if (updateData.room) foundSession.room = updateData.room;
-    if (updateData.instructor) foundSession.instructor = updateData.instructor;
-    if (updateData.lessonTopic) foundSession.lessonTopic = updateData.lessonTopic;
-    if (updateData.lessonNumber !== undefined) foundSession.lessonNumber = updateData.lessonNumber;
-    if (updateData.status) foundSession.status = updateData.status;
-    if (updateData.note !== undefined) foundSession.note = updateData.note;
-
-    foundSession.updatedAt = new Date().toISOString();
-    foundSession.updatedBy = user.name || "Minh Quân";
-
-    // Sắp xếp lại lịch của lớp theo ngày sau khi cập nhật ngày
-    classSchedules[foundClassId].sort((a, b) => a.date.localeCompare(b.date));
-    classSchedules[foundClassId].forEach((s, idx) => {
-        s.sessionNumber = idx + 1;
+    const teacher = findInstructor(session);
+    if (session.instructorId && !teacher) fail("Giảng viên thay thế không hợp lệ.");
+    if (teacher) { session.instructorId = teacher.id; session.instructor = teacher.name; }
+    for (const key of ["note", "lessonTopic"]) if (session[key] !== undefined && (typeof session[key] !== "string" || session[key].length > 2000)) fail("Ghi chú/chủ đề không hợp lệ (tối đa 2000 ký tự).");
+}
+function checkConflicts(candidate, additional = []) {
+    const conflicts = [...Object.values(classSchedules).flat(), ...additional].filter(other => {
+        if (other.id === candidate.id || other.status === "cancelled" || other.date !== candidate.date) return false;
+        if (!(candidate.startTime < other.endTime && candidate.endTime > other.startTime)) return false;
+        const a = findInstructor(candidate), b = findInstructor(other);
+        return other.classId === candidate.classId || normalize(candidate.room) === normalize(other.room) ||
+            (a && b ? a.id === b.id : normalize(candidate.instructor) === normalize(other.instructor));
     });
-
-    return {
-        success: true,
-        message: "Cập nhật buổi học thành công.",
-        session: foundSession
-    };
+    if (conflicts.length) fail("Trùng lịch lớp, phòng học hoặc giảng viên. Hãy chọn thời gian/phòng/giảng viên khác.", 409, "SCHEDULE_CONFLICT", conflicts.map(s => ({ id: s.id, classId: s.classId, date: s.date, startTime: s.startTime, endTime: s.endTime, room: s.room })));
 }
-
-/**
- * Xóa một buổi học khỏi thời khóa biểu
- */
-function deleteSession(sessionId, user = {}) {
-    let foundClassId = null;
-    let deletedSession = null;
-
-    for (const [clsId, sessArr] of Object.entries(classSchedules)) {
-        const index = sessArr.findIndex(item => item.id === sessionId);
-        if (index !== -1) {
-            deletedSession = sessArr.splice(index, 1)[0];
-            foundClassId = clsId;
-            // Đánh số lại các buổi còn lại
-            sessArr.forEach((s, idx) => {
-                s.sessionNumber = idx + 1;
-                s.totalSessions = sessArr.length;
-            });
-            break;
-        }
-    }
-
-    if (!deletedSession) {
-        throw new Error(`Không tìm thấy buổi học có mã ${sessionId}`);
-    }
-
-    return {
-        success: true,
-        message: "Đã xóa buổi học khỏi thời khóa biểu.",
-        deletedSession: deletedSession,
-        remainingSessionsCount: classSchedules[foundClassId].length
-    };
-}
-
-/**
- * Xóa toàn bộ thời khóa biểu của một lớp học
- */
-function clearClassSchedule(classId, user = {}) {
-    if (!classId) throw new Error("Mã lớp không hợp lệ.");
-    const count = classSchedules[classId] ? classSchedules[classId].length : 0;
-    delete classSchedules[classId];
-
+function studentRecipients(classId) {
     const cls = activeClasses.find(c => c.id === classId);
-    if (cls) {
-        cls.hasSchedule = false;
-        cls.totalSessions = 0;
-    }
-
-    return {
-        success: true,
-        message: `Đã xóa toàn bộ thời khóa biểu (${count} buổi) của lớp học.`,
-        deletedCount: count
-    };
+    // Filter explicitly: the legacy enrollment service returns all rows for an unknown class.
+    const rows = require("./enrollmentService").getEnrollmentsList().filter(e => e.classId === classId || (cls && e.classCode === cls.code));
+    return [...new Set(rows.map(e => e.studentId))];
 }
+function addChange(before, after, action, reason, user) {
+    const at = new Date().toISOString(), eventId = randomUUID();
+    sessionHistory.push({ id: eventId, sessionId: after.id, classId: after.classId, action, reason: reason || null,
+        actorId: user.id || null, actorName: user.name || "system", at, before: clone(before), after: clone(after) });
+    const previousTeacher = findInstructor(before), nextTeacher = findInstructor(after);
+    const recipients = new Set([...studentRecipients(after.classId), previousTeacher?.id, nextTeacher?.id].filter(Boolean));
+    const text = action === "CANCELLED"
+        ? `Buổi ${after.sessionNumber} ngày ${before.date} (${before.startTime}–${before.endTime}) đã hủy. Lý do: ${reason}`
+        : `Buổi ${after.sessionNumber} thay đổi: ${before.date} ${before.startTime}–${before.endTime}, ${before.room}, ${before.instructor} → ${after.date} ${after.startTime}–${after.endTime}, ${after.room}, ${after.instructor}.`;
+    for (const userId of recipients) notifications.push({ id: randomUUID(), eventId, userId, sessionId: after.id, classId: after.classId, message: text, createdAt: at, readAt: null });
+    return { notificationCount: recipients.size, notificationWarning: (!previousTeacher || !nextTeacher) ? "Có giảng viên chưa liên kết tài khoản; không thể tạo thông báo cho người này. Hãy chọn giảng viên trong danh sách tài khoản." : null };
+}
+function updateSession(sessionId, updateData, user = {}) {
+    const session = findSession(sessionId); assertEditable(session, updateData.version);
+    const allowed = ["date", "shift", "startTime", "endTime", "room", "instructor", "instructorId", "lessonTopic", "lessonNumber", "note", "version"];
+    if (Object.keys(updateData).some(k => !allowed.includes(k))) fail("Chỉ được sửa thông tin buổi học; hãy dùng API hủy/điểm danh riêng.");
+    const before = clone(session), candidate = { ...session, ...updateData };
+    if (updateData.instructor !== undefined && updateData.instructor !== session.instructor && updateData.instructorId === undefined) candidate.instructorId = null;
+    validateSession(candidate); checkConflicts(candidate);
+    if (allowed.filter(k => k !== "version").every(k => candidate[k] === session[k])) return { success: true, message: "Không có thay đổi.", session: decorateSession(session), notificationCount: 0 };
+    candidate.dayOfWeek = new Date(candidate.date + "T12:00:00").getDay(); candidate.dayOfWeekName = getDayOfWeekName(candidate.dayOfWeek);
+    candidate.version = (session.version || 1) + 1; candidate.updatedAt = new Date().toISOString(); candidate.updatedBy = user.id || user.name;
+    Object.assign(session, candidate);
+    const delivery = addChange(before, session, "UPDATED", null, user);
+    return { success: true, message: "Đã cập nhật buổi học và tạo thông báo trong ứng dụng.", session: decorateSession(session), ...delivery };
+}
+function cancelSession(id, data = {}, user = {}) {
+    const session = findSession(id); assertEditable(session, data.version);
+    if (typeof data.reason !== "string" || !data.reason.trim() || data.reason.trim().length > 1000) fail("Bắt buộc nhập lý do hủy (1–1000 ký tự).", 400, "CANCEL_REASON_REQUIRED");
+    const before = clone(session);
+    Object.assign(session, { status: "cancelled", cancelReason: data.reason.trim(), cancelledAt: new Date().toISOString(), cancelledBy: user.id || user.name, updatedAt: new Date().toISOString(), updatedBy: user.id || user.name, version: (session.version || 1) + 1 });
+    const delivery = addChange(before, session, "CANCELLED", session.cancelReason, user);
+    return { success: true, message: "Đã hủy buổi học và giữ nguyên lịch sử.", session: decorateSession(session), ...delivery };
+}
+function deleteSession(id, user = {}, data = {}) { return cancelSession(id, data, user); }
+function clearClassSchedule() { fail("Không được xóa hàng loạt lịch đã lưu. Hãy hủy từng buổi kèm lý do để bảo toàn lịch sử.", 409, "BULK_DELETE_DISABLED"); }
+function getSessionHistory(id) { findSession(id); return clone(sessionHistory.filter(h => h.sessionId === id)); }
+function getNotifications(userId) { return clone(notifications.filter(n => n.userId === userId).reverse()); }
+function readNotification(id, userId) {
+    const item = notifications.find(n => n.id === id && n.userId === userId);
+    if (!item) fail("Không tìm thấy thông báo.", 404, "NOTIFICATION_NOT_FOUND");
+    item.readAt = item.readAt || new Date().toISOString(); return item;
+}
+function markAttendance(id, data, user) {
+    const session = findSession(id); assertEditable(session, data.version);
+    const teacher = findInstructor(session);
+    const roles = (user.roles || []).map(r => r.code || r.id);
+    if (!["training_manager", "administrator"].some(r => roles.includes(r) || user.role === r) && teacher?.id !== user.id) fail("Chỉ giảng viên được phân công hoặc quản lý mới được điểm danh.", 403, "FORBIDDEN");
+    const memberIds = studentRecipients(session.classId);
+    if (!Array.isArray(data.students) || !data.students.length || data.students.length !== memberIds.length || new Set(data.students.map(s => s.studentId)).size !== data.students.length || data.students.some(s => !memberIds.includes(s.studentId) || !["present", "absent", "late", "excused"].includes(s.status))) fail("Phải điểm danh đủ học viên của lớp, không trùng và có trạng thái hợp lệ.");
+    const before = clone(session);
+    attendanceRecords.push({ id: randomUUID(), sessionId: id, actorId: user.id, at: new Date().toISOString(), students: clone(data.students) });
+    session.updatedAt = new Date().toISOString(); session.updatedBy = user.id;
+    session.status = "completed"; session.attendanceAt = new Date().toISOString(); session.attendanceTaken = true; session.version = (session.version || 1) + 1;
+    sessionHistory.push({ id: randomUUID(), sessionId: id, classId: session.classId, action: "ATTENDANCE_TAKEN", actorId: user.id, actorName: user.name, at: session.attendanceAt, before, after: clone(session) });
+    return { success: true, session: decorateSession(session) };
+}
+function getRoster(id) {
+    if (!activeClasses.some(c => c.id === id)) fail("Không tìm thấy lớp.", 404);
+    return studentRecipients(id).map(id => users.find(u => u.id === id)).filter(Boolean).map(u => ({ id: u.id, name: u.name, email: u.email }));
+}
+function setClassMembers(id, data) {
+    const cls = activeClasses.find(c => c.id === id); if (!cls) fail("Không tìm thấy lớp.", 404);
+    if (!Array.isArray(data.studentIds) || data.studentIds.some(id => !users.some(u => u.id === id && (u.role === "student" || userHasRole(u.id, "student"))))) fail("Danh sách học viên không hợp lệ.");
+    cls.studentIds = [...new Set(data.studentIds)];
+    require('./enrollmentService').replaceLinkedRoster(id,cls.studentIds);
+    return { success: true, members: getRoster(id) };
+}
+function getSchedulePeople() { return users.filter(u => isStaff(u) || u.role === "student" || userHasRole(u.id, "student")).map(u => ({ id: u.id, name: u.name, email: u.email, type: isStaff(u) ? "instructor" : "student" })); }
 
 /**
  * Danh sách lớp học kèm trạng thái thời khóa biểu
@@ -783,7 +846,8 @@ function createClass(classData) {
     if (!classData.name || !classData.code) {
         throw new Error("Mã lớp và tên lớp học là bắt buộc.");
     }
-    const id = classData.id || `cls_${Date.now()}`;
+    const id = classData.id || `cls_${randomUUID()}`;
+    if (activeClasses.some(c => c.id === id || normalize(c.code) === normalize(classData.code))) fail("Mã lớp học đã tồn tại.", 409, "CLASS_EXISTS");
     const newClass = {
         id: id,
         code: classData.code,
@@ -797,6 +861,8 @@ function createClass(classData) {
         createdAt: new Date().toISOString()
     };
     activeClasses.push(newClass);
+    require('./enrollmentService').upsertSharedClass(newClass);
+    require('./subjectService').upsertSharedClass(newClass);
     return newClass;
 }
 
@@ -833,7 +899,16 @@ function deleteHoliday(holidayId) {
     return deleted;
 }
 
+if (fs.existsSync(DATA_FILE)) {
+    const stored = JSON.parse(fs.readFileSync(DATA_FILE, "utf8"));
+    if (!stored || !Array.isArray(stored.activeClasses) || !stored.classSchedules || !Array.isArray(stored.holidays)) throw new Error("Kho dữ liệu lịch học không hợp lệ; khôi phục bản sao lưu trước khi chạy.");
+    restore(stored);
+}
+
 module.exports = {
+    getSessionDetail, getSessionHistory, getNotifications, getRoster, getSchedulePeople,
+    cancelSession: transaction(cancelSession), readNotification: transaction(readNotification),
+    markAttendance: transaction(markAttendance), setClassMembers: transaction(setClassMembers),
     DEFAULT_HOLIDAYS,
     STANDARD_SHIFTS,
     SUBJECT_SYLLABI,
@@ -843,15 +918,18 @@ module.exports = {
     checkIsHoliday,
     getLessonsForSubject,
     generateSchedulePreview,
-    saveClassSchedule,
+    saveClassSchedule: transaction(saveClassSchedule),
     getClassSchedule,
     getSchedules,
-    updateSession,
-    deleteSession,
-    clearClassSchedule,
+    updateSession: transaction(updateSession),
+    deleteSession: transaction(deleteSession),
+    clearClassSchedule: transaction(clearClassSchedule),
     getClassesWithScheduleStatus,
-    createClass,
+    createClass: transaction(createClass),
     getHolidays,
-    addHoliday,
-    deleteHoliday
+    addHoliday: transaction(addHoliday),
+    deleteHoliday: transaction(deleteHoliday)
 };
+
+module.exports.upsertSharedClass=cls=>{const old=activeClasses.find(c=>c.id===cls.id);if(old)Object.assign(old,cls);else activeClasses.push({...cls});};
+require('./localDatabase').register('schedules',snapshot,restore);

@@ -1699,7 +1699,7 @@ function resetLeadsForTesting() {
     ipSubmissionTimestamps.clear();
     recentSubmissionsByKey.clear();
     antiSpamTokens.clear();
-    leads = buildDefaultLeads();
+    leads.splice(0,leads.length,...buildDefaultLeads());
 }
 
 module.exports = {
@@ -1731,3 +1731,5 @@ module.exports = {
     normalizePhoneNumber,
     resetLeadsForTesting
 };
+
+require('./localDatabase').register('leads',()=>leads,v=>{leads.splice(0,leads.length,...v);module.exports.leads=leads;});

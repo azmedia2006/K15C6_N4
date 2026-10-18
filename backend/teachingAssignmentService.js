@@ -167,7 +167,16 @@ function saveTeachingAssignment({
         };
 
         const key = `${classId}:${subjectId}`;
-
+        if(process.env.TMS_OFFLINE === 'true'){
+            teachingAssignments.set(key,assignment);
+            const staff=users.find(u=>u.id===instructorId);
+            const cls={...classItem,instructorId,instructor:staff.name,instructorName:staff.name};
+            require('./scheduleService').upsertSharedClass(cls);
+            require('./enrollmentService').upsertSharedClass(cls);
+            require('./subjectService').upsertSharedClass(cls);
+            require('./localDatabase').commit();
+            return {...assignment,instructor:staff.name};
+        }
         // Đọc bản mới nhất trước khi cập nhật
         let remoteAssignments;
 
@@ -279,3 +288,5 @@ module.exports = {
     getInstructorClasses,
     hydrateTeachingAssignments
 };
+
+require('./localDatabase').register('teaching',()=>[...teachingAssignments],v=>{teachingAssignments.clear();for(const item of v)teachingAssignments.set(...item);});
