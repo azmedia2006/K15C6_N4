@@ -508,7 +508,7 @@ app.put(["/api/auth/me/profile", "/auth/me/profile"], authenticateToken, async (
 // Hỗ trợ cả tiền tố /api/auth/* và /auth/*
 // =========================================================================
 
-const isVercelRuntime = process.env.VERCEL === "1";
+const isVercelRuntime = Boolean(process.env.VERCEL || process.env.VERCEL_URL || process.env.NOW_REGION);
 
 async function hydrateUsersForVercel() {
     if (!supabaseService.SUPABASE_URL) return;
@@ -554,10 +554,15 @@ async function hydratePasswordRecoveryState() {
 }
 
 async function persistPasswordResetTokens() {
-    if (!isVercelRuntime) return;
-    await supabaseService.savePasswordResetTokensSnapshot(
-        [...passwordResetTokens.values()]
-    );
+    try {
+        if (supabaseService.SUPABASE_URL) {
+            await supabaseService.savePasswordResetTokensSnapshot(
+                [...passwordResetTokens.values()]
+            );
+        }
+    } catch (e) {
+        console.warn("[Server] Không thể lưu snapshot token khôi phục:", e.message);
+    }
 }
 
 // Xác định URL công khai cho Frontend, tuyệt đối không dùng localhost khi đang chạy trên Vercel
@@ -747,11 +752,15 @@ app.post(["/api/auth/reset-password", "/auth/reset-password"], async (req, res) 
     try {
         const resetResult = resetPasswordWithToken(token, newPassword);
 
-        if (isVercelRuntime) {
-            await persistPasswordResetTokens();
-            await supabaseService.savePasswordRecoveryUsersSnapshot(users);
-        } else {
-            await supabaseService.syncUsersDatabase(users);
+        await persistPasswordResetTokens();
+        try {
+            if (isVercelRuntime) {
+                await supabaseService.savePasswordRecoveryUsersSnapshot(users);
+            } else {
+                await supabaseService.syncUsersDatabase(users);
+            }
+        } catch (storageErr) {
+            console.warn("[Server] Không thể đồng bộ snapshot mật khẩu lên Supabase:", storageErr.message);
         }
 
         return res.status(200).json({
@@ -760,13 +769,11 @@ app.post(["/api/auth/reset-password", "/auth/reset-password"], async (req, res) 
             message: resetResult.message || "Đặt lại mật khẩu thành công! Bạn có thể sử dụng mật khẩu mới để đăng nhập."
         });
     } catch (err) {
-        const status = err.status || (isVercelRuntime ? 503 : 400);
+        const status = err.status || 400;
         return res.status(status).json({
             success: false,
             code: status,
-            message: status === 503
-                ? "Không thể lưu mật khẩu mới. Vui lòng thử lại sau."
-                : err.message || "Không thể đặt lại mật khẩu."
+            message: err.message || "Không thể đặt lại mật khẩu."
         });
     }
 });
