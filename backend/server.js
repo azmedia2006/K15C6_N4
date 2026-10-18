@@ -1,4 +1,5 @@
 const path = require("path");
+const fs = require("fs");
 require("dotenv").config({
     path: [path.join(__dirname, ".env"), path.join(__dirname, "../.env")]
 });
@@ -234,8 +235,8 @@ function requireRole(...allowedRoles) {
 }
 
 // KN-31: API đăng nhập bằng email và mật khẩu
-// Cập nhật trả về danh sách vai trò N-N
-app.post("/api/auth/login", async (req, res) => {
+// Cập nhật trả về danh sách vai trò N-N (hỗ trợ cả /api/auth/login và /auth/login)
+app.post(["/api/auth/login", "/auth/login"], async (req, res) => {
     const { email, password } = req.body || {};
 
     if (!email || !password) {
@@ -348,15 +349,15 @@ if (user && (user.status || "active") === "inactive") {
 });
 
 // KN-60: API lấy thông tin người dùng hiện tại
-// Đồng bộ tức thì trên Frontend
-app.get("/api/auth/me", authenticateToken, (req, res) => {
+// Đồng bộ tức thì trên Frontend (hỗ trợ cả /api/auth/me và /auth/me)
+app.get(["/api/auth/me", "/auth/me"], authenticateToken, (req, res) => {
     return res.status(200).json({
         success: true,
         user: req.user
     });
 });
 // KN-67: Lấy hồ sơ cá nhân của người đang đăng nhập
-app.get("/api/auth/me/profile", authenticateToken, (req, res) => {
+app.get(["/api/auth/me/profile", "/auth/me/profile"], authenticateToken, (req, res) => {
     const user = users.find(u => u.id === req.user.id);
 
     if (!user) {
@@ -381,7 +382,7 @@ app.get("/api/auth/me/profile", authenticateToken, (req, res) => {
 });
 
 // KN-67: Cập nhật hồ sơ cá nhân
-app.put("/api/auth/me/profile", authenticateToken, async (req, res) => {
+app.put(["/api/auth/me/profile", "/auth/me/profile"], authenticateToken, async (req, res) => {
     try {
         const user = users.find(u => u.id === req.user.id);
 
@@ -694,7 +695,7 @@ app.post(["/api/auth/reset-password", "/auth/reset-password"], async (req, res) 
 });
 
 // API Đăng ký tài khoản người dùng công khai (Học viên)
-app.post("/api/auth/register", async (req, res) => {
+app.post(["/api/auth/register", "/auth/register"], async (req, res) => {
     try {
         await hydrateUsersForVercel();
         const { name, email, phone, password } = req.body || {};
@@ -2849,20 +2850,36 @@ require("./kn75").mountKn75(app, { authenticateToken, requireRole });
 
 // KN-49 & KN-50: Các định tuyến mã lỗi chuẩn (Clean Error Routing)
 app.get(["/403", "/error-403"], (req, res) => {
-    res.sendFile(path.join(rootDir, "Error.html"));
+    const errorHtmlPath = path.join(rootDir, "Error.html");
+    if (fs.existsSync(errorHtmlPath)) {
+        return res.sendFile(errorHtmlPath);
+    }
+    res.status(403).send("403 Forbidden");
 });
 app.get(["/404", "/error-404"], (req, res) => {
-    res.sendFile(path.join(rootDir, "Error.html"));
+    const errorHtmlPath = path.join(rootDir, "Error.html");
+    if (fs.existsSync(errorHtmlPath)) {
+        return res.sendFile(errorHtmlPath);
+    }
+    res.status(404).send("404 Not Found");
 });
 app.get(["/500", "/error-500"], (req, res) => {
-    res.sendFile(path.join(rootDir, "Error.html"));
+    const errorHtmlPath = path.join(rootDir, "Error.html");
+    if (fs.existsSync(errorHtmlPath)) {
+        return res.sendFile(errorHtmlPath);
+    }
+    res.status(500).send("500 Server Error");
 });
 app.get("/error", (req, res) => {
-    res.sendFile(path.join(rootDir, "Error.html"));
+    const errorHtmlPath = path.join(rootDir, "Error.html");
+    if (fs.existsSync(errorHtmlPath)) {
+        return res.sendFile(errorHtmlPath);
+    }
+    res.status(500).send("An error occurred");
 });
 
 // KN-54: Fallback và chuẩn hóa lỗi cho các API request không tồn tại
-app.use("/api", (req, res) => {
+app.use(["/api", "/auth"], (req, res) => {
     res.status(404).json({
         success: false,
         code: 404,
@@ -2872,10 +2889,25 @@ app.use("/api", (req, res) => {
     });
 });
 
-// Fallback cho các đường dẫn trang không tồn tại -> Trả về giao diện 404
+// Fallback cho các đường dẫn trang không tồn tại -> Trả về giao diện 404 an toàn
 app.use((req, res, next) => {
-    if (req.method === "GET" && !req.originalUrl.startsWith("/api/")) {
-        return res.status(404).sendFile(path.join(rootDir, "Error.html"));
+    const isApiOrAuth = req.originalUrl && (req.originalUrl.startsWith("/api") || req.originalUrl.startsWith("/auth"));
+    if (isApiOrAuth) {
+        return res.status(404).json({
+            success: false,
+            code: 404,
+            error: "Không tìm thấy tài nguyên yêu cầu.",
+            path: req.originalUrl,
+            timestamp: new Date().toISOString()
+        });
+    }
+
+    if (req.method === "GET") {
+        const errorHtmlPath = path.join(rootDir, "Error.html");
+        if (fs.existsSync(errorHtmlPath)) {
+            return res.status(404).sendFile(errorHtmlPath);
+        }
+        return res.status(404).send("404 Not Found");
     }
     next();
 });
@@ -2887,7 +2919,8 @@ app.use((err, req, res, next) => {
         ? "Đã xảy ra sự cố trong quá trình xử lý yêu cầu. Dữ liệu của bạn vẫn an toàn."
         : (err.message || "Yêu cầu không hợp lệ.");
 
-    if (req.originalUrl && req.originalUrl.startsWith("/api/")) {
+    const isApiOrAuth = !req.originalUrl || req.originalUrl.startsWith("/api") || req.originalUrl.startsWith("/auth") || (req.headers && req.headers.accept && req.headers.accept.includes("application/json"));
+    if (isApiOrAuth) {
         return res.status(statusCode).json({
             success: false,
             code: statusCode,
@@ -2896,7 +2929,11 @@ app.use((err, req, res, next) => {
         });
     }
 
-    res.status(statusCode).sendFile(path.join(rootDir, "Error.html"));
+    const errorHtmlPath = path.join(rootDir, "Error.html");
+    if (fs.existsSync(errorHtmlPath)) {
+        return res.status(statusCode).sendFile(errorHtmlPath);
+    }
+    res.status(statusCode).send(`Error ${statusCode}: ${safeMessage}`);
 });
 
 // Tự động tải và đồng bộ các tài khoản người dùng từ Supabase vào bộ nhớ

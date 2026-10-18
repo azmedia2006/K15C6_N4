@@ -11,14 +11,70 @@ require("dotenv").config({
 });
 
 // Cấu hình SMTP
+const rawHost = (process.env.SMTP_HOST || "").trim();
+const rawPort = parseInt(process.env.SMTP_PORT || "587", 10);
+const rawUser = (process.env.SMTP_USER || "").trim();
+const rawPass = (process.env.SMTP_PASSWORD || process.env.SMTP_PASS || "").trim();
+const rawFromEmail = (process.env.SMTP_FROM_EMAIL || "").trim();
+const rawFromName = (process.env.SMTP_FROM_NAME || "").trim();
+
+// Phân tích và chuẩn hóa địa chỉ email người gửi và tên hiển thị:
+// Người dùng có thể vô tình nhập tên hiển thị vào SMTP_FROM_EMAIL (ví dụ: SMTP_FROM_EMAIL=ĐÀO TẠO TMS)
+// hoặc nhập dạng RFC: "Đào tạo TMS" <daotaotms@tuoitre24h.com>
+function parseSender(rawEmail, rawName, userFallback) {
+    let email = (rawEmail || "").trim();
+    let name = (rawName || "").trim();
+
+    if (name.startsWith('"') && name.endsWith('"')) {
+        name = name.slice(1, -1).trim();
+    }
+
+    const bracketMatch = email.match(/^(?:"?([^"]*)"?\s)?<([^>]+)>$/);
+    if (bracketMatch) {
+        if (!name && bracketMatch[1]) {
+            name = bracketMatch[1].trim();
+        }
+        email = bracketMatch[2].trim();
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        if (email && !name) {
+            name = email;
+        }
+        if (emailRegex.test(userFallback)) {
+            email = userFallback;
+        }
+    }
+
+    if (!name) {
+        name = "Đào tạo TMS";
+    }
+
+    return { email, name };
+}
+
+const { email: senderEmail, name: senderName } = parseSender(rawFromEmail, rawFromName, rawUser);
+
+const finalHost = rawHost || "mx.tino.vn";
+const finalUser = rawUser || "daotaotms@tuoitre24h.com";
+const finalPass = rawPass;
+const finalFromEmail = senderEmail || finalUser || "daotaotms@tuoitre24h.com";
+const finalFromName = senderName || "Đào tạo TMS";
+
+const rawEnabled = process.env.SMTP_ENABLED;
+const isExplicitFalse = rawEnabled === "false" || rawEnabled === "0";
+const isExplicitTrue = rawEnabled === "true" || rawEnabled === "1";
+const isEnabled = isExplicitTrue || (!isExplicitFalse && Boolean(finalHost && finalUser && finalPass));
+
 const SMTP_CONFIG = {
-    enabled: process.env.SMTP_ENABLED !== "false",
-    host: process.env.SMTP_HOST || "mx.tino.vn",
-    port: parseInt(process.env.SMTP_PORT || "587", 10),
-    user: process.env.SMTP_USER || "daotaotms@tuoitre24h.com",
-    pass: process.env.SMTP_PASSWORD || process.env.SMTP_PASS || "",
-    fromEmail: process.env.SMTP_FROM_EMAIL || "daotaotms@tuoitre24h.com",
-    fromName: process.env.SMTP_FROM_NAME || "Đào Tạo TMS",
+    enabled: isEnabled,
+    host: finalHost,
+    port: rawPort,
+    user: finalUser,
+    pass: finalPass,
+    fromEmail: finalFromEmail,
+    fromName: finalFromName,
     secure: process.env.SMTP_SECURE === "true",
     tls: process.env.SMTP_TLS !== "false"
 };
@@ -54,7 +110,7 @@ if (SMTP_CONFIG.configured) {
                 pass: SMTP_CONFIG.pass
             },
             tls: {
-                rejectUnauthorized: true
+                rejectUnauthorized: process.env.SMTP_REJECT_UNAUTHORIZED === "true" ? true : false
             },
             pool: true,
             maxConnections: 5,
