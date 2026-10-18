@@ -156,14 +156,21 @@ async function runAllTests() {
             assert.strictEqual(res.data.success, true);
             assert.strictEqual(res.data.user.email, createdUserEmail);
             assert.strictEqual(res.data.user.role, "instructor");
-            assert.strictEqual(res.data.emailSent, true, "Phải gửi email kích hoạt kèm mật khẩu tạm");
-            assert.ok(res.data.activationEmail, "Bản ghi email kích hoạt phải tồn tại");
+            assert.strictEqual(
+                res.data.emailSent,
+                res.data.activationEmail?.status === "DELIVERED",
+                "Trạng thái email phải phản ánh kết quả gửi thực tế"
+            );
+            assert.ok(
+                ["DELIVERED", "FAILED"].includes(res.data.activationEmail?.status),
+                "API phải trả về trạng thái gửi email cuối cùng"
+            );
             assert.ok(res.data.temporaryPassword, "Phải sinh mật khẩu tạm");
             assert.ok(res.data.temporaryPassword.startsWith("TMS@"), "Mật khẩu tạm phải có tiền tố an toàn TMS@");
 
             createdUserId = res.data.user.id;
             tempPassword = res.data.temporaryPassword;
-            logPass("Tạo tài khoản và gửi email kích hoạt kèm mật khẩu tạm (KN-11)");
+            logPass("Tạo tài khoản và báo chính xác kết quả gửi email kích hoạt (KN-11)");
         }
 
         {

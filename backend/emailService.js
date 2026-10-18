@@ -186,7 +186,11 @@ function buildActivationEmailHtml({ name, email, temporaryPassword, role, loginU
  * @returns {Object} Bản ghi email kích hoạt
  */
 function sendActivationEmail({ to, name, temporaryPassword, role = "instructor", loginUrl = "" }) {
-    const frontendUrl = loginUrl || process.env.FRONTEND_URL || "http://localhost:3000";
+    const vercelBaseUrl = process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "";
+    const frontendUrl =
+        loginUrl || process.env.FRONTEND_URL || vercelBaseUrl || "http://localhost:3000";
     const fullLoginUrl = frontendUrl.endsWith("/") ? `${frontendUrl}Login.html` : `${frontendUrl}/Login.html`;
 
     const subject = `[TMS] Thông tin tài khoản nhân sự mới và mật khẩu tạm thời - ${name}`;
@@ -196,18 +200,28 @@ function sendActivationEmail({ to, name, temporaryPassword, role = "instructor",
         to,
         subject,
         name,
-        temporaryPassword,
         role,
         sentAt: new Date().toISOString(),
-        status: "SENT",
+        status: "PENDING",
         provider: "BKNS_SMTP"
     };
 
     // Đẩy vào hàng đợi theo dõi
     sentEmails.push(emailRecord);
 
-    // Kích hoạt gửi mail thực tế qua SMTP (background async)
-    if (transporter) {
+    const markFailure = error => {
+        emailRecord.status = "FAILED";
+        emailRecord.deliveryError = error.message;
+        console.warn(`[EmailService] ⚠ Gửi email SMTP tới ${to} gặp sự cố:`, error.message);
+        return emailRecord;
+    };
+
+    let delivery;
+    if (!transporter) {
+        delivery = Promise.resolve(
+            markFailure(new Error("SMTP chưa được cấu hình để gửi email kích hoạt."))
+        );
+    } else {
         const mailOptions = {
             from: `"${SMTP_CONFIG.fromName}" <${SMTP_CONFIG.fromEmail}>`,
             to,
@@ -222,19 +236,18 @@ function sendActivationEmail({ to, name, temporaryPassword, role = "instructor",
             })
         };
 
-        transporter.sendMail(mailOptions)
+        delivery = transporter.sendMail(mailOptions)
             .then(info => {
                 emailRecord.status = "DELIVERED";
                 emailRecord.messageId = info.messageId;
                 emailRecord.response = info.response;
                 console.log(`[EmailService] ✔ Đã gửi email kích hoạt tài khoản thành công tới: ${to} (MessageID: ${info.messageId})`);
+                return emailRecord;
             })
-            .catch(err => {
-                emailRecord.deliveryError = err.message;
-                console.warn(`[EmailService] ⚠ Gửi email SMTP tới ${to} gặp sự cố:`, err.message);
-            });
+            .catch(markFailure);
     }
 
+    Object.defineProperty(emailRecord, "delivery", { value: delivery });
     return emailRecord;
 }
 

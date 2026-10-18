@@ -151,7 +151,14 @@ function getUserById(id) {
 }
 
 // Tạo người dùng mới (KN-11: Cấp quyền truy cập cho nhân sự mới)
-function createUser({ email, name, role, phone = "", password = "" }) {
+function createUser({
+    email,
+    name,
+    role,
+    phone = "",
+    password = "",
+    sendActivation = true
+}) {
     if (!email || !String(email).trim()) {
         throw { status: 400, message: "Email không được để trống." };
     }
@@ -197,12 +204,14 @@ function createUser({ email, name, role, phone = "", password = "" }) {
     users.push(newUser);
 
     // KN-11 & KN-86: Gửi email kích hoạt qua SMTP thật kèm mật khẩu tạm thời cho nhân sự mới
-    const emailResult = sendActivationEmail({
-        to: newUser.email,
-        name: newUser.name,
-        temporaryPassword: rawPassword,
-        role: newUser.role
-    });
+    const emailResult = sendActivation
+        ? sendActivationEmail({
+            to: newUser.email,
+            name: newUser.name,
+            temporaryPassword: rawPassword,
+            role: newUser.role
+        })
+        : null;
 
     return {
         user: {
@@ -216,7 +225,7 @@ function createUser({ email, name, role, phone = "", password = "" }) {
             updatedAt: newUser.updatedAt
         },
         temporaryPassword: rawPassword, // Trả về mật khẩu để Admin gửi cho nhân sự mới
-        emailSent: true,
+        emailSent: false,
         activationEmail: emailResult
     };
 }

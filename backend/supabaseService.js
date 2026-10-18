@@ -164,7 +164,13 @@ async function saveRequiredStorageSnapshot(filename, data) {
 }
 
 async function loadPasswordRecoveryUsersSnapshot() {
-    const usersList = await loadRequiredStorageSnapshot("users.json");
+    let usersList;
+    try {
+        usersList = await loadRequiredStorageSnapshot("users.json");
+    } catch (error) {
+        if (error.objectNotFound) return null;
+        throw error;
+    }
 
     if (
         !Array.isArray(usersList) ||
@@ -226,6 +232,44 @@ async function savePasswordRecoveryUsersSnapshot(usersList) {
     }
 
     await saveRequiredStorageSnapshot("users.json", usersList);
+}
+
+async function loadUserRoleAssignmentsSnapshot() {
+    try {
+        const assignments =
+            await loadRequiredStorageSnapshot("user_roles.json");
+
+        if (
+            !Array.isArray(assignments) ||
+            !assignments.every(item =>
+                item &&
+                typeof item.userId === "string" &&
+                typeof item.roleId === "string"
+            )
+        ) {
+            throw new Error("Dữ liệu vai trò người dùng trên Storage không hợp lệ.");
+        }
+
+        return assignments;
+    } catch (error) {
+        if (error.objectNotFound) return [];
+        throw error;
+    }
+}
+
+async function saveUserRoleAssignmentsSnapshot(assignments) {
+    if (
+        !Array.isArray(assignments) ||
+        !assignments.every(item =>
+            item &&
+            typeof item.userId === "string" &&
+            typeof item.roleId === "string"
+        )
+    ) {
+        throw new Error("Danh sách vai trò người dùng không hợp lệ.");
+    }
+
+    await saveRequiredStorageSnapshot("user_roles.json", assignments);
 }
 
 /**
@@ -695,6 +739,8 @@ module.exports = {
     loadPasswordResetTokensSnapshot,
     savePasswordResetTokensSnapshot,
     savePasswordRecoveryUsersSnapshot,
+    loadUserRoleAssignmentsSnapshot,
+    saveUserRoleAssignmentsSnapshot,
     syncUserToAuth,
     deleteUserFromAuth,
     syncSingleUser,

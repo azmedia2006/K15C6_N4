@@ -530,6 +530,56 @@ function syncUserRole(userId, roleId) {
     bumpUserRolesVersion(userId);
 }
 
+function hydrateUserRoleAssignments(assignments) {
+    if (
+        !Array.isArray(assignments) ||
+        !assignments.every(item =>
+            item &&
+            typeof item.userId === "string" &&
+            typeof item.roleId === "string"
+        )
+    ) {
+        throw new Error("Dữ liệu vai trò người dùng không hợp lệ.");
+    }
+
+    const validUserIds = new Set(users.map(user => user.id));
+    const restored = new Map();
+    const usersWithAssignments = new Set();
+
+    for (const assignment of assignments) {
+        if (!validUserIds.has(assignment.userId)) continue;
+        const key = `${assignment.userId}:${assignment.roleId}`;
+        restored.set(key, {
+            userId: assignment.userId,
+            roleId: assignment.roleId,
+            assignedBy: assignment.assignedBy || "storage",
+            assignedAt: assignment.assignedAt || new Date().toISOString()
+        });
+        usersWithAssignments.add(assignment.userId);
+    }
+
+    for (const user of users) {
+        if (user.role && !usersWithAssignments.has(user.id)) {
+            const key = `${user.id}:${user.role}`;
+            restored.set(key, {
+                userId: user.id,
+                roleId: user.role,
+                assignedBy: "user_snapshot",
+                assignedAt: user.createdAt || new Date().toISOString()
+            });
+            usersWithAssignments.add(user.id);
+        }
+    }
+
+    userRoles = [...restored.values()];
+    userRoleIndex.clear();
+    userRolesVersion.clear();
+    for (const item of userRoles) {
+        userRoleIndex.add(`${item.userId}:${item.roleId}`);
+        userRolesVersion.set(item.userId, 1);
+    }
+}
+
 module.exports = {
     ROLES,
     getAllRoles,
@@ -548,5 +598,6 @@ module.exports = {
     getUserRolesVersion,
     removeAllUserRoles,
     syncUserRole,
+    hydrateUserRoleAssignments,
     getAllUserRolesAssignments: () => userRoles
 };

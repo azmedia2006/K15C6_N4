@@ -37,6 +37,7 @@ const {
     recordAuditLog,
     removeAllUserRoles,
     syncUserRole,
+    hydrateUserRoleAssignments,
     getAllUserRolesAssignments,
     userHasRole
 } = require("./roleService");
@@ -510,9 +511,14 @@ const isVercelRuntime = process.env.VERCEL === "1";
 
 async function hydrateUsersForVercel() {
     if (!isVercelRuntime) return;
-    const storedUsers =
-        await supabaseService.loadPasswordRecoveryUsersSnapshot();
-    users.splice(0, users.length, ...storedUsers);
+    const [storedUsers, roleAssignments] = await Promise.all([
+        supabaseService.loadPasswordRecoveryUsersSnapshot(),
+        supabaseService.loadUserRoleAssignmentsSnapshot()
+    ]);
+    if (storedUsers) {
+        users.splice(0, users.length, ...storedUsers);
+    }
+    hydrateUserRoleAssignments(roleAssignments);
 }
 
 async function hydratePasswordRecoveryState() {
@@ -701,14 +707,50 @@ app.post(["/api/auth/reset-password", "/auth/reset-password"], async (req, res) 
 // API Đăng ký tài khoản người dùng công khai (Học viên)
 app.post("/api/auth/register", async (req, res) => {
     try {
+        await hydrateUsersForVercel();
         const { name, email, phone, password } = req.body || {};
-        const result = createUser({ name, email, phone, password, role: "student" });
+        if (typeof password !== "string" || password.trim().length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: "Mật khẩu phải có ít nhất 6 ký tự."
+            });
+        }
+
+        const result = createUser({
+            name,
+            email,
+            phone,
+            password,
+            role: "student",
+            sendActivation: false
+        });
+
+        if (isVercelRuntime) {
+            try {
+                await supabaseService.savePasswordRecoveryUsersSnapshot(users);
+            } catch (error) {
+                const userIndex = users.findIndex(user => user.id === result.user.id);
+                if (userIndex !== -1) users.splice(userIndex, 1);
+                throw error;
+            }
+        } else {
+            await supabaseService.syncSingleUser(result.user, password, users);
+        }
+
         try {
             syncUserRole(result.user.id, "student");
-        } catch (e) {
-            // ignore
+        } catch (error) {
+            console.warn("[Server] Không thể đồng bộ vai trò tài khoản mới:", error.message);
         }
-        await supabaseService.syncSingleUser(result.user, password, users);
+        if (isVercelRuntime) {
+            try {
+                await supabaseService.saveUserRoleAssignmentsSnapshot(
+                    getAllUserRolesAssignments()
+                );
+            } catch (error) {
+                console.warn("[Server] Không thể lưu vai trò tài khoản mới:", error.message);
+            }
+        }
 
         return res.status(201).json({
             success: true,
@@ -716,6 +758,13 @@ app.post("/api/auth/register", async (req, res) => {
             user: result.user
         });
     } catch (err) {
+        if (err && (err.statusCode === 503 || err.message?.includes("Supabase Storage"))) {
+            console.error("[Server] Không thể lưu tài khoản đăng ký:", err.message);
+            return res.status(503).json({
+                success: false,
+                message: "Chưa thể lưu tài khoản. Vui lòng thử lại sau."
+            });
+        }
         return res.status(err.status || 400).json({
             success: false,
             message: err.message || "Đăng ký không thành công."
@@ -774,7 +823,28 @@ app.post(
     requireRole("administrator"),
     async (req, res) => {
         try {
-            const result = createUser(req.body || {});
+            await hydrateUsersForVercel();
+            const result = createUser({
+                ...(req.body || {}),
+                sendActivation: false
+            });
+
+            if (isVercelRuntime) {
+                try {
+                    await supabaseService.savePasswordRecoveryUsersSnapshot(users);
+                } catch (error) {
+                    const userIndex = users.findIndex(user => user.id === result.user.id);
+                    if (userIndex !== -1) users.splice(userIndex, 1);
+                    throw error;
+                }
+            } else {
+                await supabaseService.syncSingleUser(
+                    result.user,
+                    result.temporaryPassword,
+                    users
+                );
+            }
+
             if (result.user && result.user.role) {
                 try {
                     syncUserRole(result.user.id, result.user.role);
@@ -782,19 +852,43 @@ app.post(
                     // ignore
                 }
             }
+            if (isVercelRuntime) {
+                try {
+                    await supabaseService.saveUserRoleAssignmentsSnapshot(
+                        getAllUserRolesAssignments()
+                    );
+                } catch (error) {
+                    console.warn("[Server] Không thể lưu vai trò tài khoản mới:", error.message);
+                }
+            }
 
-            // Đồng bộ sang tất cả các tầng Supabase (PostgreSQL tables, Auth, Storage)
-            await supabaseService.syncSingleUser(result.user, result.temporaryPassword, users);
+            const activationEmail = sendActivationEmail({
+                to: result.user.email,
+                name: result.user.name,
+                temporaryPassword: result.temporaryPassword,
+                role: result.user.role
+            });
+            await activationEmail.delivery;
+            const emailSent = activationEmail?.status === "DELIVERED";
 
             return res.status(201).json({
                 success: true,
-                message: `Tạo tài khoản người dùng '${result.user.name}' thành công. Đã gửi email kích hoạt kèm mật khẩu tạm.`,
+                message: emailSent
+                    ? `Tạo tài khoản người dùng '${result.user.name}' thành công. Đã gửi email kích hoạt kèm mật khẩu tạm.`
+                    : `Tạo tài khoản người dùng '${result.user.name}' thành công, nhưng chưa gửi được email kích hoạt. Vui lòng kiểm tra cấu hình SMTP.`,
                 user: result.user,
                 temporaryPassword: result.temporaryPassword,
-                emailSent: result.emailSent,
-                activationEmail: result.activationEmail
+                emailSent,
+                activationEmail
             });
         } catch (err) {
+            if (err && (err.statusCode === 503 || err.message?.includes("Supabase Storage"))) {
+                console.error("[Server] Không thể lưu tài khoản người dùng:", err.message);
+                return res.status(503).json({
+                    success: false,
+                    message: "Chưa thể lưu tài khoản. Vui lòng thử lại sau."
+                });
+            }
             return res.status(err.status || err.statusCode || 500).json({
                 success: false,
                 message: err.message || "Đã xảy ra lỗi khi tạo người dùng."
@@ -2202,10 +2296,14 @@ app.post("/api/admin/smtp/test",
                 temporaryPassword: "TMS@" + Math.random().toString(36).substring(2, 8),
                 role: "administrator"
             });
-            return res.status(200).json({
-                success: true,
-                message: `Đã gửi email kích hoạt thử nghiệm tới ${targetEmail} thành công!`,
-                emailRecord: emailResult
+            const deliveryResult = await emailResult.delivery;
+            const emailSent = deliveryResult.status === "DELIVERED";
+            return res.status(emailSent ? 200 : 503).json({
+                success: emailSent,
+                message: emailSent
+                    ? `Đã gửi email kích hoạt thử nghiệm tới ${targetEmail} thành công!`
+                    : `Không thể gửi email thử nghiệm tới ${targetEmail}. Vui lòng kiểm tra cấu hình SMTP.`,
+                emailRecord: deliveryResult
             });
         } catch (err) {
             return res.status(500).json({
