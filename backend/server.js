@@ -560,6 +560,61 @@ async function persistPasswordResetTokens() {
     );
 }
 
+// Xác định URL công khai cho Frontend, tuyệt đối không dùng localhost khi đang chạy trên Vercel
+function resolveFrontendUrl(req) {
+    const isVercel = Boolean(process.env.VERCEL || process.env.VERCEL_URL);
+
+    const origin = req && req.headers ? (req.headers["origin"] || "") : "";
+    if (origin && typeof origin === "string") {
+        const cleanOrigin = origin.trim().replace(/\/$/, "");
+        if (!cleanOrigin.includes("localhost") && !cleanOrigin.includes("127.0.0.1")) {
+            return cleanOrigin;
+        }
+        if (!isVercel) {
+            return cleanOrigin;
+        }
+    }
+    const referer = req && req.headers ? (req.headers["referer"] || "") : "";
+    if (referer && typeof referer === "string") {
+        try {
+            const parsed = new URL(referer);
+            const refBase = `${parsed.protocol}//${parsed.host}`;
+            if (!refBase.includes("localhost") && !refBase.includes("127.0.0.1")) {
+                return refBase;
+            }
+            if (!isVercel) {
+                return refBase;
+            }
+        } catch (_) {}
+    }
+
+    const forwardedHost = req && req.get ? (req.get("x-forwarded-host") || "") : "";
+    const forwardedProto = req && req.get ? (req.get("x-forwarded-proto") || "https") : "https";
+    if (forwardedHost && !forwardedHost.includes("localhost")) {
+        return `${forwardedProto}://${forwardedHost}`.replace(/\/$/, "");
+    }
+
+    if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+        return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`.replace(/\/$/, "");
+    }
+    if (process.env.VERCEL_URL) {
+        return `https://${process.env.VERCEL_URL}`.replace(/\/$/, "");
+    }
+
+    const envFrontend = (process.env.FRONTEND_URL || "").trim().replace(/\/$/, "");
+    if (envFrontend && (!isVercel || (!envFrontend.includes("localhost") && !envFrontend.includes("127.0.0.1")))) {
+        return envFrontend;
+    }
+
+    if (isVercel) {
+        return "https://k15c6n4.vercel.app";
+    }
+
+    const host = (req && req.get ? req.get("host") : "") || "localhost:3000";
+    const proto = (req && req.protocol) || "http";
+    return `${proto}://${host}`.replace(/\/$/, "");
+}
+
 // KN-39 & KN-42: API Yêu cầu quên mật khẩu và phát hành liên kết gửi qua Email
 app.post(["/api/auth/forgot-password", "/auth/forgot-password"], async (req, res) => {
     const { email } = req.body || {};
@@ -590,14 +645,7 @@ app.post(["/api/auth/forgot-password", "/auth/forgot-password"], async (req, res
         if (result.userFound && result.token) {
             await persistPasswordResetTokens();
 
-            const hostHeader = req.get("host") || "localhost:3000";
-            const protocol = req.protocol || "http";
-            const defaultBaseUrl = `${protocol}://${hostHeader}`;
-            const vercelBaseUrl = process.env.VERCEL_URL
-                ? `https://${process.env.VERCEL_URL}`
-                : "";
-            const frontendUrl =
-                process.env.FRONTEND_URL || vercelBaseUrl || defaultBaseUrl;
+            const frontendUrl = resolveFrontendUrl(req);
             const resetUrl = `${frontendUrl.replace(/\/$/, "")}/ResetPassword.html?token=${result.token}`;
 
             try {
