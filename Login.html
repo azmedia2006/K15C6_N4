@@ -766,8 +766,6 @@
             const cleanUrl = window.location.origin + window.location.pathname + window.location.hash;
             window.history.replaceState({}, document.title, cleanUrl);
         }
-        const SUPABASE_URL = "https://fljbbgqfgyyhvxhpflhg.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_1mU5Pm0dovYQnFJg-TerMg_11Dxbtbo";
 
         const loginForm = document.querySelector("#login-form");
         const loginSubmit = document.querySelector("#login-submit");
@@ -963,84 +961,33 @@
 
                 setBusy(registerSubmit, true, "Đang đăng ký…", "Đăng ký ngay");
                 try {
-                    const newUserId = "usr_" + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
                     const regEmail = emailInput.value.trim().toLowerCase();
-                    const regName = nameInput.value.trim();
-                    const regPhone = phoneInput.value.trim();
-                    const regPass = passInput.value;
-
-                    // Chạy song song các kênh đồng bộ dữ liệu
-                    const API_BASE_URL = (window.location.origin && window.location.origin.startsWith("http")) ? window.location.origin : "http://localhost:3000";
-
-                    const supaUserTask = fetch(`${SUPABASE_URL}/rest/v1/users`, {
-                        method: "POST",
-                        headers: {
-                            "apikey": SUPABASE_KEY,
-                            "Authorization": `Bearer ${SUPABASE_KEY}`,
-                            "Content-Type": "application/json",
-                            "Prefer": "resolution=merge-duplicates"
-                        },
-                        body: JSON.stringify({
-                            id: newUserId,
-                            email: regEmail,
-                            name: regName,
-                            role: "student",
-                            phone: regPhone || "",
-                            status: "active",
-                            created_at: new Date().toISOString(),
-                            updated_at: new Date().toISOString()
-                        })
-                    });
-
-                    const supaRoleTask = fetch(`${SUPABASE_URL}/rest/v1/user_roles`, {
-                        method: "POST",
-                        headers: {
-                            "apikey": SUPABASE_KEY,
-                            "Authorization": `Bearer ${SUPABASE_KEY}`,
-                            "Content-Type": "application/json",
-                            "Prefer": "resolution=merge-duplicates"
-                        },
-                        body: JSON.stringify({
-                            user_id: newUserId,
-                            role_id: "student",
-                            assigned_by: "self_register",
-                            assigned_at: new Date().toISOString()
-                        })
-                    });
-
-                    const backendTask = fetch(`${API_BASE_URL}/api/auth/register`, {
+                    const response = await fetch("/api/auth/register", {
                         method: "POST",
                         headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                        credentials: "same-origin",
                         body: JSON.stringify({
-                            name: regName,
+                            name: nameInput.value.trim(),
                             email: regEmail,
-                            phone: regPhone,
-                            password: regPass
+                            phone: phoneInput.value.trim(),
+                            password: passInput.value
                         })
-                    }).catch(() => {});
+                    });
+                    const result = await parseResponse(response);
 
-                    const authTask = regEmail.includes("@") ? fetch(`${SUPABASE_URL}/auth/v1/signup`, {
-                        method: "POST",
-                        headers: {
-                            "apikey": SUPABASE_KEY,
-                            "Authorization": `Bearer ${SUPABASE_KEY}`,
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            email: regEmail,
-                            password: regPass,
-                            data: { name: regName, role: "student" }
-                        })
-                    }).catch(() => {}) : Promise.resolve();
+                    if (!response.ok) {
+                        showMessage(registerMessage, result.message || "Đăng ký không thành công. Vui lòng thử lại.");
+                        return;
+                    }
 
-                    await Promise.allSettled([supaUserTask, supaRoleTask, backendTask, authTask]);
-
-                    showMessage(registerMessage, "Đăng ký thành công! Dữ liệu đã tự động cập nhật lên Supabase.", true);
+                    showMessage(registerMessage, result.message || "Đăng ký thành công.", true);
                     document.querySelector("#email").value = regEmail;
                     setTimeout(() => {
                         switchView("login");
                         showMessage(loginMessage, "Đăng ký thành công. Vui lòng đăng nhập bằng tài khoản vừa tạo.", true);
                     }, 800);
+                } catch {
+                    showMessage(registerMessage, "Dịch vụ đăng ký hiện không khả dụng. Vui lòng thử lại sau.");
                 } finally {
                     setBusy(registerSubmit, false, "Đang đăng ký…", "Đăng ký ngay");
                 }
@@ -1174,54 +1121,24 @@
                 }
 
                 if (!response.ok) {
-                    handleFailedAttempt();
+                    if (response.status === 401) {
+                        handleFailedAttempt();
+                    } else {
+                        showMessage(
+                            loginMessage,
+                            result.message || "Đăng nhập hiện không khả dụng. Vui lòng thử lại."
+                        );
+                    }
                     return;
                 }
 
                 const role = String(result.role || "").trim().toLowerCase().replace(/^role_/, "").replace(/[\s-]+/g, "_");
                 handleSuccessfulLogin(role, result.user, result.token);
             } catch {
-                // Chế độ demo / offline client-side mô phỏng đầy đủ phân quyền và xác thực người dùng
-                const inputEmail = document.querySelector("#email").value.trim().toLowerCase();
-                const inputPass = document.querySelector("#password").value;
-
-                // Thử xác thực trực tiếp qua Supabase REST API
-                try {
-                    const supaCheck = await fetch(`${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(inputEmail)}`, {
-                        headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
-                    });
-                    if (supaCheck.ok) {
-                        const supaData = await supaCheck.json();
-                        if (Array.isArray(supaData) && supaData.length > 0) {
-                            const u = supaData[0];
-                            handleSuccessfulLogin(u.role || "student", u, "token_supa_" + u.id);
-                            return;
-                        }
-                    }
-                } catch (e) {
-                    console.log("Supabase direct auth check error:", e.message);
-                }
-
-                const demoAccounts = {
-                    "admin@tms.edu.vn": { role: "administrator", pass: "admin123" },
-                    "manager@tms.edu.vn": { role: "training_manager", pass: "manager123" },
-                    "teacher@tms.edu.vn": { role: "instructor", pass: "teacher123" },
-                    "ta@tms.edu.vn": { role: "teaching_assistant", pass: "ta123456" },
-                    "student@tms.edu.vn": { role: "student", pass: "student123" },
-                    "sv001": { role: "student", pass: "student123" },
-                    "admissions@tms.edu.vn": { role: "admissions", pass: "admissions123" },
-                    "accountant@tms.edu.vn": { role: "accountant", pass: "accountant123" },
-                    "visitor@tms.edu.vn": { role: "visitor", pass: "visitor123" }
-                };
-
-                const matched = demoAccounts[inputEmail];
-                if (matched && matched.pass === inputPass) {
-                    handleSuccessfulLogin(matched.role, { email: inputEmail, role: matched.role });
-                    return;
-                }
-
-                // Nếu sai tài khoản hoặc mật khẩu: bảo mật không tiết lộ email có tồn tại hay không
-                handleFailedAttempt();
+                showMessage(
+                    loginMessage,
+                    "Kh?ng th? k?t n?i m?y ch? ??ng nh?p. Vui l?ng ki?m tra k?t n?i v? th? l?i."
+                );
             } finally {
                 // Luôn dọn dẹp trạng thái busy/spinner trước, sau đó kiểm tra và áp dụng lockout
                 setBusy(loginSubmit, false, "Đang đăng nhập…", "Đăng nhập");

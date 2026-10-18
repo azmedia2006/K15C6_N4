@@ -1916,9 +1916,6 @@
     let currentPage = 1;
     let pageSize = 20;
 
-    const SUPABASE_URL = "https://fljbbgqfgyyhvxhpflhg.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_1mU5Pm0dovYQnFJg-TerMg_11Dxbtbo";
-
     // Theme Toggle Handler
     const themeBtn = document.getElementById("theme-toggle");
     if (themeBtn) {
@@ -1939,25 +1936,9 @@
 
     // Đảm bảo token Admin hợp lệ
     async function getValidAdminToken() {
-        let token = localStorage.getItem("tms_token");
-        if (token) return token;
-        try {
-            const res = await fetch(`${API_BASE}/auth/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: "admin@tms.edu.vn", password: "admin123" })
-            });
-            const d = await res.json();
-            if (d.success && d.token) {
-                token = d.token;
-                localStorage.setItem("tms_token", token);
-                localStorage.setItem("tms_user", JSON.stringify(d.user));
-            }
-        } catch {}
-        return token;
+        return localStorage.getItem("tms_token") || localStorage.getItem("token") || null;
     }
 
-    // Khởi động trang ngay tức thì (0ms latency)
     document.addEventListener("DOMContentLoaded", () => {
         try {
             const cached = localStorage.getItem("tms_users_cache");
@@ -1976,33 +1957,37 @@
 
     // Chạy ngầm tải mới nhất từ Supabase & Backend API
     async function loadUsersFromAPIOrLocal() {
+        const token = await getValidAdminToken();
+        if (!token) {
+            showToast("\u0110\u0103ng nh\u1eadp qu\u1ea3n tr\u1ecb tr\u01b0\u1edbc khi t\u1ea3i danh s\u00e1ch t\u00e0i kho\u1ea3n.", "error");
+            return;
+        }
+
         try {
-            const supaRes = await fetch(`${SUPABASE_URL}/rest/v1/users?select=*&order=created_at.desc`, {
-                headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
-            });
-            if (supaRes.ok) {
-                const supaUsers = await supaRes.json();
-                if (Array.isArray(supaUsers) && supaUsers.length > 0) {
-                    usersData = supaUsers.map(su => ({
-                        id: su.id,
-                        email: su.email,
-                        name: su.name,
-                        role: su.role,
-                        phone: su.phone || "",
-                        status: su.status || "active",
-                        createdAt: su.created_at
-                    }));
-                    renderTable();
-                    updateMetrics();
-                    try { localStorage.setItem("tms_users_cache", JSON.stringify(usersData)); } catch {}
-                }
-            }
-        } catch (e) {
-            console.warn("Supabase fetch notice:", e.message);
+            let page = 1;
+            let totalPages = 1;
+            const loadedUsers = [];
+            do {
+                const response = await fetch(API_BASE + "/admin/users?page=" + page + "&limit=100", {
+                    headers: { "Authorization": "Bearer " + token }
+                });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(result.message || "\u0054\u1ea3i danh s\u00e1ch t\u00e0i kho\u1ea3n th\u1ea5t b\u1ea1i.");
+                if (!Array.isArray(result.users)) throw new Error("\u0050h\u1ea3n h\u1ed3i danh s\u00e1ch t\u00e0i kho\u1ea3n kh\u00f4ng h\u1ee3p l\u1ec7.");
+                loadedUsers.push(...result.users);
+                totalPages = Number(result.totalPages) || 1;
+                page += 1;
+            } while (page <= totalPages);
+
+            usersData = loadedUsers;
+            renderTable();
+            updateMetrics();
+            try { localStorage.setItem("tms_users_cache", JSON.stringify(usersData)); } catch {}
+        } catch (error) {
+            showToast(error.message || "\u0110\u00e3 x\u1ea3y ra l\u1ed7i khi t\u1ea3i danh s\u00e1ch t\u00e0i kho\u1ea3n.", "error");
         }
     }
 
-    // Phân nhóm bộ lọc Tab
     function setGroupFilter(group, btn) {
         currentGroupFilter = group;
         document.querySelectorAll("#role-segmented-tabs .seg-btn").forEach(b => b.classList.remove("active"));
@@ -2255,98 +2240,49 @@
         const phone = document.getElementById("create-phone").value.trim();
         const isAuto = document.getElementById("create-auto-pass").checked;
         const customPass = document.getElementById("create-custom-pass").value.trim();
+        const token = await getValidAdminToken();
 
-        if (usersData.some(u => u.email.toLowerCase() === email)) {
-            showToast("Email này đã được sử dụng trong hệ thống!", "error");
+        if (!token) {
+            showToast("\u0110\u0103ng nh\u1eadp qu\u1ea3n tr\u1ecb tr\u01b0\u1edbc khi t\u1ea1o t\u00e0i kho\u1ea3n.", "error");
             return;
         }
 
-        const password = (!isAuto && customPass) ? customPass : ("TMS@" + Math.random().toString(36).substring(2, 8));
-        const newUserId = "usr_" + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
-
-        const createdUser = {
-            id: newUserId,
-            name,
-            email,
-            role,
-            phone: phone || "Chưa cập nhật",
-            status: "active",
-            createdAt: new Date().toISOString()
-        };
-
-        // 1. Cập nhật giao diện tức thì (0ms Latency)
-        usersData.unshift(createdUser);
-        closeModal("create-modal");
-        renderTable();
-        updateMetrics();
-        try { localStorage.setItem("tms_users_cache", JSON.stringify(usersData)); } catch {}
-
-        document.getElementById("cred-name").textContent = createdUser.name;
-        document.getElementById("cred-email").textContent = createdUser.email;
-        const targetEmailElem = document.getElementById("cred-email-target");
-        if (targetEmailElem) targetEmailElem.textContent = createdUser.email;
-        document.getElementById("cred-pass").textContent = password;
-        document.getElementById("cred-role").textContent = roleLabels[createdUser.role]?.name || createdUser.role;
-        document.getElementById("credential-modal").classList.add("open");
-        showToast(`Đã tạo tài khoản cho ${createdUser.name} & gửi email kích hoạt!`, "success");
-
-        // 2. Chạy ngầm đồng bộ
-        (async () => {
-            const supaUserTask = fetch(`${SUPABASE_URL}/rest/v1/users`, {
+        try {
+            const response = await fetch(API_BASE + "/admin/users", {
                 method: "POST",
                 headers: {
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": `Bearer ${SUPABASE_KEY}`,
                     "Content-Type": "application/json",
-                    "Prefer": "resolution=merge-duplicates"
+                    "Authorization": "Bearer " + token
                 },
-                body: JSON.stringify({
-                    id: createdUser.id,
-                    email: createdUser.email,
-                    name: createdUser.name,
-                    role: createdUser.role,
-                    phone: createdUser.phone || "",
-                    status: "active",
-                    created_at: createdUser.createdAt,
-                    updated_at: new Date().toISOString()
-                })
+                body: JSON.stringify({ name, email, role, phone, password: isAuto ? "" : customPass })
             });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(result.message || "\u0054\u1ea1o t\u00e0i kho\u1ea3n th\u1ea5t b\u1ea1i.");
+            }
+            if (!result.user) throw new Error("\u0050h\u1ea3n h\u1ed3i t\u1ea1o t\u00e0i kho\u1ea3n kh\u00f4ng h\u1ee3p l\u1ec7.");
 
-            const supaRoleTask = fetch(`${SUPABASE_URL}/rest/v1/user_roles`, {
-                method: "POST",
-                headers: {
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": `Bearer ${SUPABASE_KEY}`,
-                    "Content-Type": "application/json",
-                    "Prefer": "resolution=merge-duplicates"
-                },
-                body: JSON.stringify({
-                    user_id: createdUser.id,
-                    role_id: createdUser.role,
-                    assigned_by: "client_create",
-                    assigned_at: new Date().toISOString()
-                })
-            });
+            const createdUser = result.user;
+            usersData = usersData.filter(user => user.email.toLowerCase() !== createdUser.email.toLowerCase());
+            usersData.unshift(createdUser);
+            closeModal("create-modal");
+            renderTable();
+            updateMetrics();
+            try { localStorage.setItem("tms_users_cache", JSON.stringify(usersData)); } catch {}
 
-            const backendTask = (async () => {
-                const token = await getValidAdminToken();
-                if (token) {
-                    return fetch(`${API_BASE}/admin/users`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${token}`
-                        },
-                        body: JSON.stringify({ id: createdUser.id, name, email, role, phone, password: (!isAuto ? customPass : password) })
-                    });
-                }
-            })();
-
-            await Promise.allSettled([supaUserTask, supaRoleTask, backendTask]);
-        })().catch(err => console.warn("Background sync warning:", err));
+            document.getElementById("cred-name").textContent = createdUser.name;
+            document.getElementById("cred-email").textContent = createdUser.email;
+            const targetEmailElem = document.getElementById("cred-email-target");
+            if (targetEmailElem) targetEmailElem.textContent = createdUser.email;
+            document.getElementById("cred-pass").textContent = result.temporaryPassword || customPass;
+            document.getElementById("cred-role").textContent = roleLabels[createdUser.role]?.name || createdUser.role;
+            document.getElementById("credential-modal").classList.add("open");
+            showToast(result.message || "\u0110\u00e3 t\u1ea1o t\u00e0i kho\u1ea3n.", result.emailSent ? "success" : "error");
+        } catch (error) {
+            showToast(error.message || "\u0110\u00e3 x\u1ea3y ra l\u1ed7i khi t\u1ea1o t\u00e0i kho\u1ea3n.", "error");
+        }
     }
 
-    // Chỉnh sửa người dùng
     function openEditModal(id) {
         const user = usersData.find(u => u.id === id);
         if (!user) return;
@@ -2370,120 +2306,67 @@
         const phone = document.getElementById("edit-phone").value.trim();
         const status = document.getElementById("edit-status").value;
         const newPass = document.getElementById("edit-new-pass").value.trim();
+        const token = await getValidAdminToken();
 
-        const user = usersData.find(u => u.id === id);
-        if (user) {
-            user.name = name;
-            user.role = role;
-            user.phone = phone;
-            user.status = status;
+        if (!token) {
+            showToast("\u0110\u0103ng nh\u1eadp qu\u1ea3n tr\u1ecb tr\u01b0\u1edbc khi c\u1eadp nh\u1eadt t\u00e0i kho\u1ea3n.", "error");
+            return;
         }
 
-        closeModal("edit-modal");
-        renderTable();
-        updateMetrics();
-        try { localStorage.setItem("tms_users_cache", JSON.stringify(usersData)); } catch {}
-        showToast("Đã cập nhật thông tin tài khoản thành công!", "success");
-
-        (async () => {
-            const supaUserPatch = fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(id)}`, {
-                method: "PATCH",
+        try {
+            const response = await fetch(API_BASE + "/admin/users/" + encodeURIComponent(id), {
+                method: "PUT",
                 headers: {
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": `Bearer ${SUPABASE_KEY}`,
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
                 },
-                body: JSON.stringify({
-                    name,
-                    role,
-                    phone,
-                    status,
-                    updated_at: new Date().toISOString()
-                })
+                body: JSON.stringify({ name, role, phone, status, password: newPass })
             });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(result.message || "\u0054\u1eadp nh\u1eadt t\u00e0i kho\u1ea3n th\u1ea5t b\u1ea1i.");
 
-            const supaRolePatch = fetch(`${SUPABASE_URL}/rest/v1/user_roles?user_id=eq.${encodeURIComponent(id)}`, {
-                method: "PATCH",
-                headers: {
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": `Bearer ${SUPABASE_KEY}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    role_id: role,
-                    assigned_at: new Date().toISOString()
-                })
-            });
-
-            const backendPatch = (async () => {
-                const token = await getValidAdminToken();
-                if (token) {
-                    return fetch(`${API_BASE}/admin/users/${id}`, {
-                        method: "PUT",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${token}`
-                        },
-                        body: JSON.stringify({ name, role, phone, status, password: newPass })
-                    });
-                }
-            })();
-
-            await Promise.allSettled([supaUserPatch, supaRolePatch, backendPatch]);
-        })().catch(err => console.warn("Background update error:", err));
+            usersData = usersData.map(user => user.id === id ? { ...user, ...result.user } : user);
+            closeModal("edit-modal");
+            renderTable();
+            updateMetrics();
+            try { localStorage.setItem("tms_users_cache", JSON.stringify(usersData)); } catch {}
+            showToast(result.message || "\u0110\u00e3 c\u1eadp nh\u1eadt t\u00e0i kho\u1ea3n.", "success");
+        } catch (error) {
+            showToast(error.message || "\u0110\u00e3 x\u1ea3y ra l\u1ed7i khi c\u1eadp nh\u1eadt t\u00e0i kho\u1ea3n.", "error");
+        }
     }
 
-    // Xóa người dùng
     async function handleDeleteUser(id, name) {
         if (id === "usr_admin") {
-            showToast("Không thể xóa tài khoản Quản trị viên hệ thống!", "error");
+            showToast("\u004b\u0068\u00f4ng th\u1ec3 x\u00f3a t\u00e0i kho\u1ea3n Qu\u1ea3n tr\u1ecb vi\u00ean h\u1ec7 th\u1ed1ng!", "error");
+            return;
+        }
+        if (!confirm("\u0042\u1ea1n c\u00f3 ch\u1eafc ch\u1eafn mu\u1ed1n x\u00f3a t\u00e0i kho\u1ea3n '" + name + "'? Thao t\u00e1c n\u00e0y kh\u00f4ng th\u1ec3 ho\u00e0n t\u00e1c.")) return;
+
+        const token = await getValidAdminToken();
+        if (!token) {
+            showToast("\u0110\u0103ng nh\u1eadp qu\u1ea3n tr\u1ecb tr\u01b0\u1edbc khi x\u00f3a t\u00e0i kho\u1ea3n.", "error");
             return;
         }
 
-        if (!confirm(`Bạn có chắc chắn muốn xóa tài khoản '${name}'? Thao tác này không thể hoàn tác.`)) {
-            return;
+        try {
+            const response = await fetch(API_BASE + "/admin/users/" + encodeURIComponent(id), {
+                method: "DELETE",
+                headers: { "Authorization": "Bearer " + token }
+            });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(result.message || "\u0058\u00f3a t\u00e0i kho\u1ea3n th\u1ea5t b\u1ea1i.");
+
+            usersData = usersData.filter(user => user.id !== id);
+            renderTable();
+            updateMetrics();
+            try { localStorage.setItem("tms_users_cache", JSON.stringify(usersData)); } catch {}
+            showToast(result.message || "\u0110\u00e3 x\u00f3a t\u00e0i kho\u1ea3n.", "success");
+        } catch (error) {
+            showToast(error.message || "\u0110\u00e3 x\u1ea3y ra l\u1ed7i khi x\u00f3a t\u00e0i kho\u1ea3n.", "error");
         }
-
-        const targetUser = usersData.find(u => u.id === id);
-        const userEmail = targetUser ? targetUser.email : null;
-
-        usersData = usersData.filter(u => u.id !== id && (!userEmail || u.email.toLowerCase() !== userEmail.toLowerCase()));
-        renderTable();
-        updateMetrics();
-        try { localStorage.setItem("tms_users_cache", JSON.stringify(usersData)); } catch {}
-        showToast(`Đã xóa tài khoản '${name}'.`, "success");
-
-        (async () => {
-            const delSupaRoles = fetch(`${SUPABASE_URL}/rest/v1/user_roles?user_id=eq.${encodeURIComponent(id)}`, {
-                method: "DELETE",
-                headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
-            });
-
-            const delSupaUser = fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(id)}`, {
-                method: "DELETE",
-                headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
-            });
-
-            const delSupaEmail = userEmail ? fetch(`${SUPABASE_URL}/rest/v1/users?email=eq.${encodeURIComponent(userEmail)}`, {
-                method: "DELETE",
-                headers: { "apikey": SUPABASE_KEY, "Authorization": `Bearer ${SUPABASE_KEY}` }
-            }) : Promise.resolve();
-
-            const delBackend = (async () => {
-                const token = await getValidAdminToken();
-                if (token) {
-                    return fetch(`${API_BASE}/admin/users/${id}`, {
-                        method: "DELETE",
-                        headers: { "Authorization": `Bearer ${token}` }
-                    });
-                }
-            })();
-
-            await Promise.allSettled([delSupaRoles, delSupaUser, delSupaEmail, delBackend]);
-        })().catch(err => console.warn("Background delete notice:", err));
     }
 
-    // Sao chép thông tin bàn giao
     function copyCredentials() {
         const name = document.getElementById("cred-name").textContent;
         const email = document.getElementById("cred-email").textContent;
