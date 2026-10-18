@@ -32,8 +32,10 @@ build/
 ### VS Code ###
 .vscode/
 
-# Local runtime state and dependencies
+### Node / Environment ###
 node_modules/
-backend/data/
+backend/node_modules/
 .env
-backend/.env
+.env.local
+.env.*.local
+

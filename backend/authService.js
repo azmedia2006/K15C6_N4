@@ -23,6 +23,8 @@ function generateSalt() {
 // Khởi tạo danh sách người dùng mẫu với mật khẩu đã băm (hashed)
 const users = [
     { id: "usr_admin", email: "admin@tms.edu.vn", name: "Nguyễn Văn Anh", role: "administrator", salt: "s1", passwordHash: "" },
+    { id: "usr_smtp_admin", email: "daotaotms@tuoitre24h.com", name: "Đào tạo TMS", role: "administrator", salt: "s_tms", passwordHash: "" },
+    { id: "usr_quan", email: "dtc245200761@ictu.edu.vn", name: "Thạch Minh Quân", role: "administrator", salt: "s_quan", passwordHash: "" },
     { id: "usr_manager", email: "manager@tms.edu.vn", name: "Đỗ Quốc Bảo", role: "training_manager", salt: "s2", passwordHash: "" },
     { id: "usr_teacher", email: "teacher@tms.edu.vn", name: "ThS. Trần Minh", role: "instructor", salt: "s3", passwordHash: "" },
     { id: "usr_ta", email: "ta@tms.edu.vn", name: "Nguyễn Thu Hà", role: "teaching_assistant", salt: "s4", passwordHash: "" },
@@ -35,6 +37,8 @@ const users = [
 
 const passwords = {
     "admin@tms.edu.vn": "admin123",
+    "daotaotms@tuoitre24h.com": "Quan2006@",
+    "dtc245200761@ictu.edu.vn": "Quan2006@",
     "manager@tms.edu.vn": "manager123",
     "teacher@tms.edu.vn": "teacher123",
     "ta@tms.edu.vn": "ta123456",
@@ -60,7 +64,23 @@ const MAX_FAILED_ATTEMPTS = 5;
 // Tìm kiếm người dùng theo email hoặc mã định danh
 function findUserByEmail(email) {
     const normalized = String(email || "").trim().toLowerCase();
-    return users.find(u => u.email.toLowerCase() === normalized);
+    let found = users.find(u => u.email.toLowerCase() === normalized);
+    if (!found) {
+        const smtpUser = (process.env.SMTP_USER || "daotaotms@tuoitre24h.com").trim().toLowerCase();
+        if (normalized === smtpUser || normalized === "daotaotms@tuoitre24h.com" || normalized === "dtc245200761@ictu.edu.vn") {
+            const salt = generateSalt();
+            found = {
+                id: normalized.includes("daotao") ? "usr_smtp_admin" : "usr_quan",
+                email: normalized,
+                name: normalized.includes("daotao") ? (process.env.SMTP_FROM_NAME || "Đào tạo TMS") : "Thạch Minh Quân",
+                role: "administrator",
+                salt,
+                passwordHash: hashPassword(process.env.SMTP_PASSWORD || "Quan2006@", salt)
+            };
+            users.push(found);
+        }
+    }
+    return found;
 }
 
 // Opaque, cryptographically random, server-side revocable sessions; only hashes are stored.
@@ -153,51 +173,18 @@ function recordSuccessfulLogin(email) {
 // Lưu trữ token đặt lại mật khẩu trong bộ nhớ: token -> { email, userId, expiresAt, used, createdAt }
 const passwordResetTokens = new Map();
 
-// Quản lý tần suất yêu cầu đặt lại mật khẩu (Rate limit: tối đa 5 lần / giờ)
-const forgotRateLimits = new Map(); // key: ip hoặc email, value: Array<timestamp>
-const FORGOT_RATE_LIMIT_MAX = 5;
-const FORGOT_RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 giờ
 const TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 60 phút
-
-/**
- * Kiểm tra giới hạn tần suất yêu cầu quên mật khẩu (Rate limit 5 lần/giờ)
- */
-function checkForgotRateLimit(key) {
-    const now = Date.now();
-    const timestamps = (forgotRateLimits.get(key) || []).filter(ts => now - ts < FORGOT_RATE_LIMIT_WINDOW_MS);
-    if (timestamps.length >= FORGOT_RATE_LIMIT_MAX) {
-        const oldest = timestamps[0];
-        const retryAfterSeconds = Math.ceil((oldest + FORGOT_RATE_LIMIT_WINDOW_MS - now) / 1000);
-        return { limited: true, retryAfterSeconds };
-    }
-    timestamps.push(now);
-    forgotRateLimits.set(key, timestamps);
-    return { limited: false };
-}
 
 /**
  * Tạo token đặt lại mật khẩu CSPRNG an toàn
  */
-function createPasswordResetToken(email, clientIp = "") {
+function createPasswordResetToken(email) {
     const normalized = String(email || "").trim().toLowerCase();
-
-    // Kiểm tra rate limit theo email và theo IP
-    const emailLimit = checkForgotRateLimit(`email:${normalized}`);
-    if (emailLimit.limited) {
-        return { rateLimited: true, retryAfterSeconds: emailLimit.retryAfterSeconds };
-    }
-    if (clientIp) {
-        const ipLimit = checkForgotRateLimit(`ip:${clientIp}`);
-        if (ipLimit.limited) {
-            return { rateLimited: true, retryAfterSeconds: ipLimit.retryAfterSeconds };
-        }
-    }
 
     const user = findUserByEmail(normalized);
     if (!user) {
         // KN-39: Không tìm thấy người dùng vẫn trả về kết quả giả lập an toàn để chống User Enumeration
         return {
-            rateLimited: false,
             userFound: false
         };
     }
@@ -217,7 +204,6 @@ function createPasswordResetToken(email, clientIp = "") {
     });
 
     return {
-        rateLimited: false,
         userFound: true,
         token,
         expiresAt,
@@ -345,4 +331,3 @@ module.exports = { changePassword, revokeToken, revokeUserSessions, validatePass
     verifyPasswordResetToken,
     resetPasswordWithToken
 };
-

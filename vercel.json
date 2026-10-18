@@ -10,6 +10,8 @@
     { "source": "/auth/(.*)", "destination": "/api/index.js" },
     { "source": "/login", "destination": "/index.html" },
     { "source": "/Login.html", "destination": "/index.html" },
+    { "source": "/forgot-password", "destination": "/ForgotPassword.html" },
+    { "source": "/ForgotPassword.html", "destination": "/ForgotPassword.html" },
     { "source": "/reset-password", "destination": "/ResetPassword.html" },
     { "source": "/ResetPassword.html", "destination": "/ResetPassword.html" },
     { "source": "/Index.html", "destination": "/Dashboard.html" },

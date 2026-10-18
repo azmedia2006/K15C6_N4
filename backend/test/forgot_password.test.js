@@ -177,6 +177,23 @@ async function runTests() {
             });
         }
 
+        // --- TEST 8: Cho phép yêu cầu liên tục, không giới hạn theo email hoặc IP ---
+        for (let i = 0; i < 7; i += 1) {
+            const allowedRes = await fetch(`${baseUrl}/api/auth/forgot-password`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: `unlimited-${i}@example.test` })
+            });
+            assert.strictEqual(allowedRes.status, 200);
+        }
+
+        for (let i = 0; i < 7; i += 1) {
+            const repeatedRequest = createPasswordResetToken(validEmail);
+            assert.strictEqual(repeatedRequest.userFound, true);
+            assert.ok(repeatedRequest.token);
+        }
+        console.log("  ✔ PASS: Yêu cầu khôi phục không còn bị giới hạn theo email hoặc IP");
+
         console.log("\n=======================================================");
         console.log("✔ TẤT CẢ CÁC TIÊU CHÍ QUÊN VÀ ĐẶT LẠI MẬT KHẨU ĐẠT 100%!");
         console.log("=======================================================\n");

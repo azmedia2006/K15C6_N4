@@ -1,4 +1,5 @@
 const path = require("path");
+const fs = require("fs");
 require("dotenv").config({
     path: [path.join(__dirname, ".env"), path.join(__dirname, "../.env")]
 });
@@ -239,9 +240,8 @@ function requireRole(...allowedRoles) {
 }
 
 // KN-31: API đăng nhập bằng email và mật khẩu
-// Cập nhật trả về danh sách vai trò N-N
-require('./businessRoutes')(app,{authenticateToken,requireRole});
-app.post("/api/auth/login", (req, res) => {
+// Cập nhật trả về danh sách vai trò N-N (hỗ trợ cả /api/auth/login và /auth/login)
+app.post(["/api/auth/login", "/auth/login"], async (req, res) => {
     const { email, password } = req.body || {};
 
     if (!email || !password) {
@@ -344,17 +344,15 @@ if (user && (user.status || "active") === "inactive") {
 });
 
 // KN-60: API lấy thông tin người dùng hiện tại
-// Đồng bộ tức thì trên Frontend
-app.post('/api/auth/logout',authenticateToken,(req,res)=>{require('./authService').revokeToken(req.headers.authorization.replace(/^Bearer\s+/i,''));res.json({success:true,message:'Đã đăng xuất.'});});
-app.post('/api/auth/change-password',authenticateToken,(req,res)=>{try{res.json(require('./authService').changePassword(req.user.id,req.body.currentPassword,req.body.newPassword));}catch(e){res.status(e.status||400).json({success:false,message:e.message});}});
-app.get("/api/auth/me", authenticateToken, (req, res) => {
+// Đồng bộ tức thì trên Frontend (hỗ trợ cả /api/auth/me và /auth/me)
+app.get(["/api/auth/me", "/auth/me"], authenticateToken, (req, res) => {
     return res.status(200).json({
         success: true,
         user: req.user
     });
 });
 // KN-67: Lấy hồ sơ cá nhân của người đang đăng nhập
-app.get("/api/auth/me/profile", authenticateToken, (req, res) => {
+app.get(["/api/auth/me/profile", "/auth/me/profile"], authenticateToken, (req, res) => {
     const user = users.find(u => u.id === req.user.id);
 
     if (!user) {
@@ -379,7 +377,7 @@ app.get("/api/auth/me/profile", authenticateToken, (req, res) => {
 });
 
 // KN-67: Cập nhật hồ sơ cá nhân
-app.put("/api/auth/me/profile", authenticateToken, async (req, res) => {
+app.put(["/api/auth/me/profile", "/auth/me/profile"], authenticateToken, async (req, res) => {
     try {
         const user = users.find(u => u.id === req.user.id);
 
@@ -505,40 +503,116 @@ app.put("/api/auth/me/profile", authenticateToken, async (req, res) => {
 // Hỗ trợ cả tiền tố /api/auth/* và /auth/*
 // =========================================================================
 
-const isVercelRuntime = process.env.VERCEL === "1";
+const isVercelRuntime = Boolean(process.env.VERCEL || process.env.VERCEL_URL || process.env.NOW_REGION);
 
 async function hydrateUsersForVercel() {
-    if (!isVercelRuntime) return;
-    const [storedUsers, roleAssignments] = await Promise.all([
-        supabaseService.loadPasswordRecoveryUsersSnapshot(),
-        supabaseService.loadUserRoleAssignmentsSnapshot()
-    ]);
-    if (storedUsers) {
-        users.splice(0, users.length, ...storedUsers);
+    if (!supabaseService.SUPABASE_URL) return;
+    try {
+        const [storedUsers, roleAssignments] = await Promise.all([
+            supabaseService.loadPasswordRecoveryUsersSnapshot().catch(() => null),
+            supabaseService.loadUserRoleAssignmentsSnapshot().catch(() => null)
+        ]);
+        if (Array.isArray(storedUsers) && storedUsers.length > 0) {
+            storedUsers.forEach(su => {
+                const existingIdx = users.findIndex(u => u.email.toLowerCase() === su.email.toLowerCase() || u.id === su.id);
+                if (existingIdx !== -1) {
+                    users[existingIdx] = { ...users[existingIdx], ...su };
+                } else {
+                    users.push(su);
+                }
+            });
+        }
+        if (roleAssignments) {
+            hydrateUserRoleAssignments(roleAssignments);
+        }
+    } catch (err) {
+        console.warn("[Server] Không thể đồng bộ người dùng từ Supabase:", err.message);
     }
-    hydrateUserRoleAssignments(roleAssignments);
 }
 
 async function hydratePasswordRecoveryState() {
-    if (!isVercelRuntime) return;
-
-    await hydrateUsersForVercel();
-    const storedTokens =
-        await supabaseService.loadPasswordResetTokensSnapshot();
-    passwordResetTokens.clear();
-
-    for (const entry of storedTokens) {
-        if (entry.expiresAt > Date.now()) {
-            passwordResetTokens.set(entry.token, entry);
+    try {
+        if (supabaseService.SUPABASE_URL) {
+            await hydrateUsersForVercel();
+            const storedTokens = await supabaseService.loadPasswordResetTokensSnapshot().catch(() => []);
+            if (Array.isArray(storedTokens)) {
+                for (const entry of storedTokens) {
+                    if (entry && entry.expiresAt > Date.now()) {
+                        passwordResetTokens.set(entry.token, entry);
+                    }
+                }
+            }
         }
+    } catch (e) {
+        console.warn("[Server] Không thể đồng bộ trạng thái phục hồi từ Supabase:", e.message);
     }
 }
 
 async function persistPasswordResetTokens() {
-    if (!isVercelRuntime) return;
-    await supabaseService.savePasswordResetTokensSnapshot(
-        [...passwordResetTokens.values()]
-    );
+    try {
+        if (supabaseService.SUPABASE_URL) {
+            await supabaseService.savePasswordResetTokensSnapshot(
+                [...passwordResetTokens.values()]
+            );
+        }
+    } catch (e) {
+        console.warn("[Server] Không thể lưu snapshot token khôi phục:", e.message);
+    }
+}
+
+// Xác định URL công khai cho Frontend, tuyệt đối không dùng localhost khi đang chạy trên Vercel
+function resolveFrontendUrl(req) {
+    const isVercel = Boolean(process.env.VERCEL || process.env.VERCEL_URL);
+
+    const origin = req && req.headers ? (req.headers["origin"] || "") : "";
+    if (origin && typeof origin === "string") {
+        const cleanOrigin = origin.trim().replace(/\/$/, "");
+        if (!cleanOrigin.includes("localhost") && !cleanOrigin.includes("127.0.0.1")) {
+            return cleanOrigin;
+        }
+        if (!isVercel) {
+            return cleanOrigin;
+        }
+    }
+    const referer = req && req.headers ? (req.headers["referer"] || "") : "";
+    if (referer && typeof referer === "string") {
+        try {
+            const parsed = new URL(referer);
+            const refBase = `${parsed.protocol}//${parsed.host}`;
+            if (!refBase.includes("localhost") && !refBase.includes("127.0.0.1")) {
+                return refBase;
+            }
+            if (!isVercel) {
+                return refBase;
+            }
+        } catch (_) {}
+    }
+
+    const forwardedHost = req && req.get ? (req.get("x-forwarded-host") || "") : "";
+    const forwardedProto = req && req.get ? (req.get("x-forwarded-proto") || "https") : "https";
+    if (forwardedHost && !forwardedHost.includes("localhost")) {
+        return `${forwardedProto}://${forwardedHost}`.replace(/\/$/, "");
+    }
+
+    if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+        return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`.replace(/\/$/, "");
+    }
+    if (process.env.VERCEL_URL) {
+        return `https://${process.env.VERCEL_URL}`.replace(/\/$/, "");
+    }
+
+    const envFrontend = (process.env.FRONTEND_URL || "").trim().replace(/\/$/, "");
+    if (envFrontend && (!isVercel || (!envFrontend.includes("localhost") && !envFrontend.includes("127.0.0.1")))) {
+        return envFrontend;
+    }
+
+    if (isVercel) {
+        return "https://k15c6n4.vercel.app";
+    }
+
+    const host = (req && req.get ? req.get("host") : "") || "localhost:3000";
+    const proto = (req && req.protocol) || "http";
+    return `${proto}://${host}`.replace(/\/$/, "");
 }
 
 // KN-39 & KN-42: API Yêu cầu quên mật khẩu và phát hành liên kết gửi qua Email
@@ -553,12 +627,44 @@ app.post(["/api/auth/forgot-password", "/auth/forgot-password"], async (req, res
         });
     }
 
-    const clientIp = req.ip || req.headers["x-forwarded-for"] || (req.socket && req.socket.remoteAddress) || "127.0.0.1";
-    const result = createPasswordResetToken(email, clientIp);
+    const normalizedInputEmail = String(email).trim().toLowerCase();
 
-    // Rate Limit: Quá 5 lần / giờ (KN-39)
-    if (result.rateLimited) {
-        return res.status(429).json({
+    try {
+        await hydratePasswordRecoveryState();
+
+        let result = createPasswordResetToken(normalizedInputEmail);
+
+        // Nếu email chưa có nhưng đúng định dạng email và khớp admin/smtp hoặc hồ sơ cần tạo
+        if (!result.userFound && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedInputEmail)) {
+            const user = findUserByEmail(normalizedInputEmail);
+            if (user) {
+                result = createPasswordResetToken(normalizedInputEmail);
+            }
+        }
+
+        if (result.userFound && result.token) {
+            await persistPasswordResetTokens();
+
+            const frontendUrl = resolveFrontendUrl(req);
+            const resetUrl = `${frontendUrl.replace(/\/$/, "")}/ResetPassword.html?token=${result.token}`;
+
+            try {
+                await sendPasswordResetEmail({
+                    to: result.user.email,
+                    name: result.user.name,
+                    resetToken: result.token,
+                    resetUrl
+                });
+                console.log(`[Server] ✔ Đã gửi email khôi phục mật khẩu tới: ${result.user.email}`);
+            } catch (mailErr) {
+                console.error("[Server] ⚠ Gửi email đặt lại mật khẩu thất bại:", mailErr.message);
+            }
+        } else {
+            console.warn(`[Server] Yêu cầu quên mật khẩu cho email không tồn tại trong hệ thống: ${normalizedInputEmail}`);
+        }
+    } catch (error) {
+        console.error("[Server] Không thể xử lý yêu cầu khôi phục mật khẩu:", error.message);
+        return res.status(503).json({
             success: false,
             code: 429,
             message: "Bạn đã yêu cầu đặt lại mật khẩu quá nhiều lần (tối đa 5 lần/giờ). Vui lòng thử lại sau.",
@@ -658,11 +764,15 @@ app.post(["/api/auth/reset-password", "/auth/reset-password"], async (req, res) 
     try {
         const resetResult = resetPasswordWithToken(token, newPassword);
 
-        // Đồng bộ dữ liệu người dùng sang Supabase
+        await persistPasswordResetTokens();
         try {
-            await supabaseService.syncUsersDatabase(users);
-        } catch (syncErr) {
-            // Không chặn tiến trình nếu offline
+            if (isVercelRuntime) {
+                await supabaseService.savePasswordRecoveryUsersSnapshot(users);
+            } else {
+                await supabaseService.syncUsersDatabase(users);
+            }
+        } catch (storageErr) {
+            console.warn("[Server] Không thể đồng bộ snapshot mật khẩu lên Supabase:", storageErr.message);
         }
 
         return res.status(200).json({
@@ -671,16 +781,17 @@ app.post(["/api/auth/reset-password", "/auth/reset-password"], async (req, res) 
             message: resetResult.message || "Đặt lại mật khẩu thành công! Bạn có thể sử dụng mật khẩu mới để đăng nhập."
         });
     } catch (err) {
-        return res.status(err.status || 400).json({
+        const status = err.status || 400;
+        return res.status(status).json({
             success: false,
-            code: err.status || 400,
+            code: status,
             message: err.message || "Không thể đặt lại mật khẩu."
         });
     }
 });
 
 // API Đăng ký tài khoản người dùng công khai (Học viên)
-app.post("/api/auth/register", async (req, res) => {
+app.post(["/api/auth/register", "/auth/register"], async (req, res) => {
     try {
         await hydrateUsersForVercel();
         const { name, email, phone, password } = req.body || {};
@@ -2096,12 +2207,15 @@ app.get("/api/health", async (req, res) => {
             url: supabaseService.SUPABASE_URL
         },
         smtp: {
-            configured: Boolean(SMTP_CONFIG.host),
+            enabled: SMTP_CONFIG.enabled,
+            configured: SMTP_CONFIG.configured,
             host: SMTP_CONFIG.host,
             port: SMTP_CONFIG.port,
             user: SMTP_CONFIG.user,
             from: SMTP_CONFIG.fromEmail,
-            connected: smtpCheck.success
+            fromName: SMTP_CONFIG.fromName,
+            connected: smtpCheck.success,
+            error: smtpCheck.error || null
         },
         timestamp: new Date().toISOString()
     });
@@ -2116,6 +2230,8 @@ app.get("/api/admin/smtp/status",
         return res.status(200).json({
             success: true,
             smtp: {
+                enabled: SMTP_CONFIG.enabled,
+                configured: SMTP_CONFIG.configured,
                 host: SMTP_CONFIG.host,
                 port: SMTP_CONFIG.port,
                 user: SMTP_CONFIG.user,
@@ -2123,7 +2239,7 @@ app.get("/api/admin/smtp/status",
                 fromName: SMTP_CONFIG.fromName,
                 secure: SMTP_CONFIG.secure,
                 connected: smtpStatus.success,
-                error: smtpStatus.error || null,
+                error: smtpStatus.error || SMTP_CONFIG.configError || null,
                 totalSentEmails: sentEmails.length
             }
         });
@@ -2683,20 +2799,36 @@ require("./kn75").mountKn75(app, { authenticateToken, requireRole });
 
 // KN-49 & KN-50: Các định tuyến mã lỗi chuẩn (Clean Error Routing)
 app.get(["/403", "/error-403"], (req, res) => {
-    res.sendFile(path.join(rootDir, "Error.html"));
+    const errorHtmlPath = path.join(rootDir, "Error.html");
+    if (fs.existsSync(errorHtmlPath)) {
+        return res.sendFile(errorHtmlPath);
+    }
+    res.status(403).send("403 Forbidden");
 });
 app.get(["/404", "/error-404"], (req, res) => {
-    res.sendFile(path.join(rootDir, "Error.html"));
+    const errorHtmlPath = path.join(rootDir, "Error.html");
+    if (fs.existsSync(errorHtmlPath)) {
+        return res.sendFile(errorHtmlPath);
+    }
+    res.status(404).send("404 Not Found");
 });
 app.get(["/500", "/error-500"], (req, res) => {
-    res.sendFile(path.join(rootDir, "Error.html"));
+    const errorHtmlPath = path.join(rootDir, "Error.html");
+    if (fs.existsSync(errorHtmlPath)) {
+        return res.sendFile(errorHtmlPath);
+    }
+    res.status(500).send("500 Server Error");
 });
 app.get("/error", (req, res) => {
-    res.sendFile(path.join(rootDir, "Error.html"));
+    const errorHtmlPath = path.join(rootDir, "Error.html");
+    if (fs.existsSync(errorHtmlPath)) {
+        return res.sendFile(errorHtmlPath);
+    }
+    res.status(500).send("An error occurred");
 });
 
 // KN-54: Fallback và chuẩn hóa lỗi cho các API request không tồn tại
-app.use("/api", (req, res) => {
+app.use(["/api", "/auth"], (req, res) => {
     res.status(404).json({
         success: false,
         code: 404,
@@ -2706,10 +2838,25 @@ app.use("/api", (req, res) => {
     });
 });
 
-// Fallback cho các đường dẫn trang không tồn tại -> Trả về giao diện 404
+// Fallback cho các đường dẫn trang không tồn tại -> Trả về giao diện 404 an toàn
 app.use((req, res, next) => {
-    if (req.method === "GET" && !req.originalUrl.startsWith("/api/")) {
-        return res.status(404).sendFile(path.join(rootDir, "Error.html"));
+    const isApiOrAuth = req.originalUrl && (req.originalUrl.startsWith("/api") || req.originalUrl.startsWith("/auth"));
+    if (isApiOrAuth) {
+        return res.status(404).json({
+            success: false,
+            code: 404,
+            error: "Không tìm thấy tài nguyên yêu cầu.",
+            path: req.originalUrl,
+            timestamp: new Date().toISOString()
+        });
+    }
+
+    if (req.method === "GET") {
+        const errorHtmlPath = path.join(rootDir, "Error.html");
+        if (fs.existsSync(errorHtmlPath)) {
+            return res.status(404).sendFile(errorHtmlPath);
+        }
+        return res.status(404).send("404 Not Found");
     }
     next();
 });
@@ -2721,7 +2868,8 @@ app.use((err, req, res, next) => {
         ? "Đã xảy ra sự cố trong quá trình xử lý yêu cầu. Dữ liệu của bạn vẫn an toàn."
         : (err.message || "Yêu cầu không hợp lệ.");
 
-    if (req.originalUrl && req.originalUrl.startsWith("/api/")) {
+    const isApiOrAuth = !req.originalUrl || req.originalUrl.startsWith("/api") || req.originalUrl.startsWith("/auth") || (req.headers && req.headers.accept && req.headers.accept.includes("application/json"));
+    if (isApiOrAuth) {
         return res.status(statusCode).json({
             success: false,
             code: statusCode,
@@ -2730,7 +2878,11 @@ app.use((err, req, res, next) => {
         });
     }
 
-    res.status(statusCode).sendFile(path.join(rootDir, "Error.html"));
+    const errorHtmlPath = path.join(rootDir, "Error.html");
+    if (fs.existsSync(errorHtmlPath)) {
+        return res.status(statusCode).sendFile(errorHtmlPath);
+    }
+    res.status(statusCode).send(`Error ${statusCode}: ${safeMessage}`);
 });
 
 // Tự động tải và đồng bộ các tài khoản người dùng từ Supabase vào bộ nhớ

@@ -772,6 +772,9 @@
         const recoveryForm = document.querySelector("#recovery-form");
         const recoverySubmit = document.querySelector("#recovery-submit");
         const recoveryMessage = document.querySelector("#recovery-message");
+        let recoveryCooldownUntil = 0;
+        let recoveryCooldownTimer = null;
+        let recoveryCooldownMessage = "Bạn đã gửi quá nhiều yêu cầu.";
         const roleHome = {
             visitor: "./Index.html?role=visitor",
             student: "./Index.html?role=student",
@@ -810,6 +813,31 @@
                 return `${m} phút ${s > 0 ? s + ' giây' : ''}`.trim();
             }
             return `${s} giây`;
+        }
+
+        function updateRecoveryCooldown(message) {
+            const remaining = Math.max(
+                0,
+                Math.ceil((recoveryCooldownUntil - Date.now()) / 1000)
+            );
+
+            if (remaining === 0) {
+                if (recoveryCooldownTimer) {
+                    window.clearInterval(recoveryCooldownTimer);
+                    recoveryCooldownTimer = null;
+                }
+                recoverySubmit.disabled = false;
+                recoverySubmit.textContent = "Gửi hướng dẫn";
+                showMessage(recoveryMessage, "Bạn có thể yêu cầu khôi phục mật khẩu lại.");
+                return;
+            }
+
+            recoverySubmit.disabled = true;
+            recoverySubmit.textContent = `Thử lại sau ${formatRemaining(remaining)}`;
+            showMessage(
+                recoveryMessage,
+                `${message} Có thể thử lại sau ${formatRemaining(remaining)}.`
+            );
         }
 
         async function parseResponse(response) {
@@ -1160,12 +1188,41 @@
                     credentials: "same-origin",
                     body: JSON.stringify({ email: document.querySelector("#recovery-email").value.trim() })
                 });
-                if (!response.ok) throw new Error("Request failed");
-                const result=await response.json();showMessage(recoveryMessage,result.message,result.mailConfigured===true);
-            } catch {
-                showMessage(recoveryMessage, "Chưa thể gửi yêu cầu. Vui lòng thử lại sau.");
+                const result = await parseResponse(response);
+                if (response.status === 429) {
+                    const retryAfterSeconds = Math.max(
+                        1,
+                        Number(result.retryAfterSeconds) ||
+                            Number(response.headers.get("Retry-After")) ||
+                            3600
+                    );
+                    recoveryCooldownUntil = Date.now() + retryAfterSeconds * 1000;
+                    recoveryCooldownMessage =
+                        result.message || "Bạn đã gửi quá nhiều yêu cầu.";
+                    if (recoveryCooldownTimer) window.clearInterval(recoveryCooldownTimer);
+                    recoveryCooldownTimer = window.setInterval(
+                        () => updateRecoveryCooldown(recoveryCooldownMessage),
+                        1000
+                    );
+                    updateRecoveryCooldown(recoveryCooldownMessage);
+                    return;
+                }
+                if (!response.ok) {
+                    throw new Error(result.message || "Chưa thể gửi yêu cầu. Vui lòng thử lại sau.");
+                }
+                showMessage(
+                    recoveryMessage,
+                    result.message || "Nếu email thuộc tài khoản hợp lệ, hướng dẫn khôi phục sẽ được gửi đến hộp thư của bạn.",
+                    true
+                );
+            } catch (error) {
+                showMessage(recoveryMessage, error.message || "Chưa thể gửi yêu cầu. Vui lòng thử lại sau.");
             } finally {
-                setBusy(recoverySubmit, false, "Đang gửi…", "Gửi hướng dẫn");
+                if (recoveryCooldownUntil > Date.now()) {
+                    updateRecoveryCooldown(recoveryCooldownMessage);
+                } else {
+                    setBusy(recoverySubmit, false, "Đang gửi…", "Gửi hướng dẫn");
+                }
             }
         });
     </script>
