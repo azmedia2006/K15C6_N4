@@ -12,13 +12,13 @@ require("dotenv").config({
 
 // Cấu hình SMTP
 const SMTP_CONFIG = {
-    enabled: process.env.SMTP_ENABLED === "true",
-    host: process.env.SMTP_HOST || "",
+    enabled: process.env.SMTP_ENABLED !== "false",
+    host: process.env.SMTP_HOST || "mx.tino.vn",
     port: parseInt(process.env.SMTP_PORT || "587", 10),
-    user: process.env.SMTP_USER || "",
+    user: process.env.SMTP_USER || "daotaotms@tuoitre24h.com",
     pass: process.env.SMTP_PASSWORD || process.env.SMTP_PASS || "",
-    fromEmail: process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || "",
-    fromName: process.env.SMTP_FROM_NAME || "Đào tạo TMS",
+    fromEmail: process.env.SMTP_FROM_EMAIL || "daotaotms@tuoitre24h.com",
+    fromName: process.env.SMTP_FROM_NAME || "Đào Tạo TMS",
     secure: process.env.SMTP_SECURE === "true",
     tls: process.env.SMTP_TLS !== "false"
 };
