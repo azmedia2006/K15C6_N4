@@ -152,47 +152,18 @@ function recordSuccessfulLogin(email) {
 // Lưu trữ token đặt lại mật khẩu trong bộ nhớ: token -> { email, userId, expiresAt, used, createdAt }
 const passwordResetTokens = new Map();
 
-// Quản lý tần suất yêu cầu đặt lại mật khẩu theo địa chỉ IP.
-const forgotRateLimits = new Map(); // key: IP, value: Array<timestamp>
-const FORGOT_RATE_LIMIT_MAX = 5;
-const FORGOT_RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 giờ
 const TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 60 phút
-
-/**
- * Kiểm tra giới hạn tần suất yêu cầu quên mật khẩu theo IP.
- */
-function checkForgotRateLimit(key) {
-    const now = Date.now();
-    const timestamps = (forgotRateLimits.get(key) || []).filter(ts => now - ts < FORGOT_RATE_LIMIT_WINDOW_MS);
-    if (timestamps.length >= FORGOT_RATE_LIMIT_MAX) {
-        const oldest = timestamps[0];
-        const retryAfterSeconds = Math.ceil((oldest + FORGOT_RATE_LIMIT_WINDOW_MS - now) / 1000);
-        return { limited: true, retryAfterSeconds };
-    }
-    timestamps.push(now);
-    forgotRateLimits.set(key, timestamps);
-    return { limited: false };
-}
 
 /**
  * Tạo token đặt lại mật khẩu CSPRNG an toàn
  */
-function createPasswordResetToken(email, clientIp = "") {
+function createPasswordResetToken(email) {
     const normalized = String(email || "").trim().toLowerCase();
-
-    // Dùng giới hạn theo IP để không khóa email của người dùng khi có nhiều yêu cầu.
-    if (clientIp) {
-        const ipLimit = checkForgotRateLimit(`ip:${clientIp}`);
-        if (ipLimit.limited) {
-            return { rateLimited: true, retryAfterSeconds: ipLimit.retryAfterSeconds };
-        }
-    }
 
     const user = findUserByEmail(normalized);
     if (!user) {
         // KN-39: Không tìm thấy người dùng vẫn trả về kết quả giả lập an toàn để chống User Enumeration
         return {
-            rateLimited: false,
             userFound: false
         };
     }
@@ -212,7 +183,6 @@ function createPasswordResetToken(email, clientIp = "") {
     });
 
     return {
-        rateLimited: false,
         userFound: true,
         token,
         expiresAt,

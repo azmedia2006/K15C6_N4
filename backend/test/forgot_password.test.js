@@ -176,58 +176,22 @@ async function runTests() {
             });
         }
 
-        // --- TEST 8: Rate limit trả về thời gian chờ cho giao diện ---
-        for (let i = 0; i < 2; i += 1) {
+        // --- TEST 8: Cho phép yêu cầu liên tục, không giới hạn theo email hoặc IP ---
+        for (let i = 0; i < 7; i += 1) {
             const allowedRes = await fetch(`${baseUrl}/api/auth/forgot-password`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: `rate-limit-${i}@example.test` })
+                body: JSON.stringify({ email: `unlimited-${i}@example.test` })
             });
             assert.strictEqual(allowedRes.status, 200);
         }
 
-        const rateLimitedRes = await fetch(`${baseUrl}/api/auth/forgot-password`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: "rate-limit-final@example.test" })
-        });
-        const rateLimitedData = await rateLimitedRes.json();
-        assert.strictEqual(rateLimitedRes.status, 429);
-        assert.ok(Number(rateLimitedData.retryAfterSeconds) > 0);
-        assert.strictEqual(
-            rateLimitedRes.headers.get("retry-after"),
-            String(rateLimitedData.retryAfterSeconds)
-        );
-        console.log("  ✔ PASS: Rate limit HTTP 429 trả thời gian chờ qua JSON và Retry-After");
-
-        // Một email không bị khóa khi gửi yêu cầu từ các địa chỉ IP khác nhau.
-        for (let i = 0; i < 6; i += 1) {
-            const emailLimitResult = createPasswordResetToken(
-                validEmail,
-                `email-limit-test-ip-${i}`
-            );
-            assert.strictEqual(
-                emailLimitResult.rateLimited,
-                false,
-                "Không giới hạn số lần chỉ dựa trên email."
-            );
+        for (let i = 0; i < 7; i += 1) {
+            const repeatedRequest = createPasswordResetToken(validEmail);
+            assert.strictEqual(repeatedRequest.userFound, true);
+            assert.ok(repeatedRequest.token);
         }
-
-        const ipLimit = "ip-limit-test-address";
-        for (let i = 0; i < 5; i += 1) {
-            const ipLimitResult = createPasswordResetToken(
-                `ip-limit-${i}@example.test`,
-                ipLimit
-            );
-            assert.strictEqual(ipLimitResult.rateLimited, false);
-        }
-        const blockedByIp = createPasswordResetToken(
-            "ip-limit-final@example.test",
-            ipLimit
-        );
-        assert.strictEqual(blockedByIp.rateLimited, true);
-        assert.ok(blockedByIp.retryAfterSeconds > 0);
-        console.log("  ✔ PASS: Giới hạn theo email đã bỏ; giới hạn chống spam theo IP vẫn hoạt động");
+        console.log("  ✔ PASS: Yêu cầu khôi phục không còn bị giới hạn theo email hoặc IP");
 
         console.log("\n=======================================================");
         console.log("✔ TẤT CẢ CÁC TIÊU CHÍ QUÊN VÀ ĐẶT LẠI MẬT KHẨU ĐẠT 100%!");

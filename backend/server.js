@@ -558,19 +558,7 @@ app.post(["/api/auth/forgot-password", "/auth/forgot-password"], async (req, res
     try {
         await hydratePasswordRecoveryState();
 
-        const clientIp = req.ip || req.headers["x-forwarded-for"] || (req.socket && req.socket.remoteAddress) || "127.0.0.1";
-        const result = createPasswordResetToken(email, clientIp);
-
-        // Rate Limit: Quá 5 lần / giờ (KN-39)
-        if (result.rateLimited) {
-            res.set("Retry-After", String(result.retryAfterSeconds));
-            return res.status(429).json({
-                success: false,
-                code: 429,
-                message: "Địa chỉ mạng này đã gửi quá nhiều yêu cầu khôi phục (tối đa 5 lần/giờ). Vui lòng thử lại sau.",
-                retryAfterSeconds: result.retryAfterSeconds
-            });
-        }
+        const result = createPasswordResetToken(email);
 
         if (result.userFound && result.token) {
             await persistPasswordResetTokens();
