@@ -567,7 +567,7 @@ app.post(["/api/auth/forgot-password", "/auth/forgot-password"], async (req, res
             return res.status(429).json({
                 success: false,
                 code: 429,
-                message: "Bạn đã yêu cầu đặt lại mật khẩu quá nhiều lần (tối đa 5 lần/giờ). Vui lòng thử lại sau.",
+                message: "Địa chỉ mạng này đã gửi quá nhiều yêu cầu khôi phục (tối đa 5 lần/giờ). Vui lòng thử lại sau.",
                 retryAfterSeconds: result.retryAfterSeconds
             });
         }

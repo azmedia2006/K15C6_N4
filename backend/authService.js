@@ -152,14 +152,14 @@ function recordSuccessfulLogin(email) {
 // Lưu trữ token đặt lại mật khẩu trong bộ nhớ: token -> { email, userId, expiresAt, used, createdAt }
 const passwordResetTokens = new Map();
 
-// Quản lý tần suất yêu cầu đặt lại mật khẩu (Rate limit: tối đa 5 lần / giờ)
-const forgotRateLimits = new Map(); // key: ip hoặc email, value: Array<timestamp>
+// Quản lý tần suất yêu cầu đặt lại mật khẩu theo địa chỉ IP.
+const forgotRateLimits = new Map(); // key: IP, value: Array<timestamp>
 const FORGOT_RATE_LIMIT_MAX = 5;
 const FORGOT_RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 giờ
 const TOKEN_EXPIRY_MS = 60 * 60 * 1000; // 60 phút
 
 /**
- * Kiểm tra giới hạn tần suất yêu cầu quên mật khẩu (Rate limit 5 lần/giờ)
+ * Kiểm tra giới hạn tần suất yêu cầu quên mật khẩu theo IP.
  */
 function checkForgotRateLimit(key) {
     const now = Date.now();
@@ -180,11 +180,7 @@ function checkForgotRateLimit(key) {
 function createPasswordResetToken(email, clientIp = "") {
     const normalized = String(email || "").trim().toLowerCase();
 
-    // Kiểm tra rate limit theo email và theo IP
-    const emailLimit = checkForgotRateLimit(`email:${normalized}`);
-    if (emailLimit.limited) {
-        return { rateLimited: true, retryAfterSeconds: emailLimit.retryAfterSeconds };
-    }
+    // Dùng giới hạn theo IP để không khóa email của người dùng khi có nhiều yêu cầu.
     if (clientIp) {
         const ipLimit = checkForgotRateLimit(`ip:${clientIp}`);
         if (ipLimit.limited) {
@@ -331,4 +327,3 @@ module.exports = {
     verifyPasswordResetToken,
     resetPasswordWithToken
 };
-

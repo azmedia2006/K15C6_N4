@@ -200,6 +200,35 @@ async function runTests() {
         );
         console.log("  ✔ PASS: Rate limit HTTP 429 trả thời gian chờ qua JSON và Retry-After");
 
+        // Một email không bị khóa khi gửi yêu cầu từ các địa chỉ IP khác nhau.
+        for (let i = 0; i < 6; i += 1) {
+            const emailLimitResult = createPasswordResetToken(
+                validEmail,
+                `email-limit-test-ip-${i}`
+            );
+            assert.strictEqual(
+                emailLimitResult.rateLimited,
+                false,
+                "Không giới hạn số lần chỉ dựa trên email."
+            );
+        }
+
+        const ipLimit = "ip-limit-test-address";
+        for (let i = 0; i < 5; i += 1) {
+            const ipLimitResult = createPasswordResetToken(
+                `ip-limit-${i}@example.test`,
+                ipLimit
+            );
+            assert.strictEqual(ipLimitResult.rateLimited, false);
+        }
+        const blockedByIp = createPasswordResetToken(
+            "ip-limit-final@example.test",
+            ipLimit
+        );
+        assert.strictEqual(blockedByIp.rateLimited, true);
+        assert.ok(blockedByIp.retryAfterSeconds > 0);
+        console.log("  ✔ PASS: Giới hạn theo email đã bỏ; giới hạn chống spam theo IP vẫn hoạt động");
+
         console.log("\n=======================================================");
         console.log("✔ TẤT CẢ CÁC TIÊU CHÍ QUÊN VÀ ĐẶT LẠI MẬT KHẨU ĐẠT 100%!");
         console.log("=======================================================\n");
