@@ -28,8 +28,8 @@
             if (rawUser) currentUser = JSON.parse(rawUser);
         } catch (e) {}
 
-        var urlParams = new URLSearchParams(window.location.search);
-        var urlRole = (urlParams.get("role") || "").toLowerCase().trim();
+
+
         var userRoles = [];
         if (currentUser && currentUser.role) {
             userRoles.push(currentUser.role.toLowerCase());
@@ -50,7 +50,7 @@
             // currentRole hợp lệ mà người dùng thực sự sở hữu
         }
 
-        var isUnauthenticated = !token || !currentUser || !currentUser.id;
+        var isUnauthenticated = !token && (!currentUser || !currentUser.id);
 
         var requiredRoles = requiredRole.split(",").map(function(item) { return item.trim().toLowerCase(); });
         var hasPermission = userRoles.some(function(r) {
@@ -78,5 +78,3 @@
         releaseMask();
     }
 })();
-
-document.addEventListener('click',async function(event){const element=event.target.closest('a,button');if(!element)return;const action=element.getAttribute('onclick')||'';if(!/logout\(/i.test(action)&&!/^Đăng xuất$/i.test(element.textContent.trim())&&!element.classList.contains('logout-btn'))return;event.preventDefault();event.stopImmediatePropagation();try{await fetch('/api/auth/logout',{method:'POST',headers:{Authorization:'Bearer '+(localStorage.getItem('tms_token')||localStorage.getItem('token'))}})}finally{localStorage.clear();location.assign('/Login.html')}},true);
