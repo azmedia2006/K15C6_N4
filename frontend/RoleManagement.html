@@ -1260,18 +1260,6 @@
         };
     }
 
-    const FALLBACK_USERS = [
-        { id: "usr_admin", name: "Nguyễn Văn Anh", email: "admin@tms.edu.vn", role: "administrator", roles: ["administrator"] },
-        { id: "usr_manager", name: "Đỗ Quốc Bảo", email: "manager@tms.edu.vn", role: "training_manager", roles: ["training_manager"] },
-        { id: "usr_teacher", name: "ThS. Trần Minh", email: "teacher@tms.edu.vn", role: "instructor", roles: ["instructor"] },
-        { id: "usr_ta", name: "Nguyễn Thu Hà", email: "ta@tms.edu.vn", role: "teaching_assistant", roles: ["teaching_assistant"] },
-        { id: "usr_student", name: "Lê Minh Tuấn", email: "student@tms.edu.vn", role: "student", roles: ["student"] },
-        { id: "usr_student2", name: "Lê Minh Tuấn", email: "sv001", role: "student", roles: ["student"] },
-        { id: "usr_admissions", name: "Vũ Hải Yến", email: "admissions@tms.edu.vn", role: "admissions", roles: ["admissions"] },
-        { id: "usr_accountant", name: "Phạm Thanh Mai", email: "accountant@tms.edu.vn", role: "accountant", roles: ["accountant"] },
-        { id: "usr_visitor", name: "Khách tham quan", email: "visitor@tms.edu.vn", role: "visitor", roles: ["visitor"] }
-    ];
-
     let authToken = localStorage.getItem("tms_token") || "";
     let currentAdmin = normalizeAdmin(JSON.parse(localStorage.getItem("tms_user") || "null"));
 
@@ -1283,31 +1271,13 @@
     let totalPages = 1;
 
     async function ensureValidAdminSession() {
-        let token = localStorage.getItem("tms_token") || localStorage.getItem("token") || "";
-        if (token) {
-            authToken = token;
-            return token;
+        const token = localStorage.getItem("tms_token") || localStorage.getItem("token") || "";
+        if (!token) {
+            window.location.replace("Login.html");
+            return null;
         }
-        try {
-            const res = await fetch(`${API_BASE}/auth/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: "admin@tms.edu.vn", password: "admin123" })
-            });
-            const d = await res.json();
-            if (d.success && d.token) {
-                authToken = d.token;
-                currentAdmin = normalizeAdmin(d.user);
-                localStorage.setItem("tms_token", authToken);
-                localStorage.setItem("tms_user", JSON.stringify(currentAdmin));
-                localStorage.setItem("tms_current_user", JSON.stringify(currentAdmin));
-                localStorage.setItem("tms_current_role", "administrator");
-                return authToken;
-            }
-        } catch (e) {
-            console.warn("Lỗi kết nối phiên quản trị:", e);
-        }
-        return authToken;
+        authToken = token;
+        return token;
     }
 
     function showToast(message, type = "success") {
@@ -1334,31 +1304,41 @@
     }
 
     async function switchAccount() {
-        const email = prompt("Nhập email tài khoản muốn chuyển đổi:", "admin@tms.edu.vn");
+        const email = prompt("Nhập email tài khoản:");
         if (!email) return;
+        const password = prompt("Nhập mật khẩu tài khoản:");
+        if (!password) return;
+
         try {
-            const res = await fetch(`${API_BASE}/auth/login`, {
+            const response = await fetch(API_BASE + "/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: email.trim(), password: email.includes("teacher") ? "teacher123" : "admin123" })
+                body: JSON.stringify({ email: email.trim(), password })
             });
-            const data = await res.json();
-            if (data.success) {
-                authToken = data.token;
-                currentAdmin = normalizeAdmin(data.user);
-                localStorage.setItem("tms_token", authToken);
-                localStorage.setItem("tms_user", JSON.stringify(currentAdmin));
-                showToast(`Đã chuyển sang tài khoản: ${currentAdmin.name}`);
-                initApp();
-            } else {
-                showToast(data.message, "error");
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.success || !data.token) {
+                showToast(data.message || "Đăng nhập không thành công.", "error");
+                return;
             }
+
+            authToken = data.token;
+            currentAdmin = normalizeAdmin(data.user);
+            localStorage.setItem("tms_token", authToken);
+            localStorage.setItem("token", authToken);
+            localStorage.setItem("tms_user", JSON.stringify(currentAdmin));
+            localStorage.setItem("tms_current_user", JSON.stringify(currentAdmin));
+            localStorage.setItem("tms_current_role", currentAdmin.role);
+            showToast("Đã chuyển sang tài khoản: " + currentAdmin.name);
+            initApp();
         } catch {
-            showToast("Lỗi kết nối máy chủ xác thực", "error");
+            showToast("Không thể kết nối máy chủ xác thực.", "error");
         }
     }
 
     async function initApp() {
+        const token = await ensureValidAdminSession();
+        if (!token) return;
+
         currentAdmin = normalizeAdmin(currentAdmin);
         const nameEl = document.getElementById("admin-name");
         const emailEl = document.getElementById("admin-email");
@@ -1415,61 +1395,40 @@
         const searchInput = document.getElementById("search-input");
         const roleFilter = document.getElementById("role-filter");
         const tbody = document.getElementById("users-table-body");
-
         const search = searchInput ? searchInput.value.trim() : "";
         const roleId = roleFilter ? roleFilter.value : "";
+
         if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 32px;">Đang tải dữ liệu...</td></tr>`;
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:32px;">Đang tải dữ liệu...</td></tr>';
         }
 
         try {
             const token = await ensureValidAdminSession();
-            const url = `${API_BASE}/admin/users?page=${currentPage}&limit=8&search=${encodeURIComponent(search)}&roleId=${encodeURIComponent(roleId)}`;
-            const res = await fetch(url, {
-                headers: { "Authorization": `Bearer ${token}` }
+            if (!token) return;
+            const url = API_BASE + "/admin/users?page=" + currentPage + "&limit=8&search=" + encodeURIComponent(search) + "&roleId=" + encodeURIComponent(roleId);
+            const response = await fetch(url, {
+                headers: { "Authorization": "Bearer " + token }
             });
-
-            if (res.status === 401) {
+            const data = await response.json().catch(() => ({}));
+            if (response.status === 401) {
                 localStorage.removeItem("tms_token");
-                const freshToken = await ensureValidAdminSession();
-                const retryRes = await fetch(url, {
-                    headers: { "Authorization": `Bearer ${freshToken}` }
-                });
-                if (retryRes.ok) {
-                    const data = await retryRes.json();
-                    usersList = data.users || [];
-                    totalPages = data.pagination ? data.pagination.totalPages : 1;
-                    renderUsersTable(usersList);
-                    updatePaginationUI(data.pagination);
-                    updateUserStat(data.pagination ? data.pagination.total : usersList.length);
-                    return;
-                }
+                localStorage.removeItem("token");
+                window.location.replace("Login.html");
+                return;
             }
+            if (!response.ok) throw new Error(data.message || "Không thể tải danh sách người dùng.");
 
-            if (res.ok) {
-                const data = await res.json();
-                usersList = data.users || [];
-                totalPages = data.pagination ? data.pagination.totalPages : 1;
-                renderUsersTable(usersList);
-                updatePaginationUI(data.pagination);
-                updateUserStat(data.pagination ? data.pagination.total : usersList.length);
-            } else {
-                throw new Error("Không thể tải danh sách");
-            }
-        } catch (err) {
-            console.warn("Sử dụng danh sách tài khoản dự phòng:", err);
-            usersList = FALLBACK_USERS.filter(u => {
-                const matchSearch = !search || 
-                    (u.name && u.name.toLowerCase().includes(search.toLowerCase())) ||
-                    (u.email && u.email.toLowerCase().includes(search.toLowerCase())) ||
-                    (u.id && u.id.toLowerCase().includes(search.toLowerCase()));
-                const matchRole = !roleId || (u.roles && u.roles.includes(roleId)) || u.role === roleId;
-                return matchSearch && matchRole;
-            });
-            totalPages = Math.ceil(usersList.length / 8) || 1;
+            usersList = data.users || [];
+            totalPages = data.pagination ? data.pagination.totalPages : 1;
             renderUsersTable(usersList);
-            updatePaginationUI({ page: currentPage, totalPages: totalPages, total: usersList.length });
-            updateUserStat(usersList.length);
+            updatePaginationUI(data.pagination);
+            updateUserStat(data.pagination ? data.pagination.total : usersList.length);
+        } catch (error) {
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:32px;"></td></tr>';
+                tbody.querySelector("td").textContent = error.message || "Request failed.";
+            }
+            showToast(error.message || "Không thể tải danh sách người dùng.", "error");
         }
     }
 
@@ -1779,12 +1738,10 @@
 
             if (res.status === 401) {
                 localStorage.removeItem("tms_token");
-                const freshToken = await ensureValidAdminSession();
-                res = await fetch(`${API_BASE}/admin/audit-logs`, {
-                    headers: { "Authorization": `Bearer ${freshToken}` }
-                });
+                localStorage.removeItem("token");
+                window.location.replace("Login.html");
+                return;
             }
-
             if (res.ok) {
                 const data = await res.json();
                 if (Array.isArray(data.auditLogs) && data.auditLogs.length > 0) {

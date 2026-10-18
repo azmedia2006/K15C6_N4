@@ -796,23 +796,31 @@ app.get(
     ["/api/admin/users", "/api/users"],
     authenticateToken,
     requireRole("administrator"),
-    (req, res) => {
-        const { page, limit, roleId, role, search, query, status } = req.query;
+    async (req, res) => {
+        try {
+            await hydrateUsersForVercel();
+            const { page, limit, roleId, role, search, query, status } = req.query;
 
-        const result = getUsersWithRolesList({
-            page,
-            limit,
-            roleId,
-            role,
-            search,
-            query,
-            status
-        });
+            const result = getUsersWithRolesList({
+                page,
+                limit,
+                roleId,
+                role,
+                search,
+                query,
+                status
+            });
 
-        return res.status(200).json({
-            success: true,
-            ...result
-        });
+            return res.status(200).json({
+                success: true,
+                ...result
+            });
+        } catch (err) {
+            return res.status(err.status || err.statusCode || 503).json({
+                success: false,
+                message: err.message || "Không thể tải danh sách tài khoản."
+            });
+        }
     }
 );
 
@@ -1048,17 +1056,22 @@ app.put(
     requireRole("administrator"),
     async (req, res) => {
         try {
+            await hydrateUsersForVercel();
             const updated = updateUser(req.params.id, req.body || {});
             if (req.body && req.body.role) {
-                try {
-                    syncUserRole(req.params.id, req.body.role);
-                } catch (e) {
-                    // ignore
-                }
+                syncUserRole(req.params.id, req.body.role);
             }
 
             // Đồng bộ cập nhật sang Supabase
             await supabaseService.syncSingleUser(updated, req.body ? req.body.password : null, users);
+            if (isVercelRuntime) {
+                await Promise.all([
+                    supabaseService.savePasswordRecoveryUsersSnapshot(users),
+                    supabaseService.saveUserRoleAssignmentsSnapshot(
+                        getAllUserRolesAssignments()
+                    )
+                ]);
+            }
 
             return res.status(200).json({
                 success: true,
@@ -1081,6 +1094,7 @@ app.delete(
     requireRole("administrator"),
     async (req, res) => {
         try {
+            await hydrateUsersForVercel();
             const targetId = req.params.id;
             if (targetId === "usr_admin" || targetId === req.user?.id) {
                 return res.status(403).json({
@@ -1094,11 +1108,19 @@ app.delete(
 
             if (userToDelete) {
                 result = deleteUser(targetId, req.user ? req.user.id : null);
-                removeAllUserRoles(targetId);
             }
+            removeAllUserRoles(targetId);
 
             // Đồng bộ xóa sang Supabase (PostgreSQL tables, Auth, Storage)
             await supabaseService.deleteSingleUser(targetId, userToDelete ? userToDelete.email : null, users);
+            if (isVercelRuntime) {
+                await Promise.all([
+                    supabaseService.savePasswordRecoveryUsersSnapshot(users),
+                    supabaseService.saveUserRoleAssignmentsSnapshot(
+                        getAllUserRolesAssignments()
+                    )
+                ]);
+            }
 
             return res.status(200).json(result);
         } catch (err) {

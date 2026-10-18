@@ -62,7 +62,7 @@ const { sentEmails, sendActivationEmail } = require("../emailService");
 const app = require("../server");
 const server = http.createServer(app);
 
-function request(path, method, body) {
+function request(path, method, body, headers = {}) {
     return new Promise((resolve, reject) => {
         const payload = body ? JSON.stringify(body) : "";
         const options = {
@@ -73,9 +73,10 @@ function request(path, method, body) {
             headers: payload
                 ? {
                     "Content-Type": "application/json",
-                    "Content-Length": Buffer.byteLength(payload)
+                    "Content-Length": Buffer.byteLength(payload),
+                    ...headers
                 }
-                : {}
+                : headers
         };
         const req = http.request(options, response => {
             let text = "";
@@ -104,6 +105,53 @@ async function run() {
             password: "admin123"
         });
         assert.strictEqual(login.status, 200);
+        const adminHeaders = {
+            Authorization: `Bearer ${login.body.token}`
+        };
+
+        const adminCreatedEmail = `serverless_admin_${Date.now()}@example.test`;
+        const adminCreated = await request("/api/admin/users", "POST", {
+            name: "Serverless Admin User",
+            email: adminCreatedEmail,
+            role: "student",
+            password: "Initial123"
+        }, adminHeaders);
+        assert.strictEqual(adminCreated.status, 201);
+        assert.strictEqual(adminCreated.body.user.email, adminCreatedEmail);
+        assert.ok(storedUsers.some(user => user.email === adminCreatedEmail));
+
+        const listedUsers = await request(
+            "/api/admin/users?page=1&limit=100",
+            "GET",
+            null,
+            adminHeaders
+        );
+        assert.strictEqual(listedUsers.status, 200);
+        assert.ok(listedUsers.body.users.some(user => user.email === adminCreatedEmail));
+
+        const adminUpdated = await request(
+            `/api/admin/users/${adminCreated.body.user.id}`,
+            "PUT",
+            { name: "Updated Admin User", role: "instructor" },
+            adminHeaders
+        );
+        assert.strictEqual(adminUpdated.status, 200);
+        assert.ok(storedUsers.some(user =>
+            user.email === adminCreatedEmail && user.name === "Updated Admin User"
+        ));
+        assert.ok(storedRoles.some(role =>
+            role.userId === adminCreated.body.user.id && role.roleId === "instructor"
+        ));
+
+        const adminDeleted = await request(
+            `/api/admin/users/${adminCreated.body.user.id}`,
+            "DELETE",
+            null,
+            adminHeaders
+        );
+        assert.strictEqual(adminDeleted.status, 200);
+        assert.ok(!storedUsers.some(user => user.email === adminCreatedEmail));
+        assert.ok(!storedRoles.some(role => role.userId === adminCreated.body.user.id));
 
         const invalidRegistration = await request("/api/auth/register", "POST", {
             name: "Test Student",
@@ -112,6 +160,7 @@ async function run() {
         });
         assert.strictEqual(invalidRegistration.status, 400);
 
+        const sentEmailsBeforeRegistration = sentEmails.length;
         const email = `serverless_${Date.now()}@example.test`;
         const registration = await request("/api/auth/register", "POST", {
             name: "Serverless Student",
@@ -122,7 +171,11 @@ async function run() {
         assert.strictEqual(registration.status, 201);
         assert.strictEqual(registration.body.user.email, email);
         assert.ok(storedUsers.some(user => user.email === email));
-        assert.strictEqual(sentEmails.length, 0, "Self registration must not email the password back.");
+        assert.strictEqual(
+            sentEmails.length,
+            sentEmailsBeforeRegistration,
+            "Self registration must not email the password back."
+        );
 
         const duplicate = await request("/api/auth/register", "POST", {
             name: "Serverless Student",
