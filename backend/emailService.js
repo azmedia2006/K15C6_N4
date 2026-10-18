@@ -232,6 +232,41 @@ function buildActivationEmailHtml({ name, email, temporaryPassword, role, loginU
 
 /**
  * KN-11 & KN-86: Gửi email kích hoạt tài khoản kèm mật khẩu tạm cho nhân sự mới
+// Xác định URL công khai cho Frontend, tuyệt đối không dùng localhost khi đang chạy trên Vercel
+function getPublicBaseUrl(overrideUrl) {
+    const isVercel = Boolean(process.env.VERCEL || process.env.VERCEL_URL);
+
+    if (overrideUrl && typeof overrideUrl === "string") {
+        const cleanOverride = overrideUrl.trim().replace(/\/$/, "");
+        if (!cleanOverride.includes("localhost") && !cleanOverride.includes("127.0.0.1")) {
+            return cleanOverride;
+        }
+        if (!isVercel) {
+            return cleanOverride;
+        }
+    }
+
+    if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+        return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`.replace(/\/$/, "");
+    }
+    if (process.env.VERCEL_URL) {
+        return `https://${process.env.VERCEL_URL}`.replace(/\/$/, "");
+    }
+
+    const envFrontend = (process.env.FRONTEND_URL || "").trim().replace(/\/$/, "");
+    if (envFrontend && (!isVercel || (!envFrontend.includes("localhost") && !envFrontend.includes("127.0.0.1")))) {
+        return envFrontend;
+    }
+
+    if (isVercel) {
+        return "https://k15c6n4.vercel.app";
+    }
+
+    return "http://localhost:3000";
+}
+
+/**
+ * KN-11 & KN-86: Gửi email kích hoạt tài khoản kèm mật khẩu tạm cho nhân sự mới
  * @param {Object} options
  * @param {string} options.to - Email người nhận
  * @param {string} options.name - Họ tên nhân sự mới
@@ -241,7 +276,7 @@ function buildActivationEmailHtml({ name, email, temporaryPassword, role, loginU
  * @returns {Object} Bản ghi email kích hoạt
  */
 function sendActivationEmail({to,name,temporaryPassword,role='student',loginUrl=''}) {
-    const url=loginUrl||process.env.FRONTEND_URL||'http://localhost:3000';
+    const url = getPublicBaseUrl(loginUrl);
     return deliver({to,subject:'[TMS] Tài khoản đào tạo',text:`Xin chào ${name}. Tài khoản: ${to}. Mật khẩu tạm: ${temporaryPassword}. Đăng nhập: ${url}`,html:buildActivationEmailHtml({name,email:to,temporaryPassword,role,loginUrl:url})});
 }
 
@@ -331,7 +366,18 @@ function buildPasswordResetEmailHtml({ name, email, resetUrl }) {
  * KN-42: Gửi email đặt lại mật khẩu chứa token qua SMTP thật
  */
 function sendPasswordResetEmail({to,name,resetToken,resetUrl=''}) {
-    const url=resetUrl||`${(process.env.FRONTEND_URL||'http://localhost:3000').replace(/\/$/,'')}/ResetPassword.html?token=${resetToken}`;
+    const isVercel = Boolean(process.env.VERCEL || process.env.VERCEL_URL);
+    let url = "";
+    if (resetUrl && resetUrl.includes("token=")) {
+        if (isVercel && (resetUrl.includes("localhost") || resetUrl.includes("127.0.0.1"))) {
+            url = resetUrl.replace(/^https?:\/\/[^\/]+/, getPublicBaseUrl());
+        } else {
+            url = resetUrl;
+        }
+    } else {
+        const baseUrl = getPublicBaseUrl(resetUrl);
+        url = `${baseUrl.replace(/\/$/, "")}/ResetPassword.html?token=${resetToken}`;
+    }
     return deliver({to,subject:'[TMS] Đặt lại mật khẩu',text:`Xin chào ${name||to}. Liên kết hết hạn sau 60 phút: ${url}`,html:buildPasswordResetEmailHtml({name,email:to,resetUrl:url})});
 }
 function deliver(message){

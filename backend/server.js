@@ -568,10 +568,28 @@ app.post(["/api/auth/forgot-password", "/auth/forgot-password"], async (req, res
 
     // Nếu tài khoản tồn tại: Gửi email bất đồng bộ qua SMTP (Fire and forget, không làm chậm response)
     if (result.userFound && result.token) {
-        const hostHeader = req.get("host") || "localhost:3000";
-        const protocol = req.protocol || "http";
-        const defaultBaseUrl = "http://localhost:3000";
-        const frontendUrl = process.env.FRONTEND_URL || defaultBaseUrl;
+        const isVercel = Boolean(process.env.VERCEL || process.env.VERCEL_URL);
+        const origin = req.headers ? (req.headers["origin"] || "") : "";
+        const forwardedHost = req.get ? (req.get("x-forwarded-host") || "") : "";
+        const forwardedProto = req.get ? (req.get("x-forwarded-proto") || "https") : "https";
+
+        let frontendUrl = "";
+        if (origin && !origin.includes("localhost") && !origin.includes("127.0.0.1")) {
+            frontendUrl = origin;
+        } else if (forwardedHost && !forwardedHost.includes("localhost")) {
+            frontendUrl = `${forwardedProto}://${forwardedHost}`;
+        } else if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+            frontendUrl = `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+        } else if (process.env.VERCEL_URL) {
+            frontendUrl = `https://${process.env.VERCEL_URL}`;
+        } else if (process.env.FRONTEND_URL && (!isVercel || !process.env.FRONTEND_URL.includes("localhost"))) {
+            frontendUrl = process.env.FRONTEND_URL;
+        } else if (isVercel) {
+            frontendUrl = "https://k15c6n4.vercel.app";
+        } else {
+            frontendUrl = "http://localhost:3000";
+        }
+
         const resetUrl = `${frontendUrl.replace(/\/$/, "")}/ResetPassword.html?token=${result.token}`;
 
         try {
