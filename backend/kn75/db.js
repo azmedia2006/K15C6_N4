@@ -24,7 +24,7 @@ function getPool() {
         max: Number(process.env.KN75_DB_POOL_MAX || 10),
         connectionTimeoutMillis: 5000,
         idleTimeoutMillis: 10000,
-        ssl: process.env.KN75_PGSSL === 'true' ? { rejectUnauthorized: false } : undefined
+        ssl: process.env.KN75_PGSSL === 'true' ? { rejectUnauthorized: true } : undefined
     });
     return pool;
 }

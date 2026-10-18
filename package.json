@@ -1,13 +1,13 @@
 {
-  "name": "ttcs-tms",
-  "version": "1.0.0",
+  "name": "tms-kn156-final",
+  "version": "2.0.0",
   "private": true,
-  "description": "Training Management System (TMS) - Hệ thống Quản lý Đào tạo",
+  "description": "TMS: KN-156, persistent local workflows and regression fixes",
   "main": "backend/server.js",
   "scripts": {
-    "start": "node backend/server.js",
-    "dev": "node backend/server.js",
-    "test": "cd backend && npm test",
+    "start": "node backend/startLocal.js",
+    "dev": "node backend/startLocal.js",
+    "test": "npm test --prefix backend",
     "test:auth": "cd backend && npm run test:auth",
     "test:auth-serverless": "cd backend && npm run test:auth-serverless",
     "test:user": "cd backend && npm run test:user",
@@ -26,13 +26,14 @@
     "test:kn124": "cd backend && npm run test:kn124",
     "test:enrollment": "cd backend && npm run test:enrollment",
     "test:forgot": "cd backend && npm run test:forgot",
-    "test:kn154": "cd backend && npm run test:kn154"
+    "test:kn154": "cd backend && npm run test:kn154",
+    "start:lead-demo": "node server.js",
+    "setup": "npm ci --prefix backend",
+    "test:kn156": "npm run test:kn156 --prefix backend",
+    "test:all": "npm run test:all --prefix backend",
+    "test:final": "npm run test:final --prefix backend"
   },
   "dependencies": {
-    "cors": "^2.8.6",
-    "dotenv": "^18.0.6",
-    "express": "^5.2.1",
-    "nodemailer": "^10.0.16",
-    "xlsx": "^0.18.5"
+    "express": "^4.21.2"
   }
 }

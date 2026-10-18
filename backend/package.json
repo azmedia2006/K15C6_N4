@@ -4,9 +4,9 @@
   "description": "Training Management System - Backend API",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node startLocal.js",
     "migrate": "node migrations/migrate_roles_n_n.js",
-    "test": "node test/auth.test.js && node test/user_management.test.js && node test/role_management.test.js && node test/rbac_kn8.test.js && node test/supabase.test.js && node test/error_handling_kn10.test.js && node test/lead_consultation.test.js && node test/lead_management_kn74.test.js && node test/user_import_kn66.test.js && node test/avatar_kn68.test.js && node test/subject_management_kn70.test.js && node test/lead_filter_kn76.test.js && node test/lead_care_log_kn122.test.js && node test/student_profile_kn124.test.js && node test/batch_enrollment.test.js",
+    "test": "node test/run-local.cjs",
     "test:auth": "node test/auth.test.js",
     "test:auth-serverless": "node test/auth_serverless.test.js",
     "test:user": "node test/user_management.test.js",
@@ -25,7 +25,12 @@
     "test:kn124": "node test/student_profile_kn124.test.js",
     "test:enrollment": "node test/batch_enrollment.test.js",
     "test:forgot": "node test/forgot_password.test.js",
-    "test:kn154": "node test/schedule_auto_generate_kn154.test.js"
+    "test:kn154": "node test/schedule_auto_generate_kn154.test.js",
+    "test:kn156": "node --test test/session_management_kn156.test.js",
+    "test:all": "node test/run-local.cjs",
+    "start:integrated": "node server.js",
+    "test:legacy-supabase": "node test/supabase.test.js",
+    "test:final": "node --test test/final-regression.test.js"
   },
   "keywords": [],
   "author": "",

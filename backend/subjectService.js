@@ -611,3 +611,7 @@ module.exports = {
     getClassesBySubjectId,
     addClassForSubject
 };
+
+module.exports.exportState=()=>({programs,subjects,programSubjects,classes});
+module.exports.upsertSharedClass=cls=>{const index=classes.findIndex(c=>c.id===cls.id);if(index<0)classes.push({...cls});else Object.assign(classes[index],cls);};
+require('./localDatabase').register('subjects',()=>({programs,subjects,programSubjects,classes}),v=>{programs=v.programs;subjects=v.subjects;programSubjects=v.programSubjects;classes=v.classes;});

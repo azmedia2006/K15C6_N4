@@ -1,0 +1,39 @@
+
+> be@1.0.0 test:kn156
+> node --test test/session_management_kn156.test.js
+
+◇ injected env (0) from .env,../.env
+◇ injected env (0) from .env,../.env
+✔ KN-168: detail provides editable flag, version and 404 (51.201129ms)
+✔ KN-170: change date, time, room, lesson; stable session number (15.347935ms)
+✔ KN-171: room overlap conflicts, no mutation/history/inbox (5.739778ms)
+✔ KN-171: instructor conflict across classes even in different rooms (13.347596ms)
+✔ KN-171: same-class overlap is blocked even when room and instructor differ (4.043561ms)
+✔ KN-171: adjacent time boundaries are allowed (4.250494ms)
+✔ KN-171: cancelled sessions do not reserve room/instructor (8.114629ms)
+✔ KN-170: invalid dates, times, empty room and unknown instructor ID are rejected (15.391932ms)
+✔ KN-172: cancellation requires nonblank reason (7.313084ms)
+✔ KN-172: soft cancellation retains session, reason and stable numbering (7.704339ms)
+✔ KN-175: attendance locks updates, cancellation and legacy DELETE (16.183445ms)
+✔ KN-175: attendance rejects invalid or partial roster (9.845083ms)
+✔ KN-175: cannot bypass locks with status fields, bulk save or bulk clear (4.759013ms)
+✔ KN-173: notification ownership, read persistence, deduplication (7.801046ms)
+✔ KN-173: replacement instructor, old instructor and every student receive one notification (3.737528ms)
+✔ KN-177: history retains full before/after, actor, action and cancellation reason (7.029141ms)
+✔ KN-176: RBAC and scoped detail: anonymous/student/teacher cannot mutate (12.823865ms)
+✔ KN-176: optimistic concurrency prevents lost updates and double notifications (4.617281ms)
+✔ KN-176: sessions, inbox, history and attendance survive a new Node process (105.223974ms)
+✔ KN-176: disk failure rolls session, history and inbox back together (2.539455ms)
+✔ KN-176: new schedule save validates overlap atomically (1.126137ms)
+✔ KN-176: unknown class filter must not leak all schedules (2.537699ms)
+✔ KN-176: private state file is not served statically (1.619808ms)
+✔ KN-176: legacy DELETE requires reason and cancels instead of deleting (4.287039ms)
+✔ KN-176: unknown class recipient resolution never includes unrelated enrollments (1.605211ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 681.380588

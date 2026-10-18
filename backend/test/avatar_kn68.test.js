@@ -131,6 +131,7 @@ async function runTests() {
 
         const thumbnailSample = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
         const studentId = "usr_student";
+        const adminToken = require("../authService").generateToken(require("../authService").users.find(u=>u.id==="usr_admin"));
 
         const updateResult = updateUserAvatar(studentId, {
             avatarData: samplePngBase64,
@@ -149,7 +150,7 @@ async function runTests() {
         // 4.1 POST /api/users/:id/avatar thành công
         const postRes = await fetch(`${baseUrl}/api/users/${studentId}/avatar`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken}` },
             body: JSON.stringify({
                 avatarData: sampleJpgBase64,
                 thumbnailData: samplePngBase64,
@@ -175,7 +176,7 @@ async function runTests() {
         // 4.3 POST lỗi khi file vượt quá 2MB
         const postOverSizeRes = await fetch(`${baseUrl}/api/users/${studentId}/avatar`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken}` },
             body: JSON.stringify({
                 avatarData: samplePngBase64,
                 mimeType: "image/png",
@@ -190,12 +191,13 @@ async function runTests() {
         // --- NHÓM 5: KIỂM THỬ ĐIỂM DANH LỚP ĐÔNG VỚI ẢNH NHẬN DIỆN MẶT HỌC VIÊN ---
         console.log("\n=== 5. KIỂM THỬ NHẬN DIỆN MẶT HỌC VIÊN KHI ĐIỂM DANH LỚP ĐÔNG ===");
 
-        const attendanceRes = await fetch(`${baseUrl}/api/attendance/students`);
+        const attendanceRes = await fetch(`${baseUrl}/api/attendance/students`,{headers:{Authorization:`Bearer ${adminToken}`}});
         const attendanceData = await attendanceRes.json();
         assert.strictEqual(attendanceRes.status, 200);
         assert.strictEqual(attendanceData.success, true);
         assert.ok(Array.isArray(attendanceData.data));
-        assert.ok(attendanceData.data.length >= 3);
+        assert.ok(attendanceData.data.length >= 1);
+        assert.ok(attendanceData.data.every(row => require("../authService").users.some(u=>u.id===row.id)), "Không tạo học viên giả trong danh sách điểm danh");
 
         const student1 = attendanceData.data.find(s => s.studentCode === "SV001");
         assert.ok(student1, "Phải có học viên SV001 trong sổ điểm danh");
@@ -206,7 +208,7 @@ async function runTests() {
         console.log("\n=== 6. KIỂM THỬ XÓA ẢNH ĐẠI DIỆN VỀ MẶC ĐỊNH ===");
 
         const delRes = await fetch(`${baseUrl}/api/users/${studentId}/avatar`, {
-            method: "DELETE"
+            method: "DELETE",headers:{Authorization:`Bearer ${adminToken}`}
         });
         const delData = await delRes.json();
         assert.strictEqual(delRes.status, 200);

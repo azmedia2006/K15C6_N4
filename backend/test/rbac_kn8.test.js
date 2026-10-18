@@ -72,6 +72,11 @@ async function runRbacKn8Tests() {
         const adminToken = adminLogin.token;
 
         // ----------------------------------------------------
+        // Real, linked records replace the retired score/tuition fallback fixtures.
+        const database = require('../localDatabase');const snapshot=database.snapshot();
+        snapshot.business.scores.push({id:'scr_001',studentId:'usr_student',classId:'cls_fs_01',assignmentId:'fixture',score:8.5});
+        snapshot.business.invoices.push({id:'tui_001',studentId:'usr_student',classId:'cls_fs_01',amount:4500000,paid:0,status:'unpaid'});
+        database.restore(snapshot);database.commit();
         logGroup("1. KIỂM THỬ VAI TRÒ GIẢNG VIÊN (INSTRUCTOR)");
         // ----------------------------------------------------
         {

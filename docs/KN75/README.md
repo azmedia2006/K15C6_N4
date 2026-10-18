@@ -1,3 +1,5 @@
+> **Tài liệu lịch sử.** Bản hợp nhất mới nhất: xem `README.md` ở gốc và `docs/FINAL/BAO_CAO_BAN_GIAO.md`. Một số trạng thái và đường dẫn kho trong tài liệu này đã được thay thế.
+
 # KN-75 — Phân công lead cho tư vấn viên
 
 Module **độc lập**. Không sửa code, dependency hay lockfile của module khác.
