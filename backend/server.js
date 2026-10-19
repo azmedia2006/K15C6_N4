@@ -10,6 +10,12 @@ const {
     recordSuccessfulLogin
 } = require("./authService");
 
+const {
+    createClassroom,
+    getClassrooms,
+    checkCapacity
+} = require("./classroomService");
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -86,6 +92,51 @@ app.post("/api/auth/login", (req, res) => {
             role: user.role
         }
     });
+});
+
+ // KN-129: Tạo phòng học
+app.post("/api/classrooms", (req, res) => {
+    try {
+        const classroom = createClassroom(req.body || {});
+        return res.status(201).json({
+            success: true,
+            message: "Tạo phòng học thành công.",
+            data: classroom
+        });
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+});
+
+// KN-129: Lấy danh sách phòng học
+app.get("/api/classrooms", (req, res) => {
+    return res.status(200).json({
+        success: true,
+        data: getClassrooms()
+    });
+});
+
+// KN-129: Kiểm tra sức chứa phòng học
+app.post("/api/classrooms/:id/check-capacity", (req, res) => {
+    try {
+        const result = checkCapacity(
+            req.params.id,
+            req.body?.studentCount
+        );
+
+        return res.status(200).json({
+            success: true,
+            data: result
+        });
+    } catch (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
 });
 
 // Health check endpoint

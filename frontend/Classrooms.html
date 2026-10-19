@@ -1,0 +1,315 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý phòng học - KN-129</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            margin: 0;
+            padding: 30px;
+            color: #1e293b;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h1 {
+            color: #1d4ed8;
+        }
+
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px #00000012;
+        }
+
+        label {
+            display: block;
+            margin-top: 12px;
+            font-weight: bold;
+        }
+
+        input, select, button {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 16px;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .message {
+            margin-top: 12px;
+            font-weight: bold;
+        }
+
+        .warning {
+            color: #dc2626;
+        }
+
+        .success {
+            color: #15803d;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            overflow-wrap: anywhere;
+        }
+
+        th {
+            background: #eff6ff;
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <h1>Quản lý phòng học</h1>
+        <p>Chức năng KN-129 – Quản lý phòng vật lý và phòng trực tuyến.</p>
+
+        <section class="card">
+            <h2>Thêm phòng học</h2>
+
+            <form id="classroomForm">
+                <label for="name">Tên phòng</label>
+                <input id="name" required placeholder="Ví dụ: Phòng A101">
+
+                <label for="capacity">Sức chứa</label>
+                <input id="capacity" type="number" min="1" required>
+
+                <label for="type">Loại phòng</label>
+                <select id="type">
+                    <option value="physical">Phòng vật lý</option>
+                    <option value="online">Phòng trực tuyến</option>
+                </select>
+
+                <div id="onlineField" hidden>
+                    <label for="onlineUrl">Liên kết phòng trực tuyến</label>
+                    <input id="onlineUrl" type="url"
+                           placeholder="https://...">
+                </div>
+
+                <button type="submit">Thêm phòng học</button>
+                <p id="formMessage" class="message" role="status"></p>
+            </form>
+        </section>
+
+        <section class="card">
+            <h2>Kiểm tra sĩ số lớp</h2>
+
+            <label for="classroomId">Mã phòng học</label>
+            <input id="classroomId" type="number" min="1" required>
+
+            <label for="studentCount">Số học viên</label>
+            <input id="studentCount" type="number" min="0" required>
+
+            <button id="checkButton" type="button">Kiểm tra sức chứa</button>
+            <p id="capacityMessage" class="message" role="status"></p>
+        </section>
+
+        <section class="card">
+            <h2>Danh sách phòng học</h2>
+            <button id="refreshButton" type="button">Tải lại danh sách</button>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mã</th>
+                        <th>Tên phòng</th>
+                        <th>Sức chứa</th>
+                        <th>Loại</th>
+                        <th>Liên kết</th>
+                    </tr>
+                </thead>
+                <tbody id="classroomList"></tbody>
+            </table>
+            <p id="listMessage" class="message" role="status"></p>
+        </section>
+    </main>
+
+    <script>
+        const API = "http://localhost:3000/api/classrooms";
+
+        const form = document.getElementById("classroomForm");
+        const typeInput = document.getElementById("type");
+        const onlineField = document.getElementById("onlineField");
+
+        typeInput.addEventListener("change", () => {
+            const isOnline = typeInput.value === "online";
+            onlineField.hidden = !isOnline;
+            document.getElementById("onlineUrl").required = isOnline;
+        });
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const message = document.getElementById("formMessage");
+            message.textContent = "";
+
+            const body = {
+                name: document.getElementById("name").value.trim(),
+                capacity: Number(document.getElementById("capacity").value),
+                type: typeInput.value,
+                onlineUrl: document.getElementById("onlineUrl").value.trim()
+            };
+
+            try {
+                const response = await fetch(API, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || "Không thể tạo phòng.");
+                }
+
+                message.textContent = "Đã thêm phòng học thành công.";
+                message.className = "message success";
+                form.reset();
+                onlineField.hidden = true;
+                document.getElementById("onlineUrl").required = false;
+                await loadClassrooms();
+            } catch (error) {
+                message.textContent =
+                    error.message || "Không kết nối được server.";
+                message.className = "message warning";
+            }
+        });
+
+        async function loadClassrooms() {
+            const list = document.getElementById("classroomList");
+            const message = document.getElementById("listMessage");
+
+            try {
+                const response = await fetch(API);
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || "Không tải được danh sách.");
+                }
+
+                list.replaceChildren();
+
+                for (const room of result.data) {
+                    const row = document.createElement("tr");
+                    const values = [
+                        room.id,
+                        room.name,
+                        room.capacity,
+                        room.type === "physical"
+                            ? "Vật lý" : "Trực tuyến"
+                    ];
+
+                    for (const value of values) {
+                        const cell = document.createElement("td");
+                        cell.textContent = String(value);
+                        row.appendChild(cell);
+                    }
+
+                    const linkCell = document.createElement("td");
+
+                    if (room.onlineUrl) {
+                        const link = document.createElement("a");
+                        link.href = room.onlineUrl;
+                        link.textContent = "Mở phòng";
+                        link.target = "_blank";
+                        link.rel = "noopener noreferrer";
+                        linkCell.appendChild(link);
+                    } else {
+                        linkCell.textContent = "—";
+                    }
+
+                    row.appendChild(linkCell);
+                    list.appendChild(row);
+                }
+
+                message.textContent = result.data.length
+                    ? "" : "Chưa có phòng học nào.";
+            } catch (error) {
+                message.textContent =
+                    error.message || "Không kết nối được server.";
+                message.className = "message warning";
+            }
+        }
+
+        document.getElementById("checkButton").addEventListener("click",
+            async () => {
+                const id = document.getElementById("classroomId").value;
+                const count = document.getElementById("studentCount").value;
+                const message = document.getElementById("capacityMessage");
+
+                if (!id || count === "" || Number(id) < 1 ||
+                    !Number.isInteger(Number(id)) ||
+                    !Number.isInteger(Number(count)) || Number(count) < 0) {
+                    message.textContent =
+                        "Vui lòng nhập mã phòng hợp lệ và sĩ số không âm.";
+                    message.className = "message warning";
+                    return;
+                }
+
+                try {
+                    const response = await fetch(
+                        `${API}/${encodeURIComponent(id)}/check-capacity`,
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                studentCount: Number(count)
+                            })
+                        }
+                    );
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(result.message || "Không kiểm tra được.");
+                    }
+
+                    message.textContent = result.data.message;
+                    message.className = result.data.isOverCapacity
+                        ? "message warning" : "message success";
+                } catch (error) {
+                    message.textContent =
+                        error.message || "Không kết nối được server.";
+                    message.className = "message warning";
+                }
+            }
+        );
+
+        document.getElementById("refreshButton")
+            .addEventListener("click", loadClassrooms);
+
+        loadClassrooms();
+    </script>
+</body>
+</html>
