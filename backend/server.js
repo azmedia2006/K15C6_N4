@@ -243,6 +243,9 @@ function requireRole(...allowedRoles) {
 // KN-31: API đăng nhập bằng email và mật khẩu
 // Cập nhật trả về danh sách vai trò N-N (hỗ trợ cả /api/auth/login và /auth/login)
 app.post(["/api/auth/login", "/auth/login"], async (req, res) => {
+    try {
+        await hydrateUsersForVercel();
+    } catch {}
     const { email, password } = req.body || {};
 
     if (!email || !password) {
@@ -517,8 +520,44 @@ app.put(["/api/auth/me/profile", "/auth/me/profile"], authenticateToken, async (
 // =========================================================================
 
 const isVercelRuntime = Boolean(process.env.VERCEL || process.env.VERCEL_URL || process.env.NOW_REGION);
+const os = require("os");
+const tmpUsersFile = path.join(os.tmpdir(), "tms_registered_users.json");
 
 async function hydrateUsersForVercel() {
+    // 1. Phục hồi từ file lưu trữ người dùng serverless cục bộ (/tmp)
+    try {
+        if (fs.existsSync(tmpUsersFile)) {
+            const raw = fs.readFileSync(tmpUsersFile, "utf8");
+            const fileUsers = JSON.parse(raw);
+            if (Array.isArray(fileUsers)) {
+                fileUsers.forEach(fu => {
+                    const existingIdx = users.findIndex(u => (u.email && fu.email && u.email.toLowerCase() === fu.email.toLowerCase()) || (u.id && fu.id && u.id === fu.id));
+                    if (existingIdx !== -1) {
+                        users[existingIdx] = { ...users[existingIdx], ...fu };
+                    } else {
+                        users.push(fu);
+                    }
+                });
+            }
+        }
+    } catch (e) {}
+
+    // 2. Phục hồi từ localDatabase
+    try {
+        const snap = require("./localDatabase").snapshot();
+        if (snap && snap.auth && Array.isArray(snap.auth.users)) {
+            snap.auth.users.forEach(su => {
+                const existingIdx = users.findIndex(u => (u.email && su.email && u.email.toLowerCase() === su.email.toLowerCase()) || (u.id && su.id && u.id === su.id));
+                if (existingIdx !== -1) {
+                    users[existingIdx] = { ...users[existingIdx], ...su };
+                } else {
+                    users.push(su);
+                }
+            });
+        }
+    } catch (e) {}
+
+    // 3. Phục hồi từ Supabase Storage nếu có cấu hình
     if (!supabaseService.SUPABASE_URL) return;
     try {
         const [storedUsers, roleAssignments] = await Promise.all([
@@ -527,7 +566,7 @@ async function hydrateUsersForVercel() {
         ]);
         if (Array.isArray(storedUsers) && storedUsers.length > 0) {
             storedUsers.forEach(su => {
-                const existingIdx = users.findIndex(u => u.email.toLowerCase() === su.email.toLowerCase() || u.id === su.id);
+                const existingIdx = users.findIndex(u => (u.email && su.email && u.email.toLowerCase() === su.email.toLowerCase()) || (u.id && su.id && u.id === su.id));
                 if (existingIdx !== -1) {
                     users[existingIdx] = { ...users[existingIdx], ...su };
                 } else {
@@ -780,6 +819,24 @@ app.post(["/api/auth/register", "/auth/register"], async (req, res) => {
             role: "student",
             sendActivation: false
         });
+
+        // Lưu ngay vào file tạm serverless (/tmp) và localDatabase để không bao giờ mất tài khoản
+        try {
+            let tmpList = [];
+            if (fs.existsSync(tmpUsersFile)) {
+                try { tmpList = JSON.parse(fs.readFileSync(tmpUsersFile, "utf8")); } catch {}
+            }
+            if (!Array.isArray(tmpList)) tmpList = [];
+            const savedU = users.find(u => u.id === result.user.id) || result.user;
+            const existingIdx = tmpList.findIndex(u => (u.email && savedU.email && u.email.toLowerCase() === savedU.email.toLowerCase()) || (u.id && savedU.id && u.id === savedU.id));
+            if (existingIdx !== -1) tmpList[existingIdx] = savedU;
+            else tmpList.push(savedU);
+            fs.writeFileSync(tmpUsersFile, JSON.stringify(tmpList, null, 2), "utf8");
+        } catch (e) {}
+
+        try {
+            require("./localDatabase").commit();
+        } catch (e) {}
 
         if (isVercelRuntime) {
             try {

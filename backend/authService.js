@@ -64,7 +64,26 @@ const MAX_FAILED_ATTEMPTS = 5;
 // Tìm kiếm người dùng theo email hoặc mã định danh
 function findUserByEmail(email) {
     const normalized = String(email || "").trim().toLowerCase();
-    let found = users.find(u => u.email.toLowerCase() === normalized);
+    let found = users.find(u => u.email && u.email.toLowerCase() === normalized);
+    if (!found) {
+        // Tự động kiểm tra file tạm lưu trữ người dùng serverless
+        try {
+            const fs = require("fs");
+            const path = require("path");
+            const os = require("os");
+            const tmpFile = path.join(os.tmpdir(), "tms_registered_users.json");
+            if (fs.existsSync(tmpFile)) {
+                const list = JSON.parse(fs.readFileSync(tmpFile, "utf8"));
+                if (Array.isArray(list)) {
+                    const matched = list.find(u => u.email && u.email.toLowerCase() === normalized);
+                    if (matched) {
+                        users.push(matched);
+                        return matched;
+                    }
+                }
+            }
+        } catch {}
+    }
     if (!found) {
         const smtpUser = (process.env.SMTP_USER || "daotaotms@tuoitre24h.com").trim().toLowerCase();
         if (normalized === smtpUser || normalized === "daotaotms@tuoitre24h.com" || normalized === "dtc245200761@ictu.edu.vn") {
