@@ -479,8 +479,8 @@
             }
 
             .left-panel {
-                min-height: 40vh;
-                padding: 3rem 2rem;
+                min-height: 30vh;
+                padding: 2.5rem 1.5rem;
                 justify-content: center;
             }
 
@@ -490,7 +490,7 @@
             }
 
             .right-panel {
-                padding: 3rem 1.5rem;
+                padding: 2.5rem 1.5rem;
                 align-items: flex-start;
             }
 
@@ -499,7 +499,47 @@
             }
         }
 
-        @media (max-width: 480px) {
+        @media (max-width: 600px) {
+            .left-panel {
+                min-height: auto;
+                padding: 1.25rem 1rem 0.75rem;
+            }
+
+            .left-panel .brand {
+                margin-bottom: 0.5rem;
+            }
+
+            .left-panel h1 {
+                font-size: 1.35rem;
+                line-height: 1.25;
+                margin-bottom: 0.25rem;
+            }
+
+            .left-panel p {
+                display: none;
+            }
+
+            .right-panel {
+                padding: 1.25rem 1rem 2rem;
+            }
+
+            .form-container {
+                width: 100%;
+                max-width: 100%;
+            }
+
+            input[type="text"],
+            input[type="email"],
+            input[type="password"],
+            input[type="tel"] {
+                font-size: 16px !important;
+                min-height: 44px;
+            }
+
+            .btn-primary {
+                min-height: 44px;
+            }
+
             .social-login {
                 grid-template-columns: 1fr;
             }
@@ -627,6 +667,25 @@
                             </svg>
                             Microsoft
                         </button>
+                    </div>
+
+                    <div class="demo-accounts-box" style="margin-top: 1.5rem; padding: 14px; background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-md);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">
+                                🔑 Tài khoản mẫu (8 vai trò)
+                            </span>
+                            <span style="font-size: 0.7rem; color: var(--primary); font-weight: 600;">Chạm để điền</span>
+                        </div>
+                        <div class="demo-chips" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                            <button type="button" class="demo-chip" onclick="fillDemo('admin@tms.edu.vn', 'admin123')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">👑 Quản trị</button>
+                            <button type="button" class="demo-chip" onclick="fillDemo('manager@tms.edu.vn', 'manager123')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">📋 Đào tạo</button>
+                            <button type="button" class="demo-chip" onclick="fillDemo('teacher@tms.edu.vn', 'teacher123')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">👨‍🏫 Giảng viên</button>
+                            <button type="button" class="demo-chip" onclick="fillDemo('ta@tms.edu.vn', 'ta123456')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">🧑‍💻 Trợ giảng</button>
+                            <button type="button" class="demo-chip" onclick="fillDemo('student@tms.edu.vn', 'student123')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">🎓 Học viên</button>
+                            <button type="button" class="demo-chip" onclick="fillDemo('admissions@tms.edu.vn', 'admissions123')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">📞 Tuyển sinh</button>
+                            <button type="button" class="demo-chip" onclick="fillDemo('accountant@tms.edu.vn', 'accountant123')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">💰 Kế toán</button>
+                            <button type="button" class="demo-chip" onclick="fillDemo('visitor@tms.edu.vn', 'visitor123')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">👀 Khách</button>
+                        </div>
                     </div>
                 </div>
 
@@ -762,6 +821,24 @@
     </main>
 
     <script>
+        window.fillDemo = function(email, password) {
+            const emailEl = document.querySelector("#email");
+            const passEl = document.querySelector("#password");
+            if (emailEl) {
+                emailEl.value = email;
+                emailEl.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            if (passEl) {
+                passEl.value = password;
+                passEl.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            const msg = document.querySelector("#login-message");
+            if (msg) {
+                msg.textContent = `Đã chọn: ${email}`;
+                msg.classList.add("success");
+            }
+        };
+
         // Bảo mật: Xóa ngay lập tức thông tin đăng nhập nhạy cảm khỏi URL thanh địa chỉ
         if (window.location.search && (window.location.search.includes("password=") || window.location.search.includes("email="))) {
             const cleanUrl = window.location.origin + window.location.pathname + window.location.hash;
