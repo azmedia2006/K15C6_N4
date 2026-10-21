@@ -271,13 +271,37 @@
         }
 
         .mobile-menu-btn {
-            display: none;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
             padding: 8px;
             border-radius: var(--radius-sm);
             color: var(--text-heading);
             background: var(--bg-surface);
             border: 1px solid var(--border-color);
             cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .mobile-menu-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .app-layout.sidebar-collapsed {
+            grid-template-columns: 80px 1fr !important;
+        }
+        .app-layout.sidebar-collapsed aside.sidebar {
+            width: 80px !important;
+        }
+        .app-layout.sidebar-collapsed aside.sidebar .sidebar-brand span,
+        .app-layout.sidebar-collapsed aside.sidebar .nav-item span,
+        .app-layout.sidebar-collapsed aside.sidebar .nav-label,
+        .app-layout.sidebar-collapsed aside.sidebar .sidebar-footer {
+            display: none !important;
+        }
+        .app-layout.sidebar-collapsed aside.sidebar .nav-item {
+            justify-content: center !important;
+            padding: 12px 0 !important;
         }
 
         .header-account {
@@ -910,7 +934,7 @@
         <!-- Top Header Bar -->
         <header class="top-header">
             <div style="display: flex; align-items: center; gap: 14px;">
-                <button class="mobile-menu-btn" onclick="toggleMobileSidebar(true)" aria-label="Mở menu" title="Mở danh mục menu">
+                <button class="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Mở menu" title="Mở danh mục menu">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
                 </button>
                 <div class="header-breadcrumb">
@@ -1205,19 +1229,27 @@
         }
     ];
 
-    function toggleMobileSidebar(open) {
+    function toggleMobileSidebar(forceState) {
         const sb = document.querySelector("aside.sidebar");
         const backdrop = document.getElementById("sidebar-backdrop");
+        const appLayout = document.querySelector(".app-layout");
         if (!sb) return;
-        const shouldOpen = (open !== undefined) ? open : !sb.classList.contains("mobile-open");
-        if (shouldOpen) {
-            sb.classList.add("mobile-open");
-            if (backdrop) backdrop.style.display = "block";
+        if (window.innerWidth <= 1024) {
+            const shouldOpen = (typeof forceState === "boolean") ? forceState : !sb.classList.contains("mobile-open");
+            if (shouldOpen) {
+                sb.classList.add("mobile-open");
+                if (backdrop) backdrop.style.display = "block";
+            } else {
+                sb.classList.remove("mobile-open");
+                if (backdrop) backdrop.style.display = "none";
+            }
         } else {
-            sb.classList.remove("mobile-open");
-            if (backdrop) backdrop.style.display = "none";
+            if (appLayout) appLayout.classList.toggle("sidebar-collapsed");
+            else sb.classList.toggle("collapsed");
         }
     }
+    window.toggleMobileSidebar = toggleMobileSidebar;
+    window.toggleSidebar = toggleMobileSidebar;
 
     function recordClientAuditLog(newEntry) {
         try {

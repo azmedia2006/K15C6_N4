@@ -1114,7 +1114,23 @@
                 localStorage.setItem("tms_token", token);
                 localStorage.setItem("token", token);
             }
-            const destination = "/Workspace.html";
+            const roleHome = {
+                visitor: "./Dashboard.html?role=visitor",
+                student: "./Dashboard.html?role=student",
+                learner: "./Dashboard.html?role=student",
+                instructor: "./Dashboard.html?role=instructor",
+                assistant: "./Dashboard.html?role=teaching_assistant",
+                teaching_assistant: "./Dashboard.html?role=teaching_assistant",
+                admissions: "./Dashboard.html?role=admissions",
+                admissions_counselor: "./Dashboard.html?role=admissions",
+                accountant: "./Dashboard.html?role=accountant",
+                training_manager: "./Dashboard.html?role=training_manager",
+                training_management: "./Dashboard.html?role=training_manager",
+                administrator: "./Dashboard.html?role=administrator",
+                system_administrator: "./Dashboard.html?role=administrator",
+                admin: "./Dashboard.html?role=administrator"
+            };
+            const destination = roleHome[cleanRole] || `./Dashboard.html?role=${cleanRole}`;
             showMessage(loginMessage, "Đăng nhập thành công! Đang chuyển hướng...", true);
             setTimeout(() => {
                 window.location.assign(destination);

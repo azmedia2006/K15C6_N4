@@ -1148,9 +1148,45 @@
             border-left-color: #3b82f6;
         }
 
-        /* Mobile Navigation Drawer & Backdrop */
+        /* 3-Bar Hamburger Menu Button & Navigation Drawer */
         .mobile-menu-btn {
-            display: none;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            width: 38px;
+            height: 38px;
+            color: var(--text-main);
+            transition: all 0.2s ease;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        .mobile-menu-btn:hover {
+            background: var(--bg-hover, rgba(0,0,0,0.05));
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .app-layout.sidebar-collapsed {
+            grid-template-columns: 80px 1fr !important;
+        }
+        .app-layout.sidebar-collapsed aside.sidebar {
+            width: 80px !important;
+        }
+        .app-layout.sidebar-collapsed aside.sidebar .brand-text,
+        .app-layout.sidebar-collapsed aside.sidebar .sidebar-brand span,
+        .app-layout.sidebar-collapsed aside.sidebar .nav-item span,
+        .app-layout.sidebar-collapsed aside.sidebar .nav-item .nav-badge,
+        .app-layout.sidebar-collapsed aside.sidebar .nav-label,
+        .app-layout.sidebar-collapsed aside.sidebar .sidebar-footer {
+            display: none !important;
+        }
+        .app-layout.sidebar-collapsed aside.sidebar .nav-item {
+            justify-content: center !important;
+            padding: 12px 0 !important;
         }
 
         .sidebar-backdrop {
@@ -2218,12 +2254,6 @@
                 <div class="ui-card">
                     <div class="card-head">
                         <h2>Quản lý Lớp học & Phòng đào tạo</h2>
-                        <a href="./TeachingAssignment.html"
-                            class="btn btn-primary"
-                            style="text-decoration: none; margin-right: 8px;"
-                            title="Phân công giảng viên và trợ giảng theo môn học">
-                            👨‍🏫 Phân công giảng viên
-                        </a>
                         <button class="btn btn-primary" onclick="openCreateClassModal()">+ Mở lớp học mới</button>
                     </div>
                     <div class="table-responsive">
@@ -3270,23 +3300,34 @@
     <div class="toast-container" id="toast-container"></div>
 
     <script>
-                // Mobile Navigation Drawer Toggle
+        // Sidebar Toggle (Mobile Drawer & Desktop Collapse)
         function toggleMobileSidebar(forceState) {
             const sidebar = document.querySelector("aside.sidebar");
             const backdrop = document.getElementById("sidebar-backdrop");
-            if (!sidebar || !backdrop) return;
-            const isOpen = (typeof forceState === "boolean") ? !forceState : sidebar.classList.contains("mobile-open");
-            if (isOpen) {
-                sidebar.classList.remove("mobile-open");
-                backdrop.classList.remove("active");
-                document.body.style.overflow = "";
+            const appLayout = document.querySelector(".app-layout");
+            if (!sidebar) return;
+            if (window.innerWidth <= 1024) {
+                if (!backdrop) return;
+                const isOpen = (typeof forceState === "boolean") ? !forceState : sidebar.classList.contains("mobile-open");
+                if (isOpen) {
+                    sidebar.classList.remove("mobile-open");
+                    backdrop.classList.remove("active");
+                    document.body.style.overflow = "";
+                } else {
+                    sidebar.classList.add("mobile-open");
+                    backdrop.classList.add("active");
+                    document.body.style.overflow = "hidden";
+                }
             } else {
-                sidebar.classList.add("mobile-open");
-                backdrop.classList.add("active");
-                document.body.style.overflow = "hidden";
+                if (appLayout) {
+                    appLayout.classList.toggle("sidebar-collapsed");
+                } else {
+                    sidebar.classList.toggle("collapsed");
+                }
             }
         }
         window.toggleMobileSidebar = toggleMobileSidebar;
+        window.toggleSidebar = toggleMobileSidebar;
 
         
         // =====================================================================
@@ -4909,8 +4950,6 @@ try {
             authorizedRoles.add("visitor");
         }
 
-        const isRealAdmin = authorizedRoles.has("administrator");
-
         const storedRole = normalizeRole(localStorage.getItem("tms_current_role"));
         const requestedRole = normalizeRole(params.get("role"));
 
@@ -5136,11 +5175,6 @@ try {
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                         Điểm danh ca hôm nay
                     </button>
-                    <a href="./MyTeachingClasses.html"
-                    class="btn-banner-outline"
-                    style="text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">
-                    📚 Lớp học của tôi
-                    </a>
                     <button class="btn-banner-outline" onclick="switchView('scores')">Chấm điểm bài tập (14 bài)</button>
                 `,
                 stats: `
