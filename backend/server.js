@@ -344,6 +344,18 @@ if (user && (user.status || "active") === "inactive") {
     });
 });
 
+app.post(['/api/auth/logout', '/auth/logout'], authenticateToken, (req, res) => {
+    require('./authService').revokeToken(req.headers.authorization.replace(/^Bearer\s+/i, ''));
+    res.json({ success: true, message: 'Đã đăng xuất.' });
+});
+app.post(['/api/auth/change-password', '/auth/change-password'], authenticateToken, (req, res) => {
+    try {
+        res.json(require('./authService').changePassword(req.user.id, req.body.currentPassword, req.body.newPassword));
+    } catch (e) {
+        res.status(e.status || 400).json({ success: false, message: e.message });
+    }
+});
+
 // KN-60: API lấy thông tin người dùng hiện tại
 // Đồng bộ tức thì trên Frontend (hỗ trợ cả /api/auth/me và /auth/me)
 app.get(["/api/auth/me", "/auth/me"], authenticateToken, (req, res) => {
@@ -2511,6 +2523,7 @@ app.delete("/api/programs/:programId/subjects/:subjectId",
 // -------------------------------------------------------------
 
 require("./sessionRoutes")(app, { authenticateToken, requireRole });
+require("./businessRoutes")(app, { authenticateToken, requireRole });
 
 // API Lấy danh sách lớp học kèm trạng thái thời khóa biểu
 app.get("/api/schedules/classes", authenticateToken, (req, res) => {

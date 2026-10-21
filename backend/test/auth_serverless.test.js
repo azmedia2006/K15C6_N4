@@ -1,6 +1,7 @@
 const assert = require("assert");
 const http = require("http");
 
+delete process.env.TMS_OFFLINE;
 process.env.VERCEL = "1";
 process.env.SMTP_HOST = "127.0.0.1";
 process.env.SMTP_PORT = "1";

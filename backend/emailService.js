@@ -11,122 +11,42 @@ require("dotenv").config({
 });
 
 // Cấu hình SMTP
-const rawHost = (process.env.SMTP_HOST || "").trim();
-const rawPort = parseInt(process.env.SMTP_PORT || "587", 10);
-const rawUser = (process.env.SMTP_USER || "").trim();
-const rawPass = (process.env.SMTP_PASSWORD || process.env.SMTP_PASS || "").trim();
-const rawFromEmail = (process.env.SMTP_FROM_EMAIL || "").trim();
-const rawFromName = (process.env.SMTP_FROM_NAME || "").trim();
-
-// Phân tích và chuẩn hóa địa chỉ email người gửi và tên hiển thị:
-// Người dùng có thể vô tình nhập tên hiển thị vào SMTP_FROM_EMAIL (ví dụ: SMTP_FROM_EMAIL=ĐÀO TẠO TMS)
-// hoặc nhập dạng RFC: "Đào tạo TMS" <daotaotms@tuoitre24h.com>
-function parseSender(rawEmail, rawName, userFallback) {
-    let email = (rawEmail || "").trim();
-    let name = (rawName || "").trim();
-
-    if (name.startsWith('"') && name.endsWith('"')) {
-        name = name.slice(1, -1).trim();
-    }
-
-    const bracketMatch = email.match(/^(?:"?([^"]*)"?\s)?<([^>]+)>$/);
-    if (bracketMatch) {
-        if (!name && bracketMatch[1]) {
-            name = bracketMatch[1].trim();
-        }
-        email = bracketMatch[2].trim();
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        if (email && !name) {
-            name = email;
-        }
-        if (emailRegex.test(userFallback)) {
-            email = userFallback;
-        }
-    }
-
-    if (!name) {
-        name = "Đào tạo TMS";
-    }
-
-    return { email, name };
-}
-
-const { email: senderEmail, name: senderName } = parseSender(rawFromEmail, rawFromName, rawUser);
-
-const finalHost = rawHost || "mx.tino.vn";
-const finalUser = rawUser || "daotaotms@tuoitre24h.com";
-const finalPass = rawPass || "Quan2006@";
-const finalFromEmail = senderEmail || finalUser || "daotaotms@tuoitre24h.com";
-const finalFromName = senderName || "Đào tạo TMS";
-
-const rawEnabled = process.env.SMTP_ENABLED;
-const isExplicitFalse = rawEnabled === "false" || rawEnabled === "0";
-const isExplicitTrue = rawEnabled === "true" || rawEnabled === "1";
-const isLocalMockTest = rawHost === "127.0.0.1" && isExplicitFalse;
-const isTinoAccount = (finalHost.includes("tino.vn") || finalUser.includes("tuoitre24h.com"));
-const isEnabled = !isLocalMockTest && (
-    isExplicitTrue ||
-    isTinoAccount ||
-    (!isExplicitFalse && Boolean(finalHost && finalUser && finalPass))
-);
+const isEnabled = process.env.SMTP_ENABLED === "true";
+const isConfigured = Boolean(isEnabled && (process.env.SMTP_HOST || "") && (process.env.SMTP_USER || "") && (process.env.SMTP_PASSWORD || process.env.SMTP_PASS || ""));
 
 const SMTP_CONFIG = {
     enabled: isEnabled,
-    host: finalHost,
-    port: rawPort,
-    user: finalUser,
-    pass: finalPass,
-    fromEmail: finalFromEmail,
-    fromName: finalFromName,
-    secure: process.env.SMTP_SECURE === "true",
+    configured: isConfigured,
+    configError: !isEnabled ? "SMTP is disabled. Set SMTP_ENABLED=true to enable email delivery." : !isConfigured ? "SMTP configuration is incomplete." : null,
+    host: process.env.SMTP_HOST || "",
+    port: parseInt(process.env.SMTP_PORT || "587", 10),
+    user: process.env.SMTP_USER || "",
+    pass: process.env.SMTP_PASSWORD || process.env.SMTP_PASS || "",
+    fromEmail: process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || "",
+    fromName: process.env.SMTP_FROM_NAME || "Đào tạo TMS",
+    secure: process.env.SMTP_SECURE === "true" || process.env.SMTP_PORT === "465",
     tls: process.env.SMTP_TLS !== "false"
 };
 
-const validSenderAddress =
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(SMTP_CONFIG.fromEmail);
-const smtpMissingSettings = [
-    !SMTP_CONFIG.host && "SMTP_HOST",
-    !Number.isInteger(SMTP_CONFIG.port) && "SMTP_PORT",
-    !SMTP_CONFIG.user && "SMTP_USER",
-    !SMTP_CONFIG.pass && "SMTP_PASSWORD",
-    !SMTP_CONFIG.fromEmail && "SMTP_FROM_EMAIL",
-    SMTP_CONFIG.fromEmail && !validSenderAddress && "valid SMTP_FROM_EMAIL"
-].filter(Boolean);
-SMTP_CONFIG.configured = SMTP_CONFIG.enabled && smtpMissingSettings.length === 0;
-SMTP_CONFIG.configError = !SMTP_CONFIG.enabled
-    ? "SMTP is disabled. Set SMTP_ENABLED=true to enable email delivery."
-    : smtpMissingSettings.length > 0
-        ? `SMTP configuration is incomplete or invalid: ${smtpMissingSettings.join(", ")}.`
-        : null;
-
 // Khởi tạo nodemailer transporter
 let transporter = null;
-if (SMTP_CONFIG.configured) {
-    try {
-        transporter = nodemailer.createTransport({
-            host: SMTP_CONFIG.host,
-            port: SMTP_CONFIG.port,
-            secure: SMTP_CONFIG.secure,
-            requireTLS: SMTP_CONFIG.tls && !SMTP_CONFIG.secure,
-            auth: {
-                user: SMTP_CONFIG.user,
-                pass: SMTP_CONFIG.pass
-            },
-            tls: {
-                rejectUnauthorized: process.env.SMTP_REJECT_UNAUTHORIZED === "true" ? true : false
-            },
-            pool: true,
-            maxConnections: 5,
-            maxMessages: 100
-        });
-    } catch (err) {
-        console.error("[EmailService] Khởi tạo SMTP Transporter thất bại:", err.message);
-    }
-} else {
-    console.warn(`[EmailService] ${SMTP_CONFIG.configError}`);
+try {
+    if (process.env.SMTP_ENABLED === "true" && SMTP_CONFIG.host && SMTP_CONFIG.user && SMTP_CONFIG.pass) transporter = nodemailer.createTransport({
+        host: SMTP_CONFIG.host,
+        port: SMTP_CONFIG.port,
+        secure: SMTP_CONFIG.secure,
+        requireTLS: SMTP_CONFIG.tls && !SMTP_CONFIG.secure,
+        auth: {
+            user: SMTP_CONFIG.user,
+            pass: SMTP_CONFIG.pass
+        },
+        tls: {
+            rejectUnauthorized: process.env.SMTP_REJECT_UNAUTHORIZED === "true" ? true : false
+        },
+        connectionTimeout: 8000, greetingTimeout: 8000, socketTimeout: 15000,
+        pool: false
+    });
+} catch (err) {
 }
 
 // Danh mục nhãn vai trò hiển thị tiếng Việt
@@ -259,73 +179,6 @@ function buildActivationEmailHtml({ name, email, temporaryPassword, role, loginU
 </html>
     `.trim();
 }
-// Xác định URL công khai của Frontend, không bao giờ để dính 'localhost' khi chạy trên môi trường Vercel/Production
-function getPublicBaseUrl(overrideUrl) {
-    const isVercel = Boolean(process.env.VERCEL || process.env.VERCEL_URL);
-
-    if (overrideUrl && typeof overrideUrl === "string") {
-        const cleanOverride = overrideUrl.trim().replace(/\/$/, "");
-        if (!cleanOverride.includes("localhost") && !cleanOverride.includes("127.0.0.1")) {
-            return cleanOverride;
-        }
-        if (!isVercel) {
-            return cleanOverride;
-        }
-    }
-
-    if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
-        return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`.replace(/\/$/, "");
-    }
-    if (process.env.VERCEL_URL) {
-        return `https://${process.env.VERCEL_URL}`.replace(/\/$/, "");
-    }
-
-    const envFrontend = (process.env.FRONTEND_URL || "").trim().replace(/\/$/, "");
-    if (envFrontend && (!isVercel || (!envFrontend.includes("localhost") && !envFrontend.includes("127.0.0.1")))) {
-        return envFrontend;
-    }
-
-    if (isVercel) {
-        return "https://k15c6n4.vercel.app";
-    }
-
-    return "http://localhost:3000";
-}
-
-/**
- * KN-11 & KN-86: Gửi email kích hoạt tài khoản kèm mật khẩu tạm cho nhân sự mới
-// Xác định URL công khai cho Frontend, tuyệt đối không dùng localhost khi đang chạy trên Vercel
-function getPublicBaseUrl(overrideUrl) {
-    const isVercel = Boolean(process.env.VERCEL || process.env.VERCEL_URL);
-
-    if (overrideUrl && typeof overrideUrl === "string") {
-        const cleanOverride = overrideUrl.trim().replace(/\/$/, "");
-        if (!cleanOverride.includes("localhost") && !cleanOverride.includes("127.0.0.1")) {
-            return cleanOverride;
-        }
-        if (!isVercel) {
-            return cleanOverride;
-        }
-    }
-
-    if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
-        return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`.replace(/\/$/, "");
-    }
-    if (process.env.VERCEL_URL) {
-        return `https://${process.env.VERCEL_URL}`.replace(/\/$/, "");
-    }
-
-    const envFrontend = (process.env.FRONTEND_URL || "").trim().replace(/\/$/, "");
-    if (envFrontend && (!isVercel || (!envFrontend.includes("localhost") && !envFrontend.includes("127.0.0.1")))) {
-        return envFrontend;
-    }
-
-    if (isVercel) {
-        return "https://k15c6n4.vercel.app";
-    }
-
-    return "http://localhost:3000";
-}
 
 /**
  * KN-11 & KN-86: Gửi email kích hoạt tài khoản kèm mật khẩu tạm cho nhân sự mới
@@ -337,71 +190,16 @@ function getPublicBaseUrl(overrideUrl) {
  * @param {string} [options.loginUrl] - Đường dẫn đăng nhập
  * @returns {Object} Bản ghi email kích hoạt
  */
-function sendActivationEmail({ to, name, temporaryPassword, role = "instructor", loginUrl = "" }) {
-    const baseUrl = getPublicBaseUrl(loginUrl);
-    const fullLoginUrl = baseUrl.endsWith("Login.html") ? baseUrl : `${baseUrl.replace(/\/$/, "")}/Login.html`;
-
-    const subject = `[TMS] Thông tin tài khoản nhân sự mới và mật khẩu tạm thời - ${name}`;
-
-    const emailRecord = {
-        id: "mail_" + Date.now().toString(36) + Math.random().toString(36).substring(2, 6),
-        to,
-        subject,
-        name,
-        role,
-        sentAt: new Date().toISOString(),
-        status: "PENDING",
-        provider: "BKNS_SMTP"
-    };
-
-    // Đẩy vào hàng đợi theo dõi
-    sentEmails.push(emailRecord);
-
-    const markFailure = error => {
-        emailRecord.status = "FAILED";
-        emailRecord.deliveryError = error.message;
-        console.warn(`[EmailService] ⚠ Gửi email SMTP tới ${to} gặp sự cố:`, error.message);
-        return emailRecord;
-    };
-
-    let delivery;
-    if (!transporter) {
-        delivery = Promise.resolve(
-            markFailure(new Error(
-                SMTP_CONFIG.configError || "SMTP transporter could not be initialized."
-            ))
-        );
-    } else {
-        const mailOptions = {
-            from: {
-                name: SMTP_CONFIG.fromName,
-                address: SMTP_CONFIG.fromEmail
-            },
-            to,
-            subject,
-            text: `Kính gửi ${name},\n\nChào mừng bạn đến với Hệ thống Quản lý Đào tạo TMS!\n\nThông tin tài khoản công tác:\n- Họ và tên: ${name}\n- Tên đăng nhập / Email: ${to}\n- Vai trò: ${ROLE_NAMES[role] || role}\n- Mật khẩu tạm thời: ${temporaryPassword}\n- Địa chỉ đăng nhập: ${fullLoginUrl}\n\nVui lòng đăng nhập và đổi mật khẩu mới trong lần đầu tiên sử dụng.\n\nTrân trọng,\n${SMTP_CONFIG.fromName}`,
-            html: buildActivationEmailHtml({
-                name,
-                email: to,
-                temporaryPassword,
-                role,
-                loginUrl: fullLoginUrl
-            })
-        };
-
-        delivery = transporter.sendMail(mailOptions)
-            .then(info => {
-                emailRecord.status = "DELIVERED";
-                emailRecord.messageId = info.messageId;
-                emailRecord.response = info.response;
-                console.log(`[EmailService] ✔ Đã gửi email kích hoạt tài khoản thành công tới: ${to} (MessageID: ${info.messageId})`);
-                return emailRecord;
-            })
-            .catch(markFailure);
-    }
-
-    Object.defineProperty(emailRecord, "delivery", { value: delivery });
-    return emailRecord;
+function sendActivationEmail({to,name,temporaryPassword,role='student',loginUrl=''}) {
+    const url=loginUrl||process.env.FRONTEND_URL||'http://localhost:3000';
+    const record = deliver({to,subject:'[TMS] Tài khoản đào tạo',text:`Xin chào ${name}. Tài khoản: ${to}. Mật khẩu tạm: ${temporaryPassword}. Đăng nhập: ${url}`,html:buildActivationEmailHtml({name,email:to,temporaryPassword,role,loginUrl:url})});
+    const delivery = Promise.resolve().then(async () => {
+        if (!transporter) return { status: 'FAILED' };
+        await record.completion;
+        return { status: record.status };
+    });
+    Object.defineProperty(record, 'delivery', { value: delivery, enumerable: false });
+    return record;
 }
 
 /**
@@ -489,75 +287,9 @@ function buildPasswordResetEmailHtml({ name, email, resetUrl }) {
 /**
  * KN-42: Gửi email đặt lại mật khẩu chứa token qua SMTP thật
  */
-async function sendPasswordResetEmail({ to, name, resetToken, resetUrl = "" }) {
-    const isVercel = Boolean(process.env.VERCEL || process.env.VERCEL_URL);
-    let fullResetUrl = "";
-    if (resetUrl && resetUrl.includes("token=")) {
-        if (isVercel && (resetUrl.includes("localhost") || resetUrl.includes("127.0.0.1"))) {
-            const baseUrl = getPublicBaseUrl();
-            fullResetUrl = resetUrl.replace(/^https?:\/\/[^\/]+/, baseUrl);
-        } else {
-            fullResetUrl = resetUrl;
-        }
-    } else {
-        const baseUrl = getPublicBaseUrl(resetUrl);
-        fullResetUrl = `${baseUrl.replace(/\/$/, "")}/ResetPassword.html?token=${resetToken}`;
-    }
-
-    const subject = `[TMS] Hướng dẫn đặt lại mật khẩu tài khoản TMS`;
-
-    const emailRecord = {
-        id: "reset_mail_" + Date.now().toString(36) + Math.random().toString(36).substring(2, 6),
-        to,
-        subject,
-        name: name || to,
-        resetToken,
-        resetUrl: fullResetUrl,
-        sentAt: new Date().toISOString(),
-        status: "PENDING",
-        provider: "BKNS_SMTP"
-    };
-
-    sentEmails.push(emailRecord);
-
-    if (!transporter) {
-        const error = new Error(
-            SMTP_CONFIG.configError || "SMTP transporter could not be initialized."
-        );
-        emailRecord.status = "FAILED";
-        emailRecord.deliveryError = error.message;
-        throw error;
-    }
-
-    const mailOptions = {
-        from: {
-            name: SMTP_CONFIG.fromName,
-            address: SMTP_CONFIG.fromEmail
-        },
-        to,
-        subject,
-        text: `Kính gửi ${name || to},\n\nChúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản ${to}.\nVui lòng truy cập liên kết sau trong vòng 60 phút để đặt lại mật khẩu:\n${fullResetUrl}\n\nNếu bạn không yêu cầu, vui lòng bỏ qua email này.\n\nTrân trọng,\n${SMTP_CONFIG.fromName}`,
-        html: buildPasswordResetEmailHtml({
-            name: name || to,
-            email: to,
-            resetUrl: fullResetUrl
-        })
-    };
-
-    try {
-        const info = await transporter.sendMail(mailOptions);
-        emailRecord.status = "DELIVERED";
-        emailRecord.messageId = info.messageId;
-        emailRecord.response = info.response;
-        console.log(`[EmailService] ✔ Đã gửi email khôi phục mật khẩu thành công tới: ${to} (MessageID: ${info.messageId})`);
-    } catch (error) {
-        emailRecord.status = "FAILED";
-        emailRecord.deliveryError = error.message;
-        console.warn(`[EmailService] ⚠ Gửi email khôi phục mật khẩu tới ${to} gặp sự cố:`, error.message);
-        throw error;
-    }
-
-    return emailRecord;
+function sendPasswordResetEmail({to,name,resetToken,resetUrl=''}) {
+    const url=resetUrl||`${(process.env.FRONTEND_URL||'http://localhost:3000').replace(/\/$/,'')}/ResetPassword.html?token=${resetToken}`;
+    return deliver({to,subject:'[TMS] Đặt lại mật khẩu',text:`Xin chào ${name||to}. Liên kết hết hạn sau 60 phút: ${url}`,html:buildPasswordResetEmailHtml({name,email:to,resetUrl:url})});
 }
 function deliver(message){
     const record={id:require('crypto').randomUUID(),to:message.to,subject:message.subject,createdAt:new Date().toISOString(),status:transporter?'QUEUED':'NOT_CONFIGURED'};
@@ -566,7 +298,9 @@ function deliver(message){
         try{const info=await transporter.sendMail({...message,from:{name:SMTP_CONFIG.fromName,address:SMTP_CONFIG.fromEmail}});record.status='ACCEPTED';record.messageId=info.messageId;record.acceptedAt=new Date().toISOString();}
         catch(e){record.status='FAILED';record.error='SMTP không chấp nhận thư. Kiểm tra cấu hình, TLS và kết nối.';}
         require('./localDatabase').commit();return record;})();
-    Object.defineProperty(record,'completion',{value:completion,enumerable:false});return record;
+    Object.defineProperty(record,'completion',{value:completion,enumerable:false});
+    record.delivery = completion;
+    return record;
 }
 require('./localDatabase').register('mail',()=>sentEmails,v=>sentEmails.splice(0,sentEmails.length,...v));
 
@@ -579,7 +313,8 @@ async function verifySmtp() {
             success: false,
             enabled: SMTP_CONFIG.enabled,
             configured: SMTP_CONFIG.configured,
-            error: SMTP_CONFIG.configError || "SMTP transporter could not be initialized."
+            connected: false,
+            error: SMTP_CONFIG.configError || "Transporter chưa được khởi tạo."
         };
     }
     return new Promise((resolve) => {
@@ -589,6 +324,7 @@ async function verifySmtp() {
                     success: false,
                     enabled: SMTP_CONFIG.enabled,
                     configured: SMTP_CONFIG.configured,
+                    connected: false,
                     error: err.message,
                     host: SMTP_CONFIG.host,
                     port: SMTP_CONFIG.port
@@ -598,6 +334,7 @@ async function verifySmtp() {
                     success: true,
                     enabled: SMTP_CONFIG.enabled,
                     configured: SMTP_CONFIG.configured,
+                    connected: true,
                     host: SMTP_CONFIG.host,
                     port: SMTP_CONFIG.port,
                     user: SMTP_CONFIG.user
