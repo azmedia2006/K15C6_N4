@@ -34,6 +34,9 @@
     "test:final": "npm run test:final --prefix backend"
   },
   "dependencies": {
-    "express": "^4.21.2"
+    "dotenv": "^18.0.8",
+    "express": "^4.21.2",
+    "nodemailer": "^10.1.7",
+    "xlsx": "^0.18.5"
   }
 }
