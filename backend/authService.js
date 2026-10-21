@@ -307,10 +307,14 @@ database.register('auth',()=>({users,sessions:[...sessions],resetTokens:[...pass
     loginAttempts.clear();for(const x of v.attempts||[])loginAttempts.set(...x);
     forgotRateLimits.clear();for(const x of v.forgotLimits||[])forgotRateLimits.set(...x);
 });
-if(process.env.NODE_ENV==='production'&&!require('fs').existsSync(database.file)){
-    if(!process.env.ADMIN_EMAIL||!process.env.ADMIN_PASSWORD)throw Error('Lần chạy production đầu tiên cần ADMIN_EMAIL và ADMIN_PASSWORD.');
-    validatePassword(process.env.ADMIN_PASSWORD);
-    const salt=generateSalt();users.splice(0,users.length,{id:'usr_admin',email:process.env.ADMIN_EMAIL,name:'Quản trị viên',role:'administrator',status:'active',salt,passwordHash:hashPassword(process.env.ADMIN_PASSWORD,salt)});
+if(process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD && !require('fs').existsSync(database.file)){
+    try {
+        validatePassword(process.env.ADMIN_PASSWORD);
+        const salt=generateSalt();
+        users.splice(0,users.length,{id:'usr_admin',email:process.env.ADMIN_EMAIL,name:'Quản trị viên',role:'administrator',status:'active',salt,passwordHash:hashPassword(process.env.ADMIN_PASSWORD,salt)});
+    } catch (e) {
+        console.warn("[Auth] Không thể khởi tạo quản trị viên tùy chỉnh:", e.message);
+    }
 }
 module.exports = { changePassword, revokeToken, revokeUserSessions, validatePassword,
     findUserByEmail,
