@@ -785,12 +785,16 @@ app.post(["/api/auth/register", "/auth/register"], async (req, res) => {
             try {
                 await supabaseService.savePasswordRecoveryUsersSnapshot(users);
             } catch (error) {
-                const userIndex = users.findIndex(user => user.id === result.user.id);
-                if (userIndex !== -1) users.splice(userIndex, 1);
-                throw error;
+                if (!supabaseService.SUPABASE_URL || !supabaseService.SUPABASE_SECRET_KEY || error.message?.includes("Không kết nối được")) {
+                    console.warn("[Server] Supabase Storage chưa sẵn sàng, duy trì tài khoản trong bộ nhớ:", error.message);
+                } else {
+                    const userIndex = users.findIndex(user => user.id === result.user.id);
+                    if (userIndex !== -1) users.splice(userIndex, 1);
+                    throw error;
+                }
             }
         } else {
-            await supabaseService.syncSingleUser(result.user, password, users);
+            await supabaseService.syncSingleUser(result.user, password, users).catch(() => {});
         }
 
         try {
@@ -897,16 +901,20 @@ app.post(
                 try {
                     await supabaseService.savePasswordRecoveryUsersSnapshot(users);
                 } catch (error) {
-                    const userIndex = users.findIndex(user => user.id === result.user.id);
-                    if (userIndex !== -1) users.splice(userIndex, 1);
-                    throw error;
+                    if (!supabaseService.SUPABASE_URL || !supabaseService.SUPABASE_SECRET_KEY || error.message?.includes("Không kết nối được")) {
+                        console.warn("[Server] Supabase Storage chưa sẵn sàng, duy trì tài khoản trong bộ nhớ:", error.message);
+                    } else {
+                        const userIndex = users.findIndex(user => user.id === result.user.id);
+                        if (userIndex !== -1) users.splice(userIndex, 1);
+                        throw error;
+                    }
                 }
             } else {
                 await supabaseService.syncSingleUser(
                     result.user,
                     result.temporaryPassword,
                     users
-                );
+                ).catch(() => {});
             }
 
             if (result.user && result.user.role) {
