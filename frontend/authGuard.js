@@ -76,10 +76,16 @@
         var token = localStorage.getItem("tms_token") || localStorage.getItem("token");
         var currentRole = (localStorage.getItem("tms_current_role") || "").toLowerCase().trim();
 
+        function getRedirectQuery() {
+            var path = window.location.pathname || "";
+            if (!path || path === "/" || path === "/Login.html" || path === "/login") return "";
+            return "?redirect=" + encodeURIComponent(path + (window.location.search || "") + (window.location.hash || ""));
+        }
+
         // 1. Chặn ngay lập tức nếu không có Token
         if (!token) {
             purgeAllAuthData();
-            window.location.replace("/Login.html");
+            window.location.replace("/Login.html" + getRedirectQuery());
             return;
         }
 
@@ -97,14 +103,16 @@
                     if (payload && payload.exp && (payload.exp * 1000) < Date.now()) {
                         // Token đã quá hạn
                         purgeAllAuthData();
-                        window.location.replace("/Login.html?error=session_expired");
+                        var q = getRedirectQuery();
+                        window.location.replace("/Login.html" + (q ? q + "&error=session_expired" : "?error=session_expired"));
                         return;
                     }
                 }
             } catch (errToken) {
                 // Token định dạng sai lệch
                 purgeAllAuthData();
-                window.location.replace("/Login.html?error=unauthorized");
+                var q = getRedirectQuery();
+                window.location.replace("/Login.html" + (q ? q + "&error=unauthorized" : "?error=unauthorized"));
                 return;
             }
         }
@@ -125,13 +133,15 @@
                         localStorage.setItem("tms_user", JSON.stringify(currentUser));
                     } else {
                         purgeAllAuthData();
-                        window.location.replace("/Login.html?error=unauthorized");
+                        var q = getRedirectQuery();
+                        window.location.replace("/Login.html" + (q ? q + "&error=unauthorized" : "?error=unauthorized"));
                         return;
                     }
                 } else if (xhr.status === 401 || xhr.status === 403) {
                     // Máy chủ từ chối token: không bao giờ được phép dùng cache cũ!
                     purgeAllAuthData();
-                    window.location.replace("/Login.html?error=unauthorized");
+                    var q = getRedirectQuery();
+                    window.location.replace("/Login.html" + (q ? q + "&error=unauthorized" : "?error=unauthorized"));
                     return;
                 }
             } catch (netErr) {
@@ -150,7 +160,7 @@
         var isUnauthenticated = !token || !currentUser || !currentUser.id;
         if (isUnauthenticated) {
             purgeAllAuthData();
-            window.location.replace("/Login.html");
+            window.location.replace("/Login.html" + getRedirectQuery());
             return;
         }
 

@@ -858,20 +858,20 @@
         let recoveryCooldownTimer = null;
         let recoveryCooldownMessage = "Bạn đã gửi quá nhiều yêu cầu.";
         const roleHome = {
-            visitor: "./Index.html?role=visitor",
-            student: "./Index.html?role=student",
-            learner: "./Index.html?role=student",
-            instructor: "./Index.html?role=instructor",
-            assistant: "./Index.html?role=teaching_assistant",
-            teaching_assistant: "./Index.html?role=teaching_assistant",
-            admissions: "./Index.html?role=admissions",
-            admissions_counselor: "./Index.html?role=admissions",
-            accountant: "./Index.html?role=accountant",
-            training_manager: "./Index.html?role=training_manager",
-            training_management: "./Index.html?role=training_manager",
-            administrator: "./Index.html?role=administrator",
-            system_administrator: "./Index.html?role=administrator",
-            admin: "./Index.html?role=administrator"
+            visitor: "./Dashboard.html?role=visitor",
+            student: "./Dashboard.html?role=student",
+            learner: "./Dashboard.html?role=student",
+            instructor: "./Dashboard.html?role=instructor",
+            assistant: "./Dashboard.html?role=teaching_assistant",
+            teaching_assistant: "./Dashboard.html?role=teaching_assistant",
+            admissions: "./Dashboard.html?role=admissions",
+            admissions_counselor: "./Dashboard.html?role=admissions",
+            accountant: "./Dashboard.html?role=accountant",
+            training_manager: "./Dashboard.html?role=training_manager",
+            training_management: "./Dashboard.html?role=training_manager",
+            administrator: "./Dashboard.html?role=administrator",
+            system_administrator: "./Dashboard.html?role=administrator",
+            admin: "./Dashboard.html?role=administrator"
         };
 
         function setBusy(button, busy, busyLabel, idleLabel) {
@@ -1242,7 +1242,12 @@
                 system_administrator: "./Dashboard.html?role=administrator",
                 admin: "./Dashboard.html?role=administrator"
             };
-            const destination = roleHome[cleanRole] || `./Dashboard.html?role=${cleanRole}`;
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirectParam = urlParams.get("redirect");
+            let destination = roleHome[cleanRole] || `./Dashboard.html?role=${cleanRole}`;
+            if (redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//")) {
+                destination = redirectParam;
+            }
             showMessage(loginMessage, "Đăng nhập thành công! Đang chuyển hướng...", true);
             setTimeout(() => {
                 window.location.assign(destination);
