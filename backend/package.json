@@ -26,6 +26,7 @@
     "test:enrollment": "node test/batch_enrollment.test.js",
     "test:forgot": "node test/forgot_password.test.js",
     "test:kn154": "node test/schedule_auto_generate_kn154.test.js",
+    "test:schedule-calendar": "node test/schedule_calendar_view.test.js",
     "test:kn156": "node --test test/session_management_kn156.test.js",
     "test:all": "node test/run-local.cjs",
     "start:integrated": "node server.js",

@@ -5,6 +5,7 @@ require("dotenv").config({
 });
 const express = require("express");
 const cors = require("cors");
+const classroomService = require("./classroomService");
 const {
     verifySmtp,
     SMTP_CONFIG,
@@ -239,6 +240,8 @@ function requireRole(...allowedRoles) {
         next();
     };
 }
+
+require('./businessRoutes')(app, { authenticateToken, requireRole });
 
 // KN-31: API đăng nhập bằng email và mật khẩu
 // Cập nhật trả về danh sách vai trò N-N (hỗ trợ cả /api/auth/login và /auth/login)
@@ -2872,7 +2875,44 @@ app.get("/error", (req, res) => {
     }
     res.status(500).send("An error occurred");
 });
+// KN-129: Lấy danh sách phòng học
+app.get("/api/classrooms", async (req, res) => {
+    try {
+        const rooms = await classroomService.getClassrooms();
+        res.json({
+            success: true,
+            data: rooms
+        });
+    } catch (error) {
+        handleClassroomError(res, error);
+    }
+});
 
+// KN-129: Thêm phòng học
+app.post("/api/classrooms", (req, res) => {
+    try {
+        const room = classroomService.createClassroom(req.body);
+        res.status(201).json({
+            success: true,
+            data: room
+        });
+    } catch (error) {
+        handleClassroomError(res, error);
+    }
+});
+// KN-129: API kiểm tra sức chứa phòng học
+app.post("/api/classrooms/validate-capacity", (req, res) => {
+    try {
+        const { classroomId, studentCount } = req.body;
+        const result = classroomService.validateRoomCapacity(classroomId, studentCount);
+        res.json({
+            success: true,
+            data: result
+        });
+    } catch (error) {
+        handleClassroomError(res, error);
+    }
+});
 // KN-54: Fallback và chuẩn hóa lỗi cho các API request không tồn tại
 app.use(["/api", "/auth"], (req, res) => {
     res.status(404).json({
@@ -2973,6 +3013,84 @@ if (require.main === module) {
     Promise.resolve()
 
         .then(() => {
+
+function handleClassroomError(res, error) {
+    return res.status(400).json({
+        success: false,
+        message: error.message
+    });
+}
+
+// KN-129: Lấy danh sách phòng học
+
+app.get("/api/classrooms/:id", (req, res) => {
+    try {
+        const room = classroomService.getClassroomById(req.params.id);
+
+        if (!room) {
+            return res.status(404).json({
+                success: false,
+                message: "Không tìm thấy phòng học."
+            });
+        }
+
+        res.json({
+            success: true,
+            data: room
+        });
+    } catch (error) {
+        handleClassroomError(res, error);
+    }
+});
+
+// KN-129: Sửa phòng học
+app.put("/api/classrooms/:id", (req, res) => {
+    try {
+        const room = classroomService.updateClassroom(
+            req.params.id,
+            req.body
+        );
+
+        res.json({
+            success: true,
+            data: room
+        });
+    } catch (error) {
+        handleClassroomError(res, error);
+    }
+});
+
+// KN-129: Xóa phòng học
+app.delete("/api/classrooms/:id", (req, res) => {
+    try {
+        const result = classroomService.deleteClassroom(req.params.id);
+
+        res.json({
+            success: true,
+            ...result
+        });
+    } catch (error) {
+        handleClassroomError(res, error);
+    }
+});
+
+// KN-129: Kiểm tra sức chứa phòng
+app.post("/api/classrooms/:id/check-capacity", (req, res) => {
+    try {
+        const result = classroomService.checkCapacity(
+            req.params.id,
+            req.body.studentCount
+        );
+
+        res.status(result.allowed ? 200 : 409).json({
+            success: result.allowed,
+            ...result
+        });
+    } catch (error) {
+        handleClassroomError(res, error);
+    }
+});
+
             app.listen(PORT, () => {
                 console.log(
                     `TMS Server running at http://localhost:${PORT}`

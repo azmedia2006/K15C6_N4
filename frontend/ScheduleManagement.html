@@ -12,6 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="schedule-calendar.css">
     <style>
         :root {
             --primary-50: #eff6ff;
@@ -1450,7 +1451,11 @@
                                 </p>
                             </div>
 
-                            <div style="display: flex; gap: 8px; align-items: center;">
+                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                <div class="sched-mode-switcher" style="background:#f1f5f9; padding:3px; border-radius:8px;">
+                                    <button type="button" class="sched-mode-btn active" id="btn-view-preview-table" onclick="switchScheduleViewType('table')">📋 Bảng danh sách</button>
+                                    <button type="button" class="sched-mode-btn" id="btn-view-preview-calendar" onclick="switchScheduleViewType('calendar')">📅 Lịch Tuần / Tháng</button>
+                                </div>
                                 <button class="btn btn-secondary btn-sm" onclick="exportScheduleCSV()" title="Tải xuống CSV">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                                     <span>Xuất CSV</span>
@@ -1470,29 +1475,36 @@
                             </div>
                         </div>
 
-                        <!-- Preview Table Container -->
-                        <div class="table-responsive" style="max-height: 650px;">
-                            <table class="schedule-table">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 80px;">STT</th>
-                                        <th>Ngày học</th>
-                                        <th>Ca & Khung giờ</th>
-                                        <th>Phòng & Giảng viên</th>
-                                        <th>Bài học trong môn (Syllabus)</th>
-                                        <th>Trạng thái</th>
-                                        <th style="text-align: right; width: 100px;">Thao tác</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="schedule-preview-tbody">
-                                    <!-- Rendered dynamically -->
-                                    <tr>
-                                        <td colspan="7" style="text-align: center; padding: 48px; color: var(--text-muted);">
-                                            Đang tải dữ liệu thời khóa biểu...
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <!-- 1. Table View Container -->
+                        <div id="schedule-table-view-wrap">
+                            <div class="table-responsive" style="max-height: 650px;">
+                                <table class="schedule-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 80px;">STT</th>
+                                            <th>Ngày học</th>
+                                            <th>Ca & Khung giờ</th>
+                                            <th>Phòng & Giảng viên</th>
+                                            <th>Bài học trong môn (Syllabus)</th>
+                                            <th>Trạng thái</th>
+                                            <th style="text-align: right; width: 100px;">Thao tác</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="schedule-preview-tbody">
+                                        <!-- Rendered dynamically -->
+                                        <tr>
+                                            <td colspan="7" style="text-align: center; padding: 48px; color: var(--text-muted);">
+                                                Đang tải dữ liệu thời khóa biểu...
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 2. Interactive Calendar View Container (Chuyển đổi tuần/tháng, Lọc theo lớp/giảng viên/phòng, Bấm xem chi tiết, Responsive Mobile) -->
+                        <div id="schedule-calendar-view-wrap" style="display: none;">
+                            <div id="schedule-mgmt-calendar-container"></div>
                         </div>
                     </div>
                 </div>
@@ -2093,6 +2105,12 @@
         }
 
         function renderPreviewTable(sessions) {
+            window.previewSessions = sessions;
+            if (window.mgmtScheduleCalendar && Array.isArray(sessions) && sessions.length > 0) {
+                window.mgmtScheduleCalendar.sessions = sessions;
+                window.mgmtScheduleCalendar.populateFilterDropdowns();
+                window.mgmtScheduleCalendar.render();
+            }
             const tbody = document.getElementById("schedule-preview-tbody");
             if (!sessions || sessions.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:32px;">Chưa có buổi học nào được sinh.</td></tr>`;
@@ -2317,7 +2335,37 @@
         }
         window.toggleMobileSidebar = toggleMobileSidebar;
         window.toggleSidebar = toggleMobileSidebar;
+        function switchScheduleViewType(type) {
+            const tableWrap = document.getElementById("schedule-table-view-wrap");
+            const calendarWrap = document.getElementById("schedule-calendar-view-wrap");
+            const btnTable = document.getElementById("btn-view-preview-table");
+            const btnCal = document.getElementById("btn-view-preview-calendar");
+
+            if (type === 'calendar') {
+                if (tableWrap) tableWrap.style.display = 'none';
+                if (calendarWrap) calendarWrap.style.display = 'block';
+                if (btnTable) btnTable.classList.remove('active');
+                if (btnCal) btnCal.classList.add('active');
+
+                if (!window.mgmtScheduleCalendar && typeof initScheduleCalendar === 'function') {
+                    window.mgmtScheduleCalendar = initScheduleCalendar('#schedule-mgmt-calendar-container');
+                } else if (window.mgmtScheduleCalendar) {
+                    if (window.previewSessions && window.previewSessions.length > 0) {
+                        window.mgmtScheduleCalendar.sessions = window.previewSessions;
+                        window.mgmtScheduleCalendar.populateFilterDropdowns();
+                    }
+                    window.mgmtScheduleCalendar.render();
+                }
+            } else {
+                if (tableWrap) tableWrap.style.display = 'block';
+                if (calendarWrap) calendarWrap.style.display = 'none';
+                if (btnTable) btnTable.classList.add('active');
+                if (btnCal) btnCal.classList.remove('active');
+            }
+        }
+        window.switchScheduleViewType = switchScheduleViewType;
     </script>
+    <script src="schedule-calendar.js"></script>
     <script src="/session-management.js"></script>
 </body>
 </html>
