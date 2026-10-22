@@ -2835,6 +2835,11 @@ app.get("/frontend/:page", (req, res) => {
     res.redirect(301, `/${req.params.page}`);
 });
 
+// Chuyển hướng Không gian làm việc (Workspace) sang Bảng điều khiển (Dashboard) thống nhất
+app.get(["/workspace", "/Workspace", "/Workspace.html", "/workspace.html"], (req, res) => {
+    res.redirect(302, "/Dashboard.html");
+});
+
 // KN-75: Phân công lead cho tư vấn viên (module độc lập, chỉ thêm route /api/kn75/*)
 require("./kn75").mountKn75(app, { authenticateToken, requireRole });
 

@@ -1,7 +1,35 @@
-<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TMS · Quản lý đào tạo</title><link rel="stylesheet" href="/workspace.css"></head><body>
-<header><div><strong>TMS</strong><span>Quản lý đào tạo</span></div><nav><a href="/Dashboard.html" style="font-weight:700; color:#10b981;">Bảng điều khiển (Dashboard)</a><a href="/Notifications.html">Thông báo lịch học</a><a href="/Profile.html">Hồ sơ</a><a href="/ChangePassword.html">Đổi mật khẩu</a><button id="logout">Đăng xuất</button></nav></header>
-<main><section class="intro"><div><p class="eyebrow">KHÔNG GIAN LÀM VIỆC</p><h1 id="welcome">Đang xác thực…</h1><p id="mode">Dữ liệu được lưu tại máy chủ. Chỉ hiển thị thông tin trong phạm vi tài khoản.</p></div><button id="reload">Tải lại dữ liệu</button></section><p id="message" role="status"></p><section id="stats" class="stats"></section>
-<nav id="tools" class="tools"><a href="/ScheduleManagement.html" data-roles="administrator,training_manager">Sinh lịch · Sửa / dời / hủy buổi</a><a href="/UserManagement.html" data-roles="administrator">Người dùng & giảng viên</a><a href="/RoleManagement.html" data-roles="administrator">Vai trò & nhật ký</a><a href="/SubjectManagement.html" data-roles="administrator,training_manager">Môn học</a><a href="/LeadManagement.html" data-roles="administrator,training_manager,admissions">Quản lý lead</a><a href="/TeachingAssignment.html" data-roles="administrator,training_manager">Phân công giảng dạy</a><a href="/MyTeachingClasses.html" data-roles="instructor">Lớp tôi dạy</a><a href="/LeadForm.html">Form tư vấn công khai</a></nav>
-<section class="panel"><div class="toolbar"><h2>Danh mục & nghiệp vụ</h2><div id="action-buttons"></div></div><nav id="tabs" class="tabs"></nav><div id="content" class="table-wrap"></div></section>
-<section class="panel"><div class="toolbar"><h2>Báo cáo từ dữ liệu hiện có</h2><div><button id="export">Tải báo cáo CSV</button><button id="print">In / lưu PDF</button></div></div><p>Báo cáo lấy từ các bản ghi được phép xem tại thời điểm tải. Không dùng số liệu KPI mẫu; biên lai là chứng từ ghi nhận nội bộ, không tự thực hiện giao dịch ngân hàng.</p><pre id="report"></pre></section>
-</main><dialog id="editor"><form id="editor-form"><div class="toolbar"><h2 id="editor-title"></h2><button type="button" id="close" aria-label="Đóng">✕</button></div><div id="fields"></div><p id="form-error" role="alert"></p><div class="footer"><button type="button" id="cancel">Hủy</button><button type="submit" id="save">Lưu dữ liệu</button></div></form></dialog><script src="/workspace.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="theme-color" content="#10b981">
+    <title>Hệ Thống Đào Tạo TMS | Không Gian Làm Việc</title>
+
+    <!-- Client-Side Access Guard: Bảo vệ xác thực nghiêm ngặt -->
+    <script src="/authGuard.js" data-required="administrator,training_manager,instructor,teaching_assistant,student,admissions,accountant,visitor"></script>
+
+    <!-- Đồng bộ không gian làm việc TMS về Bảng điều khiển (Dashboard) thống nhất -->
+    <script>
+        (function() {
+            var search = window.location.search || "";
+            var hash = window.location.hash || "";
+            window.location.replace("/Dashboard.html" + search + hash);
+        })();
+    </script>
+</head>
+<body style="margin: 0; background: #0f172a; font-family: 'Inter', system-ui, -apple-system, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; color: #f8fafc;">
+    <div style="text-align: center; padding: 24px; max-width: 420px;">
+        <div style="width: 48px; height: 48px; border: 3px solid #334155; border-top-color: #10b981; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 18px;"></div>
+        <h2 style="font-size: 1.125rem; font-weight: 600; color: #f8fafc; margin: 0 0 8px;">Không Gian Làm Việc TMS</h2>
+        <p style="font-size: 0.875rem; color: #94a3b8; margin: 0 0 16px;">Đang kết nối vào Bảng điều khiển quản lý đào tạo...</p>
+        <p style="font-size: 0.8125rem;"><a href="/Dashboard.html" style="color: #10b981; text-decoration: none; font-weight: 500;">Bấm vào đây nếu trình duyệt không tự chuyển hướng</a></p>
+    </div>
+    <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</body>
+</html>

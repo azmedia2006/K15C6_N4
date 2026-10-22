@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="theme-color" content="#10b981">
+    <title>Hệ Thống Đào Tạo TMS | Không Gian Làm Việc</title>
+
+    <!-- Client-Side Access Guard: Bảo vệ xác thực nghiêm ngặt -->
+    <script src="/authGuard.js" data-required="administrator,training_manager,instructor,teaching_assistant,student,admissions,accountant,visitor"></script>
+
+    <!-- Đồng bộ không gian làm việc TMS về Bảng điều khiển (Dashboard) thống nhất -->
+    <script>
+        (function() {
+            var search = window.location.search || "";
+            var hash = window.location.hash || "";
+            window.location.replace("/Dashboard.html" + search + hash);
+        })();
+    </script>
+</head>
+<body style="margin: 0; background: #0f172a; font-family: 'Inter', system-ui, -apple-system, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; color: #f8fafc;">
+    <div style="text-align: center; padding: 24px; max-width: 420px;">
+        <div style="width: 48px; height: 48px; border: 3px solid #334155; border-top-color: #10b981; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 18px;"></div>
+        <h2 style="font-size: 1.125rem; font-weight: 600; color: #f8fafc; margin: 0 0 8px;">Không Gian Làm Việc TMS</h2>
+        <p style="font-size: 0.875rem; color: #94a3b8; margin: 0 0 16px;">Đang kết nối vào Bảng điều khiển quản lý đào tạo...</p>
+        <p style="font-size: 0.8125rem;"><a href="/Dashboard.html" style="color: #10b981; text-decoration: none; font-weight: 500;">Bấm vào đây nếu trình duyệt không tự chuyển hướng</a></p>
+    </div>
+    <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</body>
+</html>

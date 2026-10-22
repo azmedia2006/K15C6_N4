@@ -9,6 +9,12 @@
     { "source": "/", "destination": "/Login.html", "permanent": false },
     { "source": "/frontend/Login.html", "destination": "/Login.html", "permanent": true },
     { "source": "/frontend/Index.html", "destination": "/Login.html", "permanent": true },
+    { "source": "/Index.html", "destination": "/Dashboard.html", "permanent": false },
+    { "source": "/Workspace.html", "destination": "/Dashboard.html", "permanent": false },
+    { "source": "/workspace.html", "destination": "/Dashboard.html", "permanent": false },
+    { "source": "/workspace", "destination": "/Dashboard.html", "permanent": false },
+    { "source": "/Workspace", "destination": "/Dashboard.html", "permanent": false },
+    { "source": "/frontend/Workspace.html", "destination": "/Dashboard.html", "permanent": true },
     { "source": "/frontend/:path*", "destination": "/:path*", "permanent": true }
   ],
   "rewrites": [
