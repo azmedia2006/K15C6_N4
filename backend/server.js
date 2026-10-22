@@ -17,6 +17,7 @@ const {
     findUserByEmail,
     hashPassword,
     verifyPassword,
+    changePassword,
     generateToken,
     verifyToken,
     getLockoutStatus,
@@ -345,6 +346,35 @@ if (user && (user.status || "active") === "inactive") {
             roles: userWithRoles.roles
         }
     });
+});
+
+app.post(["/api/auth/change-password", "/auth/change-password"], authenticateToken, (req, res) => {
+    const { currentPassword, newPassword } = req.body || {};
+
+    if (typeof currentPassword !== "string" || !currentPassword ||
+        typeof newPassword !== "string" || !newPassword) {
+        return res.status(400).json({
+            success: false,
+            message: "Vui lòng nhập mật khẩu hiện tại và mật khẩu mới."
+        });
+    }
+
+    try {
+        return res.status(200).json(changePassword(req.user.id, currentPassword, newPassword));
+    } catch (error) {
+        if (Number.isInteger(error.status) && error.status >= 400 && error.status < 500) {
+            return res.status(error.status).json({
+                success: false,
+                message: error.message
+            });
+        }
+
+        console.error("[Auth] Không thể đổi mật khẩu:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Không thể đổi mật khẩu lúc này."
+        });
+    }
 });
 
 // KN-60: API lấy thông tin người dùng hiện tại
