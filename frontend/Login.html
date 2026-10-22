@@ -644,7 +644,7 @@
                     </div>
 
                     <div class="social-login">
-                        <button type="button" class="btn-social">
+                        <button type="button" class="btn-social" onclick="showSocialLoginNotice('Google')">
                             <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
                                 <path
                                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -661,7 +661,7 @@
                             </svg>
                             Google
                         </button>
-                        <button type="button" class="btn-social">
+                        <button type="button" class="btn-social" onclick="showSocialLoginNotice('Microsoft')">
                             <svg viewBox="0 0 21 21" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M10 0H0v10h10V0z" fill="#f25022" />
                                 <path d="M21 0H11v10h10V0z" fill="#7fba00" />
@@ -887,6 +887,14 @@
             element.textContent = text;
             element.classList.toggle("success", success);
         }
+
+        function showSocialLoginNotice(provider) {
+            const msg = document.getElementById("message");
+            if (msg) {
+                showMessage(msg, 'Tính năng đăng nhập Single Sign-On (SSO) qua ' + provider + ' đang được kết nối với cổng trường học. Vui lòng đăng nhập bằng tài khoản mẫu hoặc tài khoản đã đăng ký bên dưới.', false);
+            }
+        }
+        window.showSocialLoginNotice = showSocialLoginNotice;
 
         function formatRemaining(seconds) {
             const m = Math.floor(seconds / 60);

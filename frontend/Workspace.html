@@ -4877,8 +4877,14 @@
         };
         const allowedRoles = new Set(Object.keys(allRolesMap));
 
-        // Xác minh user với Backend hoặc khởi tạo phiên quản trị dự phòng
-        const token = localStorage.getItem("tms_token") || localStorage.getItem("token");
+        // Trạng thái người dùng và phân quyền RBAC toàn cục
+        let currentUser = null;
+        let role = "visitor";
+        let authorizedRoles = new Set(["visitor"]);
+        let allowedMenus = ["dashboard", "courses"];
+
+        function initDashboardSession() {
+            const token = localStorage.getItem("tms_token") || localStorage.getItem("token");
 
         function forceLogin() {
             if (typeof window.tmsLogout === "function") {
@@ -5874,6 +5880,8 @@
             todoBadgeEl.textContent = prof.todoBadge.text;
             todoBadgeEl.className = "badge " + prof.todoBadge.className;
         }
+        }
+        initDashboardSession();
 
         // Xử lý tìm kiếm nhanh toàn cục
         function handleGlobalSearch(keyword) {
@@ -6176,6 +6184,52 @@
                 }
             }).catch(() => {});
         }, 150);
+
+        // Đảm bảo tất cả hàm điều hướng, mở modal và tác vụ được gắn vào window để mọi nút bấm hoạt động 100%
+        window.switchView = switchView;
+        window.showToast = showToast;
+        window.openActionModal = openActionModal;
+        window.closeModal = closeModal;
+        window.confirmModalAction = confirmModalAction;
+        window.openCreateClassModal = openCreateClassModal;
+        window.toggleNotifications = toggleNotifications;
+        window.toggleMobileSidebar = toggleMobileSidebar;
+        window.toggleSidebar = toggleMobileSidebar;
+        window.toggleCheckin = toggleCheckin;
+        window.downloadCSV = downloadCSV;
+        window.triggerLastDownload = triggerLastDownload;
+        window.openReportModal = openReportModal;
+        window.closeReportModal = closeReportModal;
+        window.exportSystemReport = exportSystemReport;
+        window.exportExcelReport = exportExcelReport;
+        window.exportScheduleReport = exportScheduleReport;
+        window.exportDebtReport = exportDebtReport;
+        window.exportPDFReport = exportPDFReport;
+        window.openAvatarModal = openAvatarModal;
+        window.closeAvatarModal = closeAvatarModal;
+        window.resetAvatarSelection = resetAvatarSelection;
+        window.handleAvatarFileSelect = handleAvatarFileSelect;
+        window.handleZoomChange = handleZoomChange;
+        window.submitAvatarUpload = submitAvatarUpload;
+        window.applyAvatarToUI = applyAvatarToUI;
+        window.searchStudents = searchStudents;
+        window.clearStudentSelection = clearStudentSelection;
+        window.openBatchEnrollModal = openBatchEnrollModal;
+        window.closeBatchEnrollModal = closeBatchEnrollModal;
+        window.submitBatchEnrollment = submitBatchEnrollment;
+        window.openClassStudentsModal = openClassStudentsModal;
+        window.closeClassStudentsModal = closeClassStudentsModal;
+        window.openLeadForm = openLeadForm;
+        window.closeLeadForm = closeLeadForm;
+        window.saveLeadForm = saveLeadForm;
+        window.deleteDashboardLead = deleteDashboardLead;
+        window.openConsultationModal = openConsultationModal;
+        window.closeConsultationModal = closeConsultationModal;
+        window.submitNewConsultation = submitNewConsultation;
+        window.loadDashboardLeads = loadDashboardLeads;
+        window.handleGlobalSearch = handleGlobalSearch;
+        window.quickSwitchRole = quickSwitchRole;
+        window.renderRoleSwitcherUI = renderRoleSwitcherUI;
     </script>
     <!-- Mobile Sidebar Backdrop Overlay -->
     <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleMobileSidebar(false)"></div>
