@@ -5,6 +5,9 @@
     <script src="/authGuard.js" data-required="administrator,training_manager,instructor,teaching_assistant,student,admissions,accountant,visitor"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta name="theme-color" content="#10b981">
     <title>Hệ Thống Đào Tạo TMS | Dashboard Quản Lý</title>
     
@@ -1908,7 +1911,7 @@
                     <div class="user-name" id="display-user-name">Nguyễn Văn Anh</div>
                     <div class="user-role" id="display-user-role">Quản trị viên (Admin)</div>
                 </div>
-                <a href="./Login.html" class="logout-btn" title="Đăng xuất" onclick="localStorage.removeItem('tms_token'); localStorage.removeItem('tms_current_user'); localStorage.removeItem('tms_current_role');">
+                <a href="./Login.html" class="logout-btn" title="Đăng xuất" onclick="if(window.tmsLogout){window.tmsLogout(); return false;}">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                 </a>
             </div>
@@ -1940,7 +1943,7 @@
                     <div class="role-switcher-wrap" id="role-switcher-container" title="Vai trò người dùng">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                         <span style="font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Vai trò:</span>
-                        <span id="current-role-badge" style="font-size: 0.8125rem; font-weight: 600; color: var(--text-main); padding-right: 4px;">Đang tải...</span>
+                        <span id="current-role-badge" style="font-size: 0.8125rem; font-weight: 600; color: var(--text-main); padding-right: 4px;">Quản trị viên</span>
                     </div>
 
                     <button class="action-icon-btn" id="theme-toggle" aria-label="Đổi chế độ sáng tối" title="Đổi giao diện sáng/tối">
@@ -1950,7 +1953,7 @@
                         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
                         <span class="badge-dot"></span>
                     </button>
-                    <a href="./Login.html" class="action-icon-btn" title="Đăng nhập lại hoặc đổi tài khoản">
+                    <a href="./Login.html" class="action-icon-btn" title="Đăng nhập lại hoặc đổi tài khoản" onclick="if(window.tmsLogout){window.tmsLogout(); return false;}">
                         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
                     </a>
                 </div>
@@ -3756,6 +3759,10 @@
                 const response = await fetch(`/api/students?${query.toString()}`, {
                     headers: token ? { "Authorization": `Bearer ${token}` } : {}
                 });
+                if (response.status === 401) {
+                    if (typeof forceLogin === "function") forceLogin();
+                    return;
+                }
                 const result = await response.json();
                 if (!response.ok || !result.success || !Array.isArray(result.data)) {
                     throw new Error(result.message || "Không thể tải danh sách học viên.");
@@ -3765,7 +3772,10 @@
                 renderStudents(allStudents);
             } catch (err) {
                 if (requestId !== studentSearchRequestId) return;
-                tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--error, #ef4444);">${escapeLeadHtml(err.message)}</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:2rem; color:var(--error, #ef4444);">
+                    <div style="margin-bottom:8px;">${escapeLeadHtml(err.message)}</div>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="loadStudents()" style="padding:4px 12px; font-size:12px; border-radius:4px; cursor:pointer;">Thử lại</button>
+                </td></tr>`;
             }
         }
 
@@ -4892,12 +4902,24 @@
         const token = localStorage.getItem("tms_token") || localStorage.getItem("token");
 
         function forceLogin() {
-            localStorage.removeItem("tms_token");
-            localStorage.removeItem("token");
-            localStorage.removeItem("tms_current_user");
-            localStorage.removeItem("tms_current_role");
-            localStorage.removeItem("tms_user");
-            window.location.replace("./Login.html");
+            if (typeof window.tmsLogout === "function") {
+                window.tmsLogout();
+            } else {
+                try {
+                    localStorage.removeItem("tms_token");
+                    localStorage.removeItem("token");
+                    localStorage.removeItem("tms_current_user");
+                    localStorage.removeItem("tms_current_role");
+                    localStorage.removeItem("tms_user");
+                    sessionStorage.clear();
+                } catch (e) {}
+                window.location.replace("/Login.html");
+            }
+        }
+
+        if (!token) {
+            forceLogin();
+            return;
         }
 
         let currentUser = null;
@@ -4913,10 +4935,17 @@
                     if (authData.success && authData.user) {
                         currentUser = authData.user;
                         localStorage.setItem("tms_current_user", JSON.stringify(currentUser));
+                    } else {
+                        forceLogin();
+                        return;
                     }
+                } else if (xhr.status === 401 || xhr.status === 403) {
+                    // Chặn tuyệt đối token bị máy chủ từ chối - không bao giờ dùng cache cũ
+                    forceLogin();
+                    return;
                 }
             } catch (error) {
-                console.warn("Không thể xác minh token từ backend, sử dụng phiên dự phòng:", error);
+                console.warn("Không thể xác minh token từ backend:", error);
             }
         }
 
@@ -5301,9 +5330,11 @@
             }
         };
         document.querySelectorAll("a[href*='Login.html']").forEach(link => {
-            link.addEventListener("click", () => {
-                localStorage.removeItem("tms_current_user");
-                localStorage.removeItem("tms_current_role");
+            link.addEventListener("click", (e) => {
+                if (typeof window.tmsLogout === "function") {
+                    e.preventDefault();
+                    window.tmsLogout();
+                }
             });
         });
 

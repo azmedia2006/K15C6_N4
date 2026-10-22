@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Sinh Thời Khóa Biểu Tự Động (KN-154) - Hệ Thống Đào Tạo TMS</title>
     <!-- Client-Side Access Guard -->
-    <script src="authGuard.js" data-required="training_manager,administrator"></script>
+    <script src="/authGuard.js" data-required="training_manager,administrator"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1719,10 +1722,15 @@
         }
 
         function logout() {
-            localStorage.removeItem("tms_token");
-            localStorage.removeItem("token");
-            localStorage.removeItem("tms_current_user");
-            window.location.href = "/Login.html";
+            if (typeof window.tmsLogout === "function") {
+                window.tmsLogout();
+            } else {
+                localStorage.removeItem("tms_token");
+                localStorage.removeItem("token");
+                localStorage.removeItem("tms_current_user");
+                sessionStorage.clear();
+                window.location.replace("/Login.html");
+            }
         }
 
         // ========================================================
