@@ -588,19 +588,50 @@
         render() {
             const filtered = this.getFilteredSessions();
 
-            // KN-158: Hiển thị trạng thái tải lịch học.
+            // KN-158: Xác định tuần hoặc tháng đang xem.
+            const monday = getMonday(this.currentDate);
+
+            const startDate = this.viewMode === 'week'
+                ? formatISO(monday)
+                : formatISO(new Date(
+                    this.currentDate.getFullYear(),
+                    this.currentDate.getMonth(), 1
+                ));
+
+            const endDate = this.viewMode === 'week'
+                ? formatISO(addDays(monday, 6))
+                : formatISO(new Date(
+                    this.currentDate.getFullYear(),
+                    this.currentDate.getMonth() + 1, 0
+                ));
+
+            const visibleSessions = filtered.filter(s =>
+                s.date >= startDate && s.date <= endDate
+            );
+
             const statusEl = this.container.querySelector('#sched-status-message');
 
             if (statusEl) {
-                const message = this.loadError ||
-                    (this.sessions.length === 0 ? 'Bạn chưa có lịch học.' : '');
+                let message = '';
+
+                if (this.loadError) {
+                    message = this.loadError;
+                } else if (this.sessions.length === 0) {
+                    message = 'Bạn chưa có lịch học.';
+                } else if (filtered.length === 0) {
+                    message = 'Không có buổi học phù hợp với bộ lọc.';
+                } else if (visibleSessions.length === 0) {
+                    message = this.viewMode === 'week'
+                        ? 'Không có buổi học nào trong tuần này.'
+                        : 'Không có buổi học nào trong tháng này.';
+                }
 
                 statusEl.textContent = message;
                 statusEl.style.display = message ? 'block' : 'none';
             }
 
             this.container.querySelector('#sched-result-count').textContent =
-                `${filtered.length} buổi`;
+                `${visibleSessions.length} buổi`;
 
             if (this.viewMode === 'week') {
                 this.renderWeekView(filtered);
