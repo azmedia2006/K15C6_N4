@@ -1,24 +1,8 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <script>
-    // Tự động khởi tạo phiên quản trị mặc định nếu chưa đăng nhập để luôn xem được Dashboard
-    if (!localStorage.getItem("tms_token") && !localStorage.getItem("token")) {
-        const demoUser = {
-            id: "usr_admin_001",
-            fullName: "Quản trị viên TMS",
-            name: "Quản trị viên TMS",
-            email: "admin@tms.edu.vn",
-            role: "administrator",
-            roles: ["administrator", "training_manager", "instructor", "admissions", "accountant", "student"],
-            permissions: ["*"]
-        };
-        localStorage.setItem("tms_token", "tms_demo_admin_token");
-        localStorage.setItem("token", "tms_demo_admin_token");
-        localStorage.setItem("tms_current_role", "administrator");
-        localStorage.setItem("tms_current_user", JSON.stringify(demoUser));
-    }
-    </script>
+    <!-- Client-Side Access Guard: Yêu cầu đăng nhập trước khi vào Dashboard -->
+    <script src="/authGuard.js" data-required="administrator,training_manager,instructor,teaching_assistant,student,admissions,accountant,visitor"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#10b981">
@@ -4943,17 +4927,8 @@
         }
 
         if (!currentUser) {
-            currentUser = {
-                id: "usr_admin_001",
-                fullName: "Quản trị viên TMS",
-                name: "Quản trị viên TMS",
-                email: "admin@tms.edu.vn",
-                role: "administrator",
-                roles: ["administrator", "training_manager", "instructor", "admissions", "accountant", "student"],
-                permissions: ["*"]
-            };
-            localStorage.setItem("tms_current_user", JSON.stringify(currentUser));
-            localStorage.setItem("tms_current_role", "administrator");
+            forceLogin();
+            return;
         }
 
         // Xác định vai trò gốc thực tế của tài khoản (Authentication)

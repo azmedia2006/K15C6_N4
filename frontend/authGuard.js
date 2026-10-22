@@ -28,6 +28,8 @@
             if (rawUser) currentUser = JSON.parse(rawUser);
         } catch (e) {}
 
+
+
         var userRoles = [];
         if (currentUser && currentUser.role) {
             userRoles.push(currentUser.role.toLowerCase());
@@ -48,7 +50,7 @@
             // currentRole hợp lệ mà người dùng thực sự sở hữu
         }
 
-        var isUnauthenticated = !token && (!currentUser || !currentUser.id);
+        var isUnauthenticated = !token || !currentUser || !currentUser.id;
 
         var requiredRoles = requiredRole.split(",").map(function(item) { return item.trim().toLowerCase(); });
         var hasPermission = userRoles.some(function(r) {
@@ -56,7 +58,12 @@
             return requiredRoles.indexOf(r) !== -1;
         });
 
-        if (isUnauthenticated || !hasPermission) {
+        if (isUnauthenticated) {
+            window.location.replace("/Login.html");
+            return;
+        }
+
+        if (!hasPermission) {
             // Chuyển hướng ngay tới trang Error 403 với ngữ cảnh chi tiết (KN-48, KN-50, KN-51)
             var target = "/Error.html?code=403"
                 + "&from=" + encodeURIComponent(window.location.pathname)

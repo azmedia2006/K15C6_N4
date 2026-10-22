@@ -2829,7 +2829,7 @@ app.get("/", (req, res) => {
 
 // Chuyển hướng sạch nếu người dùng gõ /frontend/Login.html
 app.get("/frontend/Login.html", (req, res) => {
-    res.redirect(301, "/");
+    res.redirect(301, "/Login.html");
 });
 app.get("/frontend/:page", (req, res) => {
     res.redirect(301, `/${req.params.page}`);
