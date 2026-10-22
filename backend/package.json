@@ -9,6 +9,7 @@
     "test": "node test/run-local.cjs",
     "test:auth": "node test/auth.test.js",
     "test:auth-serverless": "node test/auth_serverless.test.js",
+    "test:classrooms": "node --test test/classroom_service.test.js",
     "test:user": "node test/user_management.test.js",
     "test:role": "node test/role_management.test.js",
     "test:kn8": "node test/rbac_kn8.test.js",

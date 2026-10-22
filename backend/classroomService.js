@@ -1,70 +1,106 @@
+'use strict';
 
+const database = require('./localDatabase');
 const classrooms = [];
 let nextId = 1;
 
-// Thêm phòng học
+function classroomError(message, status = 400) {
+    return Object.assign(new Error(message), { status });
+}
+
+function validateRoom(data) {
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        throw classroomError('Thông tin phòng học không hợp lệ.');
+    }
+
+    const name = typeof data.name === 'string' ? data.name.trim() : '';
+    if (!name || name.length > 120 || !['physical', 'online'].includes(data.type)) {
+        throw classroomError('Tên phòng (tối đa 120 ký tự) hoặc loại phòng không hợp lệ.');
+    }
+
+    if (!Number.isInteger(data.capacity) || data.capacity < 1) {
+        throw classroomError('Sức chứa phải là số nguyên lớn hơn 0.');
+    }
+
+    let onlineUrl = '';
+    if (data.onlineUrl !== undefined && typeof data.onlineUrl !== 'string') {
+        throw classroomError('Đường dẫn phòng học không hợp lệ.');
+    }
+    if (data.type === 'online') {
+        onlineUrl = typeof data.onlineUrl === 'string' ? data.onlineUrl.trim() : '';
+        if (!onlineUrl || onlineUrl.length > 2048) {
+            throw classroomError('Phòng trực tuyến phải có đường dẫn hợp lệ.');
+        }
+        let parsedUrl;
+        try {
+            parsedUrl = new URL(onlineUrl);
+        } catch {
+            throw classroomError('Đường dẫn phòng trực tuyến không hợp lệ.');
+        }
+        if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+            throw classroomError('Đường dẫn phòng trực tuyến phải dùng HTTP hoặc HTTPS.');
+        }
+    }
+
+    return { name, type: data.type, capacity: data.capacity, onlineUrl };
+}
+
+function getClassrooms() {
+    return classrooms.map(room => ({ ...room }));
+}
+
+function getClassroomById(id) {
+    const roomId = Number(id);
+    if (!Number.isSafeInteger(roomId) || roomId < 1) return undefined;
+    return classrooms.find(room => room.id === roomId);
+}
+
+function ensureUniqueName(name, exceptId) {
+    if (classrooms.some(room =>
+        room.id !== exceptId && room.name.toLowerCase() === name.toLowerCase()
+    )) {
+        throw classroomError('Tên phòng học đã tồn tại.', 409);
+    }
+}
+
 function createClassroom(data) {
-    const {
-        name,
-        type,
-        capacity,
-        onlineUrl = ""
-    } = data;
-
-    if (!name || !["physical", "online"].includes(type)) {
-        throw new Error("Tên phòng hoặc loại phòng không hợp lệ.");
-    }
-
-    if (!Number.isInteger(capacity) || capacity < 1) {
-        throw new Error("Sức chứa phải là số nguyên lớn hơn 0.");
-    }
-
-    if (type === "online" && !onlineUrl.trim()) {
-        throw new Error("Phòng trực tuyến phải có đường dẫn.");
-    }
+    const validated = validateRoom(data);
+    ensureUniqueName(validated.name);
 
     const classroom = {
         id: nextId++,
-        name,
-        type,
-        capacity,
-        onlineUrl,
-        status: "active"
+        ...validated,
+        status: 'active'
     };
 
     classrooms.push(classroom);
-    return classroom;
+    return { ...classroom };
 }
 
-// Lấy danh sách phòng học
-function getClassrooms() {
-    return classrooms;
-}
-
-// Tìm phòng theo mã
-function getClassroomById(id) {
-    return classrooms.find(room => room.id === Number(id));
-}
-
-// Kiểm tra sức chứa phòng
 function checkCapacity(id, studentCount) {
     const room = getClassroomById(id);
-
     if (!room) {
-        throw new Error("Không tìm thấy phòng học.");
+        throw classroomError('Không tìm thấy phòng học.', 404);
     }
-
-    if (!Number.isInteger(studentCount) || studentCount < 1) {
-        throw new Error("Sĩ số phải là số nguyên lớn hơn 0.");
+    if (!Number.isSafeInteger(studentCount) || studentCount < 1) {
+        throw classroomError('Sĩ số phải là số nguyên lớn hơn 0.');
     }
-
-    if (room.status !== "active") {
+    if (room.status !== 'active') {
         return {
             allowed: false,
-            message: "Phòng học hiện không hoạt động."
+            message: 'Phòng học hiện không hoạt động.',
+            capacity: room.capacity,
+            studentCount
         };
     }
-
+    if (room.type === 'online') {
+        return {
+            allowed: true,
+            message: 'Phòng trực tuyến không giới hạn sức chứa.',
+            capacity: room.capacity,
+            studentCount
+        };
+    }
     if (studentCount > room.capacity) {
         return {
             allowed: false,
@@ -76,90 +112,71 @@ function checkCapacity(id, studentCount) {
 
     return {
         allowed: true,
-        message: "Sức chứa phòng học hợp lệ.",
+        message: 'Sức chứa phòng học hợp lệ.',
         capacity: room.capacity,
         studentCount
     };
 }
 
-// Sửa thông tin phòng học
 function updateClassroom(id, data) {
     const room = getClassroomById(id);
-
     if (!room) {
-        throw new Error("Không tìm thấy phòng học.");
+        throw classroomError('Không tìm thấy phòng học.', 404);
+    }
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+        throw classroomError('Thông tin phòng học không hợp lệ.');
+    }
+    const allowedFields = ['name', 'type', 'capacity', 'onlineUrl', 'status'];
+    if (Object.keys(data).some(key => !allowedFields.includes(key))) {
+        throw classroomError('Có trường thông tin phòng học không được hỗ trợ.');
     }
 
-    const updated = {
-        ...room,
-        ...data,
-        id: room.id
-    };
-
-    if (!updated.name ||
-        !["physical", "online"].includes(updated.type)) {
-        throw new Error("Tên phòng hoặc loại phòng không hợp lệ.");
+    const validated = validateRoom({ ...room, ...data });
+    if (data.status !== undefined && !['active', 'inactive'].includes(data.status)) {
+        throw classroomError('Trạng thái phòng học không hợp lệ.');
     }
-
-    if (!Number.isInteger(updated.capacity) || updated.capacity < 1) {
-        throw new Error("Sức chứa phải là số nguyên lớn hơn 0.");
-    }
-
-    if (updated.type === "online" &&
-        (!updated.onlineUrl || !updated.onlineUrl.trim())) {
-        throw new Error("Phòng trực tuyến phải có đường dẫn.");
-    }
-
-    Object.assign(room, updated);
-    return room;
+    ensureUniqueName(validated.name, room.id);
+    Object.assign(room, validated);
+    if (data.status !== undefined) room.status = data.status;
+    return { ...room };
 }
 
-// Xóa phòng học
 function deleteClassroom(id) {
-    const index = classrooms.findIndex(
-        room => room.id === Number(id)
-    );
-
+    const index = classrooms.findIndex(room => room.id === Number(id));
     if (index === -1) {
-        throw new Error("Không tìm thấy phòng học.");
+        throw classroomError('Không tìm thấy phòng học.', 404);
     }
-
     classrooms.splice(index, 1);
-    return { message: "Đã xóa phòng học thành công." };
+    return { message: 'Đã xóa phòng học thành công.' };
 }
-// Kiểm tra sức chứa phòng học so với sĩ số lớp
+
 function validateRoomCapacity(classroomId, studentCount) {
-    const classroom = classrooms.find(c => c.id === Number(classroomId));
-    
-    // Nếu chưa có/không tìm thấy phòng
-    if (!classroom) {
-        return {
-            valid: false,
-            message: "Phòng học không tồn tại hoặc chưa được khởi tạo."
-        };
-    }
-
-    // Nếu là phòng online thì không giới hạn
-    if (classroom.type === "online") {
-        return { valid: true };
-    }
-
-    // Kiểm tra sức chứa phòng vật lý
-    if (studentCount > classroom.capacity) {
-        return {
-            valid: false,
-            message: `Sĩ số lớp (${studentCount} học viên) vượt quá sức chứa của phòng ${classroom.name} (${classroom.capacity} chỗ).`
-        };
-    }
-
-    return { valid: true };
+    const result = checkCapacity(classroomId, studentCount);
+    return {
+        valid: result.allowed,
+        message: result.message,
+        capacity: result.capacity,
+        studentCount: result.studentCount
+    };
 }
+
+database.register('classrooms', () => ({ classrooms, nextId }), state => {
+    if (!state || !Array.isArray(state.classrooms)) {
+        throw new Error('Dữ liệu phòng học đã lưu không hợp lệ.');
+    }
+    classrooms.splice(0, classrooms.length, ...state.classrooms);
+    nextId = Math.max(
+        Number.isSafeInteger(state.nextId) && state.nextId > 0 ? state.nextId : 1,
+        classrooms.reduce((max, room) => Math.max(max, Number(room.id) + 1), 1)
+    );
+});
+
 module.exports = {
     createClassroom,
     getClassrooms,
     getClassroomById,
     checkCapacity,
-    validateRoomCapacity, // Đã thêm vào export
+    validateRoomCapacity,
     updateClassroom,
     deleteClassroom
 };

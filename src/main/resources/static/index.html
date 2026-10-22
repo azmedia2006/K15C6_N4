@@ -62,7 +62,7 @@
         <h2>1. Tạo môn học</h2>
         <form id="courseForm">
             <label for="courseName">Tên môn học</label>
-            <input id="courseName" required placeholder="Ví dụ: Lập trình Java">
+            <input id="courseName" maxlength="120" required placeholder="Ví dụ: Lập trình Java">
             <label for="maxSessions">Số buổi tối đa</label>
             <input id="maxSessions" type="number" min="1" required value="5">
             <button>Tạo môn học</button>
@@ -73,7 +73,7 @@
         <h2>2. Chọn môn học</h2>
         <label for="courseSelect">Môn cần quản lý</label>
         <select id="courseSelect"></select>
-        <p id="courseInfo"></p>
+        <p id="courseInfo" aria-live="polite"></p>
     </section>
 
     <section class="panel">
@@ -86,11 +86,11 @@
                 </div>
                 <div>
                     <label for="topic">Chủ đề</label>
-                    <input id="topic" required placeholder="Ví dụ: Biến và kiểu dữ liệu">
+                    <input id="topic" maxlength="200" required placeholder="Ví dụ: Biến và kiểu dữ liệu">
                 </div>
             </div>
             <label for="objective">Mục tiêu buổi học</label>
-            <textarea id="objective" required
+            <textarea id="objective" maxlength="2000" required
                       placeholder="Sau buổi học, sinh viên có thể..."></textarea>
             <button>Thêm buổi học</button>
         </form>
@@ -105,7 +105,7 @@
 
     <section class="panel">
         <h2>5. Danh sách buổi học</h2>
-        <div id="notice" class="notice" role="status"></div>
+        <div id="notice" class="notice" role="status" aria-live="polite" aria-atomic="true"></div>
         <div class="table-wrap">
             <table>
                 <thead>
@@ -121,6 +121,7 @@
     const $ = id => document.getElementById(id);
     let courses = [];
     let currentSessions = [];
+    let sessionLoadVersion = 0;
 
     function notify(message) {
         $("notice").textContent = message;
@@ -192,6 +193,16 @@
         const tbody = $("sessionRows");
         tbody.replaceChildren();
 
+        if (currentSessions.length === 0) {
+            const tr = document.createElement("tr");
+            const td = document.createElement("td");
+            td.colSpan = 3;
+            td.textContent = "Môn học chưa có buổi học nào.";
+            tr.append(td);
+            tbody.append(tr);
+            return;
+        }
+
         currentSessions.forEach(session => {
             const tr = document.createElement("tr");
 
@@ -214,22 +225,43 @@
 
     async function loadSessions() {
         const id = selectedCourseId();
+        const requestVersion = ++sessionLoadVersion;
         if (!id) {
             currentSessions = [];
             renderSessions();
+            $("sessionForm").querySelector("button").disabled = true;
+            $("copyButton").disabled = true;
+            $("sessionNumber").value = "";
+            $("courseInfo").textContent = "Chưa có môn học. Hãy tạo môn học trước.";
             return;
         }
 
-        currentSessions = await api(`/api/courses/${id}/sessions`);
+        currentSessions = [];
+        renderSessions();
+        $("sessionForm").querySelector("button").disabled = true;
+        $("copyButton").disabled = true;
+
+        const loadedSessions = await api(`/api/courses/${id}/sessions`);
+        if (requestVersion !== sessionLoadVersion || id !== selectedCourseId()) {
+            return;
+        }
+        currentSessions = loadedSessions;
         renderSessions();
 
         const course = courses.find(c => c.id === id);
-        $("sessionNumber").value = currentSessions.length + 1;
+        const usedNumbers = new Set(currentSessions.map(session => session.sessionNumber));
+        let nextNumber = 1;
+        while (usedNumbers.has(nextNumber) && nextNumber <= (course?.maxSessions || 0)) {
+            nextNumber++;
+        }
+        if (!course || nextNumber > course.maxSessions) nextNumber = null;
+        $("sessionNumber").value = nextNumber || "";
+        $("sessionNumber").max = course?.maxSessions || "";
 
         const full = course &&
             currentSessions.length >= course.maxSessions;
 
-        $("sessionForm").querySelector("button").disabled = !!full;
+        $("sessionForm").querySelector("button").disabled = !!full || !nextNumber;
         $("copyButton").disabled = !!full;
 
         $("courseInfo").textContent = course
@@ -239,6 +271,8 @@
 
     $("courseForm").addEventListener("submit", async event => {
         event.preventDefault();
+        const button = event.currentTarget.querySelector("button");
+        button.disabled = true;
         try {
             await api("/api/courses", {
                 method: "POST",
@@ -253,6 +287,8 @@
             notify("Tạo môn học thành công.");
         } catch (error) {
             notify(error.message);
+        } finally {
+            button.disabled = false;
         }
     });
 
@@ -262,6 +298,8 @@
 
         if (!id) return notify("Hãy tạo và chọn môn học trước.");
 
+        const button = $("sessionForm").querySelector("button");
+        button.disabled = true;
         try {
             await api(`/api/courses/${id}/sessions`, {
                 method: "POST",
@@ -277,6 +315,12 @@
             notify("Thêm buổi học thành công.");
         } catch (error) {
             notify(error.message);
+        } finally {
+            if (selectedCourseId() === id) {
+                const course = courses.find(item => item.id === id);
+                button.disabled = !course ||
+                    currentSessions.length >= course.maxSessions;
+            }
         }
     });
 
@@ -295,6 +339,7 @@
             return;
         }
 
+        $("copyButton").disabled = true;
         try {
             await api(`/api/courses/${targetId}/sessions/copy`, {
                 method: "POST",
@@ -304,6 +349,10 @@
             notify("Nhân bản danh sách thành công.");
         } catch (error) {
             notify(error.message);
+        } finally {
+            const course = courses.find(item => item.id === targetId);
+            $("copyButton").disabled = selectedCourseId() !== targetId ||
+                !course || currentSessions.length >= course.maxSessions;
         }
     });
 

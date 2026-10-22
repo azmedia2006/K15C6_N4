@@ -22,10 +22,10 @@ public class CourseSession {
     @Column(name = "session_number", nullable = false)
     private int sessionNumber;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 200)
     private String topic;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 2000)
     private String objective;
 
     public CourseSession() {}
