@@ -532,9 +532,7 @@ async function hydrateUsersForVercel() {
             if (Array.isArray(fileUsers)) {
                 fileUsers.forEach(fu => {
                     const existingIdx = users.findIndex(u => (u.email && fu.email && u.email.toLowerCase() === fu.email.toLowerCase()) || (u.id && fu.id && u.id === fu.id));
-                    if (existingIdx !== -1) {
-                        users[existingIdx] = { ...users[existingIdx], ...fu };
-                    } else {
+                    if (existingIdx === -1) {
                         users.push(fu);
                     }
                 });
@@ -548,9 +546,7 @@ async function hydrateUsersForVercel() {
         if (snap && snap.auth && Array.isArray(snap.auth.users)) {
             snap.auth.users.forEach(su => {
                 const existingIdx = users.findIndex(u => (u.email && su.email && u.email.toLowerCase() === su.email.toLowerCase()) || (u.id && su.id && u.id === su.id));
-                if (existingIdx !== -1) {
-                    users[existingIdx] = { ...users[existingIdx], ...su };
-                } else {
+                if (existingIdx === -1) {
                     users.push(su);
                 }
             });
@@ -567,9 +563,7 @@ async function hydrateUsersForVercel() {
         if (Array.isArray(storedUsers) && storedUsers.length > 0) {
             storedUsers.forEach(su => {
                 const existingIdx = users.findIndex(u => (u.email && su.email && u.email.toLowerCase() === su.email.toLowerCase()) || (u.id && su.id && u.id === su.id));
-                if (existingIdx !== -1) {
-                    users[existingIdx] = { ...users[existingIdx], ...su };
-                } else {
+                if (existingIdx === -1) {
                     users.push(su);
                 }
             });
@@ -842,13 +836,7 @@ app.post(["/api/auth/register", "/auth/register"], async (req, res) => {
             try {
                 await supabaseService.savePasswordRecoveryUsersSnapshot(users);
             } catch (error) {
-                if (!supabaseService.SUPABASE_URL || !supabaseService.SUPABASE_SECRET_KEY || error.message?.includes("Không kết nối được")) {
-                    console.warn("[Server] Supabase Storage chưa sẵn sàng, duy trì tài khoản trong bộ nhớ:", error.message);
-                } else {
-                    const userIndex = users.findIndex(user => user.id === result.user.id);
-                    if (userIndex !== -1) users.splice(userIndex, 1);
-                    throw error;
-                }
+                console.warn("[Server] Supabase Storage chưa sẵn sàng hoặc timeout, duy trì tài khoản trong bộ nhớ & localDatabase:", error.message);
             }
         } else {
             await supabaseService.syncSingleUser(result.user, password, users).catch(() => {});
@@ -954,17 +942,29 @@ app.post(
                 sendActivation: false
             });
 
+            // Lưu ngay vào file tạm serverless (/tmp) và localDatabase
+            try {
+                let tmpList = [];
+                if (fs.existsSync(tmpUsersFile)) {
+                    try { tmpList = JSON.parse(fs.readFileSync(tmpUsersFile, "utf8")); } catch {}
+                }
+                if (!Array.isArray(tmpList)) tmpList = [];
+                const savedU = users.find(u => u.id === result.user.id) || result.user;
+                const existingIdx = tmpList.findIndex(u => (u.email && savedU.email && u.email.toLowerCase() === savedU.email.toLowerCase()) || (u.id && savedU.id && u.id === savedU.id));
+                if (existingIdx !== -1) tmpList[existingIdx] = savedU;
+                else tmpList.push(savedU);
+                fs.writeFileSync(tmpUsersFile, JSON.stringify(tmpList, null, 2), "utf8");
+            } catch (e) {}
+
+            try {
+                require("./localDatabase").commit();
+            } catch (e) {}
+
             if (isVercelRuntime) {
                 try {
                     await supabaseService.savePasswordRecoveryUsersSnapshot(users);
                 } catch (error) {
-                    if (!supabaseService.SUPABASE_URL || !supabaseService.SUPABASE_SECRET_KEY || error.message?.includes("Không kết nối được")) {
-                        console.warn("[Server] Supabase Storage chưa sẵn sàng, duy trì tài khoản trong bộ nhớ:", error.message);
-                    } else {
-                        const userIndex = users.findIndex(user => user.id === result.user.id);
-                        if (userIndex !== -1) users.splice(userIndex, 1);
-                        throw error;
-                    }
+                    console.warn("[Server] Supabase Storage chưa sẵn sàng hoặc timeout, duy trì tài khoản trong bộ nhớ:", error.message);
                 }
             } else {
                 await supabaseService.syncSingleUser(

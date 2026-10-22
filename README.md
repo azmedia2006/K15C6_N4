@@ -139,3 +139,4 @@ Hệ thống triển khai cơ chế kiểm soát truy cập dựa trên vai trò
   - Hệ thống tích hợp kho lưu trữ đa tầng kết hợp `/tmp/tms_registered_users.json`, `localDatabase.commit()` và đồng bộ an toàn qua `localStorage` phía client.
   - Khi container serverless khởi động lạnh (Cold Start), tài khoản đăng ký mới tự động đồng bộ và đăng nhập thông suốt mà không làm mất dữ liệu người dùng.
 - **Tối ưu hóa đa thiết bị (Mobile-First Responsive):** Toàn bộ giao diện bảng điều khiển, biểu mẫu tạo mới/chỉnh sửa, thanh điều hướng 3 gạch (Hamburger Drawer) và bảng dữ liệu được căn chỉnh tối ưu cho màn hình điện thoại từ 360px trở lên.
+- **Hệ thống Thông báo & Điều hướng Trực tiếp (KN-156):** Tự động điều hướng `/notifications` và `/Notifications.html`, phân tách hộp thư thông báo thay đổi lịch học in-app theo đúng tài khoản đăng nhập, hỗ trợ phiên quản trị demo trực quan và đồng bộ đầy đủ các phân hệ.
