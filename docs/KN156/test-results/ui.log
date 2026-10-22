@@ -1,8 +1,0 @@
-PASS UI: edit saved session persisted
-PASS UI: cancellation reason + cancelled state
-PASS UI: attendance locks edit/cancel buttons
-PASS UI: history shows before/after
-PASS UI: class roster management
-PASS UI: student inbox + mark as read
-PASS UI: mobile inbox layout
-PASS UI: no JavaScript page errors

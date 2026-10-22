@@ -1,39 +1,17 @@
 {
-  "name": "tms-kn156-final",
-  "version": "2.0.0",
+  "name": "tms-kn178-nodejs",
+  "version": "1.0.0",
   "private": true,
-  "description": "TMS: KN-156, persistent local workflows and regression fixes",
-  "main": "backend/server.js",
+  "description": "TMS demo - bảo lưu, chuyển lớp, thôi học và danh sách điểm danh",
+  "main": "server.js",
   "scripts": {
-    "start": "node backend/startLocal.js",
-    "dev": "node backend/startLocal.js",
-    "test": "npm test --prefix backend",
-    "test:auth": "cd backend && npm run test:auth",
-    "test:auth-serverless": "cd backend && npm run test:auth-serverless",
-    "test:user": "cd backend && npm run test:user",
-    "test:role": "cd backend && npm run test:role",
-    "test:kn8": "cd backend && npm run test:kn8",
-    "test:supabase": "cd backend && npm run test:supabase",
-    "test:kn10": "cd backend && npm run test:kn10",
-    "test:lead": "cd backend && npm run test:lead",
-    "test:kn74": "cd backend && npm run test:kn74",
-    "test:kn66": "cd backend && npm run test:kn66",
-    "test:import": "cd backend && npm run test:import",
-    "test:kn68": "cd backend && npm run test:kn68",
-    "test:kn70": "cd backend && npm run test:kn70",
-    "test:kn76": "cd backend && npm run test:kn76",
-    "test:kn122": "cd backend && npm run test:kn122",
-    "test:kn124": "cd backend && npm run test:kn124",
-    "test:enrollment": "cd backend && npm run test:enrollment",
-    "test:forgot": "cd backend && npm run test:forgot",
-    "test:kn154": "cd backend && npm run test:kn154",
-    "start:lead-demo": "node server.js",
-    "setup": "npm ci --prefix backend",
-    "test:kn156": "npm run test:kn156 --prefix backend",
-    "test:all": "npm run test:all --prefix backend",
-    "test:final": "npm run test:final --prefix backend"
+    "start": "node server.js",
+    "dev": "node --watch server.js"
   },
+  "engines": { "node": ">=20" },
   "dependencies": {
-    "express": "^4.21.2"
+    "bcryptjs": "^2.4.3",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1"
   }
 }

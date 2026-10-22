@@ -1,1 +1,0 @@
-CREATE DATABASE tms_kn75_test;

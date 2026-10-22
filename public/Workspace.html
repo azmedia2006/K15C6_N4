@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="vi">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>TMS | Quản lý học viên</title><link rel="stylesheet" href="/style.css"></head>
+<body>
+<header class="topbar"><div class="brand-mark small">TMS</div><div><b>Training Management System</b><div class="muted tiny">Quản lý hồ sơ và danh sách điểm danh</div></div><div class="spacer"></div><span id="whoami" class="user-pill"></span><button id="logout" class="secondary">Đăng xuất</button></header>
+<main class="container">
+  <section class="hero"><div><div class="eyebrow">KN-178 · HỒ SƠ HỌC VIÊN</div><h1>Bảo lưu, chuyển lớp và thôi học</h1><p>Danh sách điểm danh chỉ hiển thị học viên đang học trong lớp.</p></div><div class="hero-icon">✓</div></section>
+  <div id="notice" class="notice hidden"></div>
+  <section class="panel">
+    <div class="panel-head"><div><h2>Danh sách học viên</h2><p class="muted">Chọn học viên để cập nhật trạng thái và lưu lịch sử.</p></div><button id="refresh" class="secondary">↻ Làm mới</button></div>
+    <div class="filters"><input id="search" placeholder="Tìm mã, tên, email, lớp..."><select id="statusFilter"><option value="">Tất cả trạng thái</option><option value="active">Đang học</option><option value="deferred">Bảo lưu</option><option value="dropout">Thôi học</option></select></div>
+    <div class="table-wrap"><table><thead><tr><th>Mã HV</th><th>Học viên</th><th>Lớp</th><th>Trạng thái</th><th>Ngày hiệu lực</th><th>Thao tác</th></tr></thead><tbody id="studentsBody"><tr><td colspan="6">Đang tải...</td></tr></tbody></table></div>
+  </section>
+  <div class="two-col">
+    <section class="panel">
+      <div class="panel-head"><div><h2>Danh sách điểm danh</h2><p class="muted">Không hiển thị học viên bảo lưu hoặc thôi học.</p></div></div>
+      <label>Chọn lớp</label><select id="attendanceClass"></select>
+      <div id="rosterSummary" class="roster-summary">Chọn lớp để xem danh sách.</div>
+      <ul id="roster" class="roster"></ul>
+    </section>
+    <section class="panel">
+      <div class="panel-head"><div><h2>Lịch sử thay đổi</h2><p class="muted">Ghi lại người thao tác, thời gian, lý do và trạng thái trước/sau.</p></div><button id="historyRefresh" class="secondary">Tải lại</button></div>
+      <div id="historyList" class="history-list"></div>
+    </section>
+  </div>
+</main>
+<dialog id="actionDialog">
+  <form id="actionForm" method="dialog">
+    <div class="dialog-head"><div><div class="eyebrow">CẬP NHẬT HỒ SƠ</div><h2 id="dialogTitle">Thao tác</h2></div><button type="button" id="closeDialog" class="icon-btn">✕</button></div>
+    <p id="selectedStudent" class="muted"></p>
+    <input type="hidden" id="studentId">
+    <label>Ngày hiệu lực *</label><input id="effectiveDate" type="date" required>
+    <div id="targetWrap" class="hidden"><label>Lớp chuyển đến *</label><select id="targetClass"></select></div>
+    <label>Lý do *</label><textarea id="reason" rows="3" placeholder="Nhập lý do cụ thể..." required minlength="3"></textarea>
+    <p id="dialogError" class="error"></p>
+    <div class="dialog-actions"><button type="button" id="cancelAction" class="secondary">Hủy</button><button id="submitAction" class="primary" type="submit">Lưu thay đổi</button></div>
+  </form>
+</dialog>
+<script src="/app.js"></script>
+</body></html>

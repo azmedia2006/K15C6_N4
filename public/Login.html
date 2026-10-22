@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Đăng nhập TMS</title><link rel="stylesheet" href="/style.css">
+</head>
+<body class="login-page">
+  <main class="login-card">
+    <div class="brand-mark">TMS</div>
+    <h1>Hệ thống quản lý đào tạo</h1>
+    <p class="muted">Đăng nhập để quản lý trạng thái học viên</p>
+    <form id="loginForm">
+      <label>Email</label><input id="email" type="email" value="manager@tms.edu.vn" required>
+      <label>Mật khẩu</label><input id="password" type="password" value="manager123" required>
+      <button type="submit" class="primary full">Đăng nhập</button>
+      <p id="error" class="error"></p>
+    </form>
+    <div class="demo"><b>Tài khoản thử cục bộ</b><br>Quản lý: manager@tms.edu.vn / manager123<br>Quản trị: admin@tms.edu.vn / admin123</div>
+  </main>
+  <script>
+    document.querySelector("#loginForm").addEventListener("submit", async e => {
+      e.preventDefault(); const error = document.querySelector("#error"); error.textContent = "";
+      try {
+        const r = await fetch("/api/login", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({email:email.value,password:password.value})});
+        const d = await r.json(); if (!r.ok) throw new Error(d.error || "Đăng nhập thất bại");
+        location.href = "/Workspace.html";
+      } catch (err) { error.textContent = err.message; }
+    });
+  </script>
+</body></html>
