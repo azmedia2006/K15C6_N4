@@ -35,7 +35,7 @@
     // Cung cấp hàm logout toàn cục xóa sạch cache và thu hồi phiên trên Server
     window.tmsLogout = function() {
         var tok = localStorage.getItem("tms_token") || localStorage.getItem("token");
-        if (tok && tok !== "tms_demo_admin_token") {
+        if (tok) {
             try {
                 var xhr = new XMLHttpRequest();
                 xhr.open("POST", "/api/auth/logout", true);
@@ -58,12 +58,46 @@
     // Global 401 Interceptor: Bắt mọi phản hồi HTTP 401 trên toàn trang để tự động thu hồi phiên
     if (window.fetch) {
         var _originalFetch = window.fetch;
-        window.fetch = function() {
-            return _originalFetch.apply(this, arguments).then(function(response) {
-                if (response && response.status === 401) {
-                    purgeAllAuthData();
-                    window.location.replace("/Login.html?error=session_expired");
+        window.fetch = function () {
+            return _originalFetch.apply(this, arguments).then(function (response) {
+                if (!response || response.status !== 401) {
+                    return response;
                 }
+
+                var checkedToken =
+                    localStorage.getItem("tms_token") ||
+                    localStorage.getItem("token");
+
+                if (!checkedToken) {
+                    return response;
+                }
+
+                // Xác minh phiên trước khi quyết định đăng xuất.
+                // Dùng fetch gốc để tránh gọi lặp interceptor.
+                _originalFetch.call(window, "/api/auth/me", {
+                    method: "GET",
+                    headers: {
+                        Authorization: "Bearer " + checkedToken
+                    },
+                    cache: "no-store"
+                }).then(function (check) {
+                    var currentToken =
+                        localStorage.getItem("tms_token") ||
+                        localStorage.getItem("token");
+
+                    if (
+                        currentToken === checkedToken &&
+                        (check.status === 401 || check.status === 403)
+                    ) {
+                        purgeAllAuthData();
+                        window.location.replace(
+                            "/Login.html?error=session_expired"
+                        );
+                    }
+                }).catch(function () {
+                    // Lỗi kết nối không đồng nghĩa token đã hết hạn.
+                });
+
                 return response;
             });
         };
@@ -90,7 +124,7 @@
         }
 
         // 2. Kiểm tra tính toàn vẹn và thời hạn của JWT Token
-        if (token !== "tms_demo_admin_token") {
+        if (token) {
             try {
                 var parts = token.split(".");
                 if (parts.length === 3) {
@@ -119,7 +153,7 @@
 
         // 3. Xác minh Token trực tiếp với Backend API /api/auth/me qua Synchronous XHR
         var currentUser = null;
-        if (token !== "tms_demo_admin_token") {
+        if (token) {
             try {
                 var xhr = new XMLHttpRequest();
                 xhr.open("GET", "/api/auth/me", false); // Chạy đồng bộ trong <head> để bảo vệ tuyệt đối
@@ -147,14 +181,6 @@
             } catch (netErr) {
                 console.warn("TMS Access Guard: Kết nối máy chủ kiểm tra phiên gặp sự cố:", netErr);
             }
-        }
-
-        // Nếu máy chủ ngoại tuyến / token demo, đọc lại hồ sơ được lưu
-        if (!currentUser) {
-            try {
-                var rawUser = localStorage.getItem("tms_current_user") || localStorage.getItem("tms_user");
-                if (rawUser) currentUser = JSON.parse(rawUser);
-            } catch (e) {}
         }
 
         var isUnauthenticated = !token || !currentUser || !currentUser.id;

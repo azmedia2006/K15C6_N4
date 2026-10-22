@@ -6171,18 +6171,33 @@
             }
 
             // Đồng bộ dữ liệu điểm danh học viên
-            fetch("/api/attendance/students").then(r => r.json()).then(res => {
-                if (res.success && Array.isArray(res.data)) {
-                    res.data.forEach(s => {
-                        if (s.studentCode === "SV001" && s.thumbnail) {
-                            const thumb = document.getElementById("attendance-thumb-sv001");
-                            const large = document.getElementById("attendance-large-sv001");
-                            if (thumb) thumb.src = s.thumbnail;
-                            if (large) large.src = s.avatar || s.thumbnail;
-                        }
-                    });
-                }
-            }).catch(() => {});
+            const kn68AttendanceRole = String(
+                localStorage.getItem("tms_current_role") || ""
+            ).trim().toLowerCase().replace(/^role_/, "");
+
+            const kn68AttendanceToken =
+                localStorage.getItem("tms_token") ||
+                localStorage.getItem("token");
+
+            kn68AttendanceToken &&
+                ["administrator", "training_manager", "instructor", "teaching_assistant"]
+                    .includes(kn68AttendanceRole) &&
+                fetch("/api/attendance/students", {
+                    headers: {
+                        Authorization: `Bearer ${kn68AttendanceToken}`
+                    }
+                }).then(r => r.json()).then(res => {
+                    if (res.success && Array.isArray(res.data)) {
+                        res.data.forEach(s => {
+                            if (s.studentCode === "SV001" && s.thumbnail) {
+                                const thumb = document.getElementById("attendance-thumb-sv001");
+                                const large = document.getElementById("attendance-large-sv001");
+                                if (thumb) thumb.src = s.thumbnail;
+                                if (large) large.src = s.avatar || s.thumbnail;
+                            }
+                        });
+                    }
+                }).catch(() => {});
         }, 150);
 
         // Đảm bảo tất cả hàm điều hướng, mở modal và tác vụ được gắn vào window để mọi nút bấm hoạt động 100%

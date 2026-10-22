@@ -6171,7 +6171,24 @@
             }
 
             // Đồng bộ dữ liệu điểm danh học viên
-            fetch("/api/attendance/students").then(r => r.json()).then(res => {
+
+            const kn68AttendanceRole = String(
+                localStorage.getItem("tms_current_role") || ""
+            ).trim().toLowerCase().replace(/^role_/, "");
+
+            const kn68AttendanceToken =
+                localStorage.getItem("tms_token") ||
+                localStorage.getItem("token");
+
+            kn68AttendanceToken &&
+            ["administrator", "training_manager", "instructor", "teaching_assistant"]
+                .includes(kn68AttendanceRole) &&
+            fetch("/api/attendance/students", {
+                headers: {
+                    Authorization: `Bearer ${kn68AttendanceToken}`
+                }
+            }).then(r => r.json()).then(res => {
+
                 if (res.success && Array.isArray(res.data)) {
                     res.data.forEach(s => {
                         if (s.studentCode === "SV001" && s.thumbnail) {
