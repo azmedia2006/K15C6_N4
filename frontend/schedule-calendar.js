@@ -234,6 +234,10 @@
         }
 
         buildDOM() {
+            const isStudentSchedule = String(
+                localStorage.getItem('tms_current_role') || ''
+            ).trim().toLowerCase() === 'student';
+
             this.container.innerHTML = `
                 <div class="schedule-calendar-container" id="sched-calendar-app">
                     <!-- Top Toolbar -->
@@ -247,9 +251,9 @@
                                         <line x1="8" y1="2" x2="8" y2="6"></line>
                                         <line x1="3" y1="10" x2="21" y2="10"></line>
                                     </svg>
-                                    <span>Thời Khóa Biểu Hệ Thống</span>
+                                    <span>${isStudentSchedule ? 'Thời khóa biểu của tôi' : 'Thời Khóa Biểu Hệ Thống'}</span>
                                 </h3>
-                                <p>Tra cứu lịch học, chuyển đổi tuần/tháng và lọc theo lớp, giảng viên, phòng</p>
+                                <p>${isStudentSchedule ? 'Xem lịch học các lớp bạn đã ghi danh theo tuần hoặc tháng' : 'Tra cứu lịch học, chuyển đổi tuần/tháng và lọc theo lớp, giảng viên, phòng'}</p>
                             </div>
 
                             <!-- Mode Switcher (Tuần / Tháng) -->
@@ -322,6 +326,14 @@
                     <!-- Mobile Day Selector Strip (For Week View on mobile) -->
                     <div class="sched-mobile-day-strip" id="sched-mobile-day-strip">
                         <!-- Rendered dynamically -->
+                    </div>
+
+                    <!-- KN-158: Thông báo trạng thái tải lịch học -->
+                    <div
+                        id="sched-status-message"
+                        role="status"
+                        aria-live="polite"
+                        style="display: none; margin: 12px 0; padding: 14px 16px; border: 1px solid #cbd5e1; border-radius: 10px; color: var(--sched-text-muted);">
                     </div>
 
                     <!-- Main Calendar View Body -->
@@ -423,23 +435,36 @@
 
         async loadData() {
             let loadedSessions = [];
+            this.loadError = null;
+
             const token = localStorage.getItem('tms_token') || localStorage.getItem('token');
 
-            // 1. Try loading from API
+            // KN-158: Phân biệt lỗi API với trường hợp không có lịch học.
             try {
                 const res = await fetch(this.options.apiEndpoint, {
                     headers: token ? { Authorization: `Bearer ${token}` } : {}
                 });
-                if (res.ok) {
-                    const result = await res.json();
-                    if (result && Array.isArray(result.data) && result.data.length > 0) {
-                        loadedSessions = result.data;
-                    } else if (result && Array.isArray(result.sessions) && result.sessions.length > 0) {
-                        loadedSessions = result.sessions;
-                    }
+
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}`);
+                }
+
+                const result = await res.json();
+
+                if (!result || result.success === false) {
+                    throw new Error(result?.message || 'Phản hồi API không hợp lệ');
+                }
+
+                if (Array.isArray(result.data)) {
+                    loadedSessions = result.data;
+                } else if (Array.isArray(result.sessions)) {
+                    loadedSessions = result.sessions;
+                } else {
+                    throw new Error('Dữ liệu lịch học không hợp lệ');
                 }
             } catch (err) {
-                // Fallback will be used
+                this.loadError = 'Không thể tải thời khóa biểu. Vui lòng thử lại.';
+                console.error('Lỗi tải thời khóa biểu:', err);
             }
 
             // 2. Also check if ScheduleManagement preview sessions are in memory
@@ -447,10 +472,8 @@
                 loadedSessions = [...loadedSessions, ...window.previewSessions];
             }
 
-            // 3. If no sessions loaded, use rich mock demo data for immediate visual responsiveness
-            if (!loadedSessions || loadedSessions.length === 0) {
-                loadedSessions = JSON.parse(JSON.stringify(DEFAULT_DEMO_SESSIONS));
-            }
+            // KN-158: Chỉ hiển thị lịch học thật từ Backend.
+            // Không sử dụng lịch demo khi học viên chưa có lịch.
 
             // Normalize sessions
             this.sessions = loadedSessions.map(s => {
@@ -564,7 +587,20 @@
 
         render() {
             const filtered = this.getFilteredSessions();
-            this.container.querySelector('#sched-result-count').textContent = `${filtered.length} buổi`;
+
+            // KN-158: Hiển thị trạng thái tải lịch học.
+            const statusEl = this.container.querySelector('#sched-status-message');
+
+            if (statusEl) {
+                const message = this.loadError ||
+                    (this.sessions.length === 0 ? 'Bạn chưa có lịch học.' : '');
+
+                statusEl.textContent = message;
+                statusEl.style.display = message ? 'block' : 'none';
+            }
+
+            this.container.querySelector('#sched-result-count').textContent =
+                `${filtered.length} buổi`;
 
             if (this.viewMode === 'week') {
                 this.renderWeekView(filtered);
