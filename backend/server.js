@@ -241,6 +241,8 @@ function requireRole(...allowedRoles) {
     };
 }
 
+require('./businessRoutes')(app, { authenticateToken, requireRole });
+
 // KN-31: API đăng nhập bằng email và mật khẩu
 // Cập nhật trả về danh sách vai trò N-N (hỗ trợ cả /api/auth/login và /auth/login)
 app.post(["/api/auth/login", "/auth/login"], async (req, res) => {
