@@ -1227,10 +1227,6 @@
         // Lấy token xác thực
         function getAuthToken() {
             let token = localStorage.getItem("tms_token") || localStorage.getItem("token") || "";
-            if (!token) {
-                token = "tms_demo_admin_token";
-                localStorage.setItem("tms_token", token);
-            }
             return token;
         }
 

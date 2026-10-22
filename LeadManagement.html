@@ -7,7 +7,7 @@
     <title>Hệ Thống Đào Tạo TMS | Quản Lý Lead, Nhật Ký Chăm Sóc & Đặt Lịch Nhắc Gọi Lại (KN-122 & KN-76)</title>
 
     <!-- Client-Side Access Guard -->
-    <script src="/authGuard.js" data-required="usr_admissions,admissions_officer,training_manager,administrator"></script>
+    <script src="/authGuard.js" data-required="admissions,admissions_officer,training_manager,administrator"></script>
 
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2352,7 +2352,7 @@
 
             // Gửi API nếu có backend
             try {
-                const token = localStorage.getItem('tms_token') || localStorage.getItem('token') || sessionStorage.getItem('token') || 'tms_demo_admin_token';
+                const token = localStorage.getItem('tms_token') || localStorage.getItem('token') || sessionStorage.getItem('token') || '';
                 const headers = { 'Content-Type': 'application/json' };
                 if (token) headers['Authorization'] = 'Bearer ' + token;
 
@@ -2405,7 +2405,7 @@
             if (!confirm('Xác nhận đã liên hệ gọi lại xong cho khách hàng ' + lead.name + '?')) return;
 
             try {
-                const token = localStorage.getItem('tms_token') || localStorage.getItem('token') || sessionStorage.getItem('token') || 'tms_demo_admin_token';
+                const token = localStorage.getItem('tms_token') || localStorage.getItem('token') || sessionStorage.getItem('token') || '';
                 const headers = { 'Content-Type': 'application/json' };
                 if (token) headers['Authorization'] = 'Bearer ' + token;
 

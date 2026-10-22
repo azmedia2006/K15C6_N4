@@ -2069,15 +2069,26 @@
 
     // Đảm bảo token Admin hợp lệ
     async function getValidAdminToken() {
-        let t = localStorage.getItem("tms_token") || localStorage.getItem("token");
-        if (!t) {
-            t = "tms_demo_admin_token";
-            localStorage.setItem("tms_token", t);
-        }
+        let t = localStorage.getItem("tms_token") || localStorage.getItem("token") || "";
         return t;
     }
 
     document.addEventListener("DOMContentLoaded", () => {
+        try {
+            const rawUser = localStorage.getItem("tms_current_user") || localStorage.getItem("tms_user");
+            if (rawUser) {
+                const u = JSON.parse(rawUser);
+                if (u && u.name) {
+                    const elName = document.getElementById("display-user-name");
+                    if (elName) elName.textContent = u.name;
+                    const elAvatar = document.getElementById("avatar-letters");
+                    if (elAvatar) {
+                        const words = u.name.trim().split(/\s+/);
+                        elAvatar.textContent = words.length >= 2 ? (words[words.length-2][0] + words[words.length-1][0]).toUpperCase() : words[0].slice(0, 2).toUpperCase();
+                    }
+                }
+            }
+        } catch {}
         try {
             const cached = localStorage.getItem("tms_users_cache");
             if (cached) {

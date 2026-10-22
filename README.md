@@ -131,6 +131,11 @@ Hệ thống triển khai cơ chế kiểm soát truy cập dựa trên vai trò
 - **Quản lý danh sách nhân sự & học viên:** Tìm kiếm đa điều kiện, phân trang chuẩn 20 bản ghi/trang.
 - **Nhập dữ liệu bằng Excel (.xlsx) / CSV UTF-8:** Hỗ trợ tải tệp mẫu chuẩn, xem trước dữ liệu, phát hiện dòng lỗi chi tiết theo từng dòng và nhập an toàn các dòng hợp lệ.
 
+### 8.5. Cách ly Không gian Làm việc & Giao diện Bảng điều khiển theo Vai trò (Dashboard RBAC Isolation)
+- **8 Bảng điều khiển chuyên biệt:** Mỗi vai trò (`administrator`, `training_manager`, `instructor`, `teaching_assistant`, `student`, `admissions`, `accountant`, `visitor`) sở hữu tiêu đề cổng riêng, thống kê KPI phù hợp, phím tắt nhanh và danh sách việc cần làm (To-Do List) tương ứng.
+- **Bảo mật giao diện & Điều hướng:** Ngăn chặn tuyệt đối việc người dùng không phải Quản trị viên nhìn thấy giao diện hoặc phím tắt dành cho Admin. Tự động kiểm tra quyền hạn khi chuyển đổi màn hình (`switchView`) và chặn truy cập trái phép với mã lỗi 403 Forbidden.
+- **Cá nhân hóa theo tài khoản thực tế:** Hiển thị chính xác tên người dùng, avatar viết tắt và huy hiệu chức danh từ dữ liệu tài khoản đăng nhập (`currentUser.name`), không dùng tên cứng gán trước.
+
 ## 9. Triển khai Đám mây Vercel (Production Live Deployment)
 
 - **Địa chỉ truy cập ứng dụng chính thức:** [https://k15c6n4.vercel.app](https://k15c6n4.vercel.app)
