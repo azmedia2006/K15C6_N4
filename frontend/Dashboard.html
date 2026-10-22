@@ -4907,7 +4907,7 @@
             return;
         }
 
-        let currentUser = null;
+        currentUser = null;
 
         if (token && token !== "tms_demo_admin_token") {
             try {
@@ -4947,7 +4947,7 @@
 
         // Xác định vai trò gốc thực tế của tài khoản (Authentication)
         const userPrimaryRole = normalizeRole((currentUser && currentUser.role) || "visitor");
-        const authorizedRoles = new Set();
+        authorizedRoles = new Set();
         if (allowedRoles.has(userPrimaryRole)) {
             authorizedRoles.add(userPrimaryRole);
         }
@@ -4964,7 +4964,6 @@
         const storedRole = normalizeRole(localStorage.getItem("tms_current_role"));
         const requestedRole = normalizeRole(params.get("role"));
 
-        let role;
         if (requestedRole && authorizedRoles.has(requestedRole)) {
             role = requestedRole;
         } else if (storedRole && authorizedRoles.has(storedRole)) {
@@ -5018,6 +5017,8 @@
             localStorage.setItem("tms_current_role", cleanRole);
             window.location.reload();
         }
+        window.quickSwitchRole = quickSwitchRole;
+        window.renderRoleSwitcherUI = renderRoleSwitcherUI;
 
         // 1. Phân quyền danh mục Menu (KN-14 RBAC)
         const rolePermissions = {
@@ -5053,7 +5054,7 @@
             ]
         };
 
-        const allowedMenus = rolePermissions[role] || rolePermissions.visitor;
+        allowedMenus = rolePermissions[role] || rolePermissions.visitor;
         document.querySelectorAll("#sidebar-nav .nav-item[data-menu]").forEach(menu => {
             const menuKey = menu.getAttribute("data-menu");
             if (!allowedMenus.includes(menuKey)) {
@@ -6243,8 +6244,6 @@
         window.submitNewConsultation = submitNewConsultation;
         window.loadDashboardLeads = loadDashboardLeads;
         window.handleGlobalSearch = handleGlobalSearch;
-        window.quickSwitchRole = quickSwitchRole;
-        window.renderRoleSwitcherUI = renderRoleSwitcherUI;
     </script>
     <!-- Mobile Sidebar Backdrop Overlay -->
     <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleMobileSidebar(false)"></div>
