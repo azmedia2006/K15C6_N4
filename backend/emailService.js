@@ -16,15 +16,16 @@ const defaultSmtpPort = 587;
 const defaultSmtpUser = "daotaotms@tuoitre24h.com";
 const defaultSmtpPass = "Quan2006@";
 const defaultSmtpFromName = "Đào tạo TMS";
-const defaultSmtpFromEmail = "ĐÀO TẠO TMS";
+const defaultSmtpFromEmail = "daotaotms@tuoitre24h.com";
 
-const isEnabled = process.env.SMTP_ENABLED === "true";
+const isTestEnv = process.env.NODE_ENV === "test" || process.env.SMTP_ENABLED === "false";
+const isEnabled = process.env.SMTP_ENABLED === "true" || (!isTestEnv && process.env.SMTP_ENABLED !== "false");
 const host = process.env.SMTP_HOST || defaultSmtpHost;
 const port = parseInt(process.env.SMTP_PORT || String(defaultSmtpPort), 10);
 const user = process.env.SMTP_USER || defaultSmtpUser;
 const pass = process.env.SMTP_PASSWORD || process.env.SMTP_PASS || defaultSmtpPass;
-const fromEmail = process.env.SMTP_FROM_EMAIL || defaultSmtpFromEmail;
-const fromName = process.env.SMTP_FROM_NAME || defaultSmtpFromName;
+const fromEmail = (process.env.SMTP_FROM_EMAIL || defaultSmtpFromEmail).replace(/^"|"$/g, "").trim();
+const fromName = (process.env.SMTP_FROM_NAME || defaultSmtpFromName).replace(/^"|"$/g, "").trim();
 const secure = process.env.SMTP_SECURE === "true" || process.env.SMTP_PORT === "465";
 const tls = process.env.SMTP_TLS !== "false";
 
@@ -121,11 +122,11 @@ function updateSmtpConfig(newConfig, shouldCommit = true) {
         process.env.SMTP_PASSWORD = SMTP_CONFIG.pass;
     }
     if (newConfig.fromEmail !== undefined) {
-        SMTP_CONFIG.fromEmail = String(newConfig.fromEmail).trim();
+        SMTP_CONFIG.fromEmail = String(newConfig.fromEmail).replace(/^"|"$/g, "").trim();
         process.env.SMTP_FROM_EMAIL = SMTP_CONFIG.fromEmail;
     }
     if (newConfig.fromName !== undefined) {
-        SMTP_CONFIG.fromName = String(newConfig.fromName).trim();
+        SMTP_CONFIG.fromName = String(newConfig.fromName).replace(/^"|"$/g, "").trim();
         process.env.SMTP_FROM_NAME = SMTP_CONFIG.fromName;
     }
     if (newConfig.secure !== undefined) {
@@ -423,7 +424,11 @@ require('./localDatabase').register('smtp_config',
     }),
     (v) => {
         if (v && typeof v === 'object') {
-            updateSmtpConfig(v, false);
+            const configToApply = { ...v };
+            if (process.env.SMTP_ENABLED === "false" || process.env.NODE_ENV === "test") {
+                configToApply.enabled = false;
+            }
+            updateSmtpConfig(configToApply, false);
         }
     }
 );

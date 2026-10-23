@@ -3521,6 +3521,20 @@
     <div class="toast-container" id="toast-container"></div>
 
     <script>
+        // Global HTML escape helper
+        function escapeHtml(value) {
+            return String(value == null ? "" : value).replace(/[&<>"']/g, function(c) {
+                return {
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    '"': "&quot;",
+                    "'": "&#39;"
+                }[c];
+            });
+        }
+        window.escapeHtml = escapeHtml;
+
         // Sidebar Toggle (Mobile Drawer & Desktop Collapse)
         function toggleMobileSidebar(forceState) {
             const sidebar = document.querySelector("aside.sidebar");
@@ -5342,19 +5356,19 @@
             }
 
             const origBtn = sendBtn ? sendBtn.innerHTML : "";
-            if (sendBtn) {
-                sendBtn.disabled = true;
-                sendBtn.innerHTML = `<span>Đang gửi thử...</span>`;
-            }
-            if (resultBox) {
-                resultBox.style.display = "block";
-                resultBox.style.background = "#eff6ff";
-                resultBox.style.color = "#1d4ed8";
-                resultBox.style.border = "1px solid #bfdbfe";
-                resultBox.innerHTML = `Đang kết nối SMTP và phát hành email kích hoạt mẫu tới <strong>${escapeHtml(to)}</strong>...`;
-            }
-
             try {
+                if (sendBtn) {
+                    sendBtn.disabled = true;
+                    sendBtn.innerHTML = `<span>Đang gửi thử...</span>`;
+                }
+                if (resultBox) {
+                    resultBox.style.display = "block";
+                    resultBox.style.background = "#eff6ff";
+                    resultBox.style.color = "#1d4ed8";
+                    resultBox.style.border = "1px solid #bfdbfe";
+                    resultBox.innerHTML = `Đang kết nối SMTP và phát hành email kích hoạt mẫu tới <strong>${escapeHtml(to)}</strong>...`;
+                }
+
                 const res = await fetch("/api/admin/smtp/test", {
                     method: "POST",
                     headers: {
@@ -5363,18 +5377,18 @@
                     },
                     body: JSON.stringify({ to, name })
                 });
-                const data = await res.json();
+                const data = await res.json().catch(() => ({}));
                 if (res.ok && data.success) {
                     showToast("Thư thử nghiệm đã được máy chủ SMTP chấp nhận thành công!");
                     if (resultBox) {
                         resultBox.style.background = "#ecfdf5";
                         resultBox.style.color = "#065f46";
                         resultBox.style.border = "1px solid #a7f3d0";
-                        resultBox.innerHTML = `Thành công: ${escapeHtml(data.message)}<br><small style="color: #047857;">Mã thông điệp (Message-ID): ${escapeHtml(data.emailRecord?.messageId || "N/A")}. Vui lòng kiểm tra Hộp thư đến (Inbox / Spam) của bạn.</small>`;
+                        resultBox.innerHTML = `Thành công: ${escapeHtml(data.message || "Máy chủ SMTP đã chấp nhận gửi thư")}<br><small style="color: #047857;">Mã thông điệp (Message-ID): ${escapeHtml(data.emailRecord?.messageId || "N/A")}. Vui lòng kiểm tra Hộp thư đến (Inbox / Spam) của bạn.</small>`;
                     }
                     await loadMailLogs();
                 } else {
-                    throw new Error(data.message || "Máy chủ không chấp nhận gửi thư.");
+                    throw new Error(data.message || (data.emailRecord && data.emailRecord.error) || "Máy chủ không chấp nhận gửi thư.");
                 }
             } catch (err) {
                 showToast("Gửi thư thử nghiệm thất bại: " + err.message, "error");
