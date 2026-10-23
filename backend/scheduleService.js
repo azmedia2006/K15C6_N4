@@ -583,7 +583,7 @@ function generateSchedulePreview(options) {
 /**
  * Lưu chính thức thời khóa biểu vào hệ thống (KN-165)
  */
-function saveClassSchedule(classId, sessionsList, user = {}) {
+function saveClassSchedule(classId, sessionsList, user = {}, options = {}) {
     if (!classId) {
         throw new Error("Mã lớp học không được để trống.");
     }
@@ -610,7 +610,17 @@ function saveClassSchedule(classId, sessionsList, user = {}) {
         session.dayOfWeekName = getDayOfWeekName(session.dayOfWeek);
         return session;
     });
-    sanitizedSessions.forEach((session, index) => checkConflicts(session, sanitizedSessions.slice(0, index)));
+    const conflicts = sanitizedSessions.flatMap((session, index) =>
+        findConflicts(session, sanitizedSessions.slice(0, index))
+    );
+    if (conflicts.length && !options.overrideConflicts) {
+        fail(
+            "Trùng lịch lớp, phòng học hoặc giảng viên. Hãy chọn thời gian/phòng/giảng viên khác hoặc yêu cầu Quản lý đào tạo xác nhận ghi đè.",
+            409,
+            "SCHEDULE_CONFLICT",
+            conflicts
+        );
+    }
 
     classSchedules[classId] = sanitizedSessions;
 
@@ -630,7 +640,7 @@ function saveClassSchedule(classId, sessionsList, user = {}) {
         targetUserId: classId,
         roleId: "training_manager",
         status: "SUCCESS",
-        reason: `Đã sinh và lưu thành công thời khóa biểu ${sanitizedSessions.length} buổi cho lớp ${cls ? cls.name : classId}`
+        reason: `Đã sinh và lưu thành công thời khóa biểu ${sanitizedSessions.length} buổi cho lớp ${cls ? cls.name : classId}${conflicts.length ? ` sau khi xác nhận ghi đè ${conflicts.length} xung đột` : ""}`
     });
 
     return {
@@ -640,6 +650,7 @@ function saveClassSchedule(classId, sessionsList, user = {}) {
         totalSessions: sanitizedSessions.length,
         startDate: sanitizedSessions[0].date,
         endDate: sanitizedSessions[sanitizedSessions.length - 1].date,
+        conflicts,
         sessions: sanitizedSessions
     };
 }
@@ -737,15 +748,40 @@ function validateSession(session) {
     if (teacher) { session.instructorId = teacher.id; session.instructor = teacher.name; }
     for (const key of ["note", "lessonTopic"]) if (session[key] !== undefined && (typeof session[key] !== "string" || session[key].length > 2000)) fail("Ghi chú/chủ đề không hợp lệ (tối đa 2000 ký tự).");
 }
-function checkConflicts(candidate, additional = []) {
-    const conflicts = [...Object.values(classSchedules).flat(), ...additional].filter(other => {
-        if (other.id === candidate.id || other.status === "cancelled" || other.date !== candidate.date) return false;
-        if (!(candidate.startTime < other.endTime && candidate.endTime > other.startTime)) return false;
+function sessionConflictSummary(session) {
+    const cls = activeClasses.find(item => item.id === session.classId);
+    return {
+        id: session.id,
+        classId: session.classId,
+        className: session.className || cls?.name || session.classId,
+        sessionNumber: session.sessionNumber,
+        date: session.date,
+        startTime: session.startTime,
+        endTime: session.endTime,
+        room: session.room,
+        instructor: session.instructor
+    };
+}
+function findConflicts(candidate, additional = []) {
+    return [...Object.values(classSchedules).flat(), ...additional].flatMap(other => {
+        if (other.id === candidate.id || other.status === "cancelled" || other.date !== candidate.date) return [];
+        if (!(candidate.startTime < other.endTime && candidate.endTime > other.startTime)) return [];
         const a = findInstructor(candidate), b = findInstructor(other);
-        return other.classId === candidate.classId || normalize(candidate.room) === normalize(other.room) ||
-            (a && b ? a.id === b.id : normalize(candidate.instructor) === normalize(other.instructor));
+        const reasons = [];
+        if (other.classId === candidate.classId) reasons.push("same_class");
+        if (normalize(candidate.room) === normalize(other.room)) reasons.push("room");
+        if (a && b ? a.id === b.id : normalize(candidate.instructor) === normalize(other.instructor)) reasons.push("instructor");
+        return reasons.length ? [{
+            candidate: sessionConflictSummary(candidate),
+            conflicting: sessionConflictSummary(other),
+            reasons
+        }] : [];
     });
-    if (conflicts.length) fail("Trùng lịch lớp, phòng học hoặc giảng viên. Hãy chọn thời gian/phòng/giảng viên khác.", 409, "SCHEDULE_CONFLICT", conflicts.map(s => ({ id: s.id, classId: s.classId, date: s.date, startTime: s.startTime, endTime: s.endTime, room: s.room })));
+}
+function checkConflicts(candidate, additional = []) {
+    const conflicts = findConflicts(candidate, additional);
+    if (conflicts.length) fail("Trùng lịch lớp, phòng học hoặc giảng viên. Hãy chọn thời gian/phòng/giảng viên khác.", 409, "SCHEDULE_CONFLICT", conflicts);
+    return conflicts;
 }
 function studentRecipients(classId) {
     const cls = activeClasses.find(c => c.id === classId);

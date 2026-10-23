@@ -155,11 +155,13 @@ CREATE TABLE IF NOT EXISTS public.subjects (
     created_by VARCHAR(64) REFERENCES public.users(id) ON DELETE SET NULL
 );
 
--- 13. Table: program_subjects (Quan hệ nhiều-nhiều: Một môn dùng cho nhiều chương trình)
+-- 13. Table: program_subjects (Quan hệ nhiều-nhiều: Một môn dùng cho nhiều chương trình, lộ trình & môn tiên quyết KN-71)
 CREATE TABLE IF NOT EXISTS public.program_subjects (
     id SERIAL PRIMARY KEY,
     program_id VARCHAR(64) NOT NULL REFERENCES public.programs(id) ON DELETE CASCADE,
     subject_id VARCHAR(64) NOT NULL REFERENCES public.subjects(id) ON DELETE CASCADE,
+    order_index INT NOT NULL DEFAULT 1,
+    prerequisite_subject_id VARCHAR(64) REFERENCES public.subjects(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     CONSTRAINT uq_program_subject UNIQUE (program_id, subject_id)
 );

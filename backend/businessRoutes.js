@@ -72,7 +72,23 @@ function mount(app,{authenticateToken,requireRole}){
     app.post('/api/admin/users/:id/reset-password',...guard('administrator'),wrap(req=>{const user=auth.users.find(u=>u.id===req.params.id);must(user,'Không tìm thấy tài khoản.',404);auth.validatePassword(req.body.newPassword);const reason=text(req.body.reason,'Lý do',1000);user.salt=auth.generateSalt();user.passwordHash=auth.hashPassword(req.body.newPassword,user.salt);auth.revokeUserSessions(user.id);roles.recordAuditLog({adminId:req.user.id,targetUserId:user.id,action:'ADMIN_PASSWORD_RESET',reason});return{success:true,message:'Đã đặt lại mật khẩu và thu hồi phiên cũ. Hãy cung cấp mật khẩu qua kênh an toàn.'}}));
     app.get('/api/attendance/students',...guard('administrator','training_manager','instructor','teaching_assistant'),wrap(req=>{require('./studentService').ensureStudentProfiles();const records=db.snapshot().schedules.attendanceRecords||[];const ids=new Set(schedule().getClassesWithScheduleStatus().filter(c=>canSeeClass(req.user,c.id)).flatMap(c=>studentIds(c.id)));return{success:true,data:auth.users.filter(u=>ids.has(u.id)).map(u=>{const rows=records.flatMap(r=>r.students).filter(x=>x.studentId===u.id);return{id:u.id,name:u.name,email:u.email,studentCode:u.studentCode||u.id,avatar:u.avatar||'',thumbnail:u.thumbnail||'',attendanceRate:rows.length?Math.round(rows.filter(r=>['present','late'].includes(r.status)).length/rows.length*100):null,status:rows.at(-1)?.status||'not_recorded'};})}}));
     app.get('/api/workspace',authenticateToken,wrap(req=>workspace(req.user)));
-    app.get('/api/classes',authenticateToken,wrap(req=>{const data=enrollment.getAllClasses(req.query).filter(c=>canSeeClass(req.user,c.id));return{success:true,total:data.length,data,classes:data}}));
+    app.get('/api/classes/metrics',authenticateToken,wrap(req=>({success:true,metrics:enrollment.getClassMetrics()})));
+    app.get('/api/classes/filter-options',authenticateToken,wrap(req=>({success:true,data:enrollment.getClassFilterOptions()})));
+    app.get('/api/classes',authenticateToken,wrap(req=>{
+        const raw=enrollment.getAllClasses(req.query);
+        const data=raw.filter(c=>canSeeClass(req.user,c.id));
+        return {
+            success:true,
+            total:data.length,
+            totalRecords:raw.totalRecords||data.length,
+            page:raw.page||1,
+            limit:raw.limit||data.length,
+            totalPages:raw.totalPages||1,
+            data,
+            classes:data,
+            metrics:raw.metrics||enrollment.getClassMetrics()
+        };
+    }));
     app.get('/api/courses',authenticateToken,wrap(req=>({success:true,data:workspace(req.user).courses})));
     app.post('/api/courses',...guard('administrator','training_manager'),wrap(req=>{const b=req.body;const code=text(b.code,'Mã khóa',32);must(![...subjects.getAllPrograms(),...state.courses].some(c=>c.code===code),'Mã khóa đã tồn tại.',409);const value={id:randomUUID(),code,name:text(b.name,'Tên khóa'),description:String(b.description||'').slice(0,2000),createdAt:new Date().toISOString()};state.courses.push(value);return{success:true,data:value}}));
     app.post('/api/classes',...guard('administrator','training_manager'),wrap(req=>{const b=req.body;must(subjects.getSubjectById(b.subjectId),'Môn học không hợp lệ.');must(auth.users.some(u=>u.id===b.instructorId&&(u.role==='instructor'||roles.userHasRole(u.id,'instructor'))),'Phải chọn tài khoản giảng viên.');must(Number.isInteger(Number(b.maxCapacity||35))&&Number(b.maxCapacity||35)>0&&Number(b.maxCapacity||35)<=500,'Sĩ số phải từ 1 đến 500.');const user=auth.users.find(u=>u.id===b.instructorId);const cls=schedule().createClass({...b,name:text(b.name,'Tên lớp'),code:text(b.code,'Mã lớp'),instructor:user.name});Object.assign(cls,{instructorId:user.id,maxCapacity:Number(b.maxCapacity)||35});must(Number.isInteger(cls.maxCapacity)&&cls.maxCapacity>0&&cls.maxCapacity<=500,'Sĩ số phải từ 1 đến 500.');schedule().upsertSharedClass(cls);enrollment.upsertSharedClass(cls);subjects.upsertSharedClass(cls);return{success:true,data:cls}}));

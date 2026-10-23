@@ -223,12 +223,38 @@
         }
 
         .sidebar-user {
-            padding: 16px 20px;
+            padding: 12px 16px;
             border-top: 1px solid rgba(255, 255, 255, 0.08);
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             background: rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-user-clickable {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            overflow: hidden;
+            cursor: pointer;
+            border-radius: var(--radius-sm, 10px);
+            padding: 6px 8px;
+            margin: -6px -8px;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-user-clickable:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .sidebar-user-clickable:hover .user-name {
+            color: var(--primary) !important;
+        }
+
+        .sidebar-user-clickable:hover .avatar-edit-badge {
+            background: var(--primary-hover);
+            transform: scale(1.15);
         }
 
         .user-avatar {
@@ -1045,6 +1071,75 @@
             z-index: 1000;
             padding: 20px;
             animation: fadeIn 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            display: grid !important;
+        }
+
+        /* Header Avatar Profile Button (KN-68) */
+        .header-avatar-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 3px 10px 3px 4px;
+            border-radius: 9999px;
+            background: var(--bg-card);
+            border: 1.5px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            user-select: none;
+            margin-right: 4px;
+        }
+        .header-avatar-btn:hover {
+            border-color: var(--primary);
+            background: var(--primary-soft);
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+            transform: translateY(-1px);
+        }
+        .header-avatar-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .header-avatar-circle img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+        }
+        .header-avatar-meta {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+            text-align: left;
+        }
+        .header-user-name {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-main);
+            max-width: 130px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .header-avatar-action {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 2px;
         }
 
         .modal-card {
@@ -1869,15 +1964,20 @@
             </nav>
 
             <div class="sidebar-user">
-                <div class="user-avatar-wrap" onclick="openAvatarModal()" title="Bấm để đổi ảnh đại diện (KN-68)">
-                    <div class="user-avatar" id="avatar-letters">US</div>
-                    <div class="avatar-edit-badge" title="Đổi ảnh đại diện">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <div class="sidebar-user-clickable" onclick="openAvatarModal()" title="Bấm vào đây để đổi ảnh đại diện cá nhân (KN-68)">
+                    <div class="user-avatar-wrap" title="Bấm để đổi ảnh đại diện">
+                        <div class="user-avatar" id="avatar-letters">US</div>
+                        <div class="avatar-edit-badge" title="Đổi ảnh đại diện">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                        </div>
                     </div>
-                </div>
-                <div class="user-info">
-                    <div class="user-name" id="display-user-name">Đang tải...</div>
-                    <div class="user-role" id="display-user-role">Đang xác thực...</div>
+                    <div class="user-info">
+                        <div class="user-name" id="display-user-name">Đang tải...</div>
+                        <div class="user-role" id="display-user-role">Đang xác thực...</div>
+                        <div style="font-size: 10px; color: var(--primary); font-weight: 700; margin-top: 2px; display: flex; align-items: center; gap: 3px;">
+                            <span>📷 Bấm để đổi ảnh</span>
+                        </div>
+                    </div>
                 </div>
                 <a href="./Login.html" class="logout-btn" title="Đăng xuất" onclick="if(window.tmsLogout){window.tmsLogout(); return false;}">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -1907,6 +2007,17 @@
                 </div>
 
                 <div class="header-actions">
+                    <!-- KN-68: User Avatar Profile Button in Header -->
+                    <div class="header-avatar-btn" id="header-avatar-btn" onclick="openAvatarModal()" title="Bấm để đổi ảnh đại diện (KN-68)">
+                        <div class="header-avatar-circle" id="header-avatar-circle">
+                            <span id="header-avatar-letters">AD</span>
+                        </div>
+                        <div class="header-avatar-meta">
+                            <span class="header-user-name" id="header-display-name">Quản trị viên</span>
+                            <span class="header-avatar-action">Đổi ảnh 📷</span>
+                        </div>
+                    </div>
+
                     <!-- Current User Role Badge -->
                     <div class="role-switcher-wrap" id="role-switcher-container" title="Vai trò người dùng">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -3043,12 +3154,12 @@
             <div class="avatar-modal-header">
                 <h3>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary);"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                    Cập nhật ảnh đại diện
+                    <span id="avatar-modal-title">Cập nhật ảnh đại diện</span>
                 </h3>
                 <button class="modal-close-btn" onclick="closeAvatarModal()" title="Đóng">&times;</button>
             </div>
             <div class="avatar-modal-body">
-                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+                <p id="avatar-modal-desc" style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
                     Tải lên ảnh chân dung rõ mặt để giảng viên dễ dàng nhận diện và điểm danh trong lớp đông (KN-68).
                 </p>
 
@@ -5831,6 +5942,12 @@
         const avatarLettersEl = document.getElementById("avatar-letters");
         if (avatarLettersEl) avatarLettersEl.textContent = avatarLetters;
 
+        const headerDisplayNameEl = document.getElementById("header-display-name");
+        if (headerDisplayNameEl) headerDisplayNameEl.textContent = displayName;
+
+        const headerAvatarLettersEl = document.getElementById("header-avatar-letters");
+        if (headerAvatarLettersEl) headerAvatarLettersEl.textContent = avatarLetters;
+
         const welcomeSubEl = document.getElementById("welcome-sub");
         if (welcomeSubEl) welcomeSubEl.innerHTML = `Chào mừng <span id="welcome-name" style="font-weight: 700; color: var(--text-main);">${displayName}</span>. ${prof.welcomeSub}`;
 
@@ -5894,13 +6011,30 @@
             currentAvatarTargetId = targetId || (currentUser ? currentUser.id : "usr_student");
             resetAvatarSelection();
             const modal = document.getElementById("avatar-modal");
-            if (modal) modal.classList.add("active");
+            if (modal) {
+                modal.classList.add("active");
+                modal.style.display = "grid";
+            }
+            // Dynamic title
+            const titleEl = document.getElementById("avatar-modal-title");
+            const descEl = document.getElementById("avatar-modal-desc");
+            if (targetId && targetId !== (currentUser && currentUser.id)) {
+                let name = targetId === "usr_student" ? "Lê Minh Tuấn (SV001)" : (targetId === "usr_sv002" ? "Hoàng Thùy Linh (SV002)" : (targetId === "usr_sv003" ? "Trần Đình Trọng (SV003)" : targetId));
+                if (titleEl) titleEl.textContent = `Cập nhật ảnh nhận diện học viên: ${name}`;
+                if (descEl) descEl.textContent = `Tải lên ảnh chân dung rõ nét để giảng viên nhận diện khuôn mặt khi điểm danh lớp đông (KN-68).`;
+            } else {
+                if (titleEl) titleEl.textContent = "Cập nhật ảnh đại diện cá nhân";
+                if (descEl) descEl.textContent = "Tải lên ảnh chân dung rõ mặt (JPG/PNG tối đa 2MB), cắt vuông 1:1 và sinh bản thu nhỏ tự động.";
+            }
         }
         window.openAvatarModal = openAvatarModal;
 
         function closeAvatarModal() {
             const modal = document.getElementById("avatar-modal");
-            if (modal) modal.classList.remove("active");
+            if (modal) {
+                modal.classList.remove("active");
+                modal.style.display = "none";
+            }
             resetAvatarSelection();
         }
         window.closeAvatarModal = closeAvatarModal;
@@ -6099,14 +6233,19 @@
         window.submitAvatarUpload = submitAvatarUpload;
 
         function applyAvatarToUI(userId, avatarUrl, thumbUrl) {
-            // 1. Cập nhật Sidebar avatar nếu là tài khoản hiện tại
-            const isMe = !currentAvatarTargetId || currentAvatarTargetId === (currentUser && currentUser.id) || userId === "usr_student";
+            // 1. Cập nhật Sidebar avatar & Header avatar nếu là tài khoản hiện tại
+            const isMe = !currentAvatarTargetId || currentAvatarTargetId === (currentUser && currentUser.id) || userId === "usr_student" || (currentUser && userId === currentUser.id);
             if (isMe) {
                 const avatarContainer = document.getElementById("avatar-letters");
                 if (avatarContainer) {
-                    avatarContainer.innerHTML = `<img src="${avatarUrl}" class="user-avatar-img" alt="Avatar" />`;
+                    avatarContainer.innerHTML = `<img src="${avatarUrl}" class="user-avatar-img" alt="Avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" />`;
                     avatarContainer.style.background = "transparent";
                     avatarContainer.style.padding = "0";
+                }
+                const headerCircle = document.getElementById("header-avatar-circle");
+                if (headerCircle) {
+                    headerCircle.innerHTML = `<img src="${avatarUrl}" alt="Avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" />`;
+                    headerCircle.style.background = "transparent";
                 }
             }
 
@@ -6151,14 +6290,14 @@
                 localStorage.getItem("tms_token") ||
                 localStorage.getItem("token");
 
-                kn68AttendanceToken &&
-                ["administrator", "training_manager", "instructor", "teaching_assistant"]
-                    .includes(kn68AttendanceRole) &&
+            kn68AttendanceToken &&
+            ["administrator", "training_manager", "instructor", "teaching_assistant"]
+                .includes(kn68AttendanceRole) &&
             fetch("/api/attendance/students", {
-            headers: {
-            Authorization: `Bearer ${kn68AttendanceToken}`
-                    }
-                }).then(r => r.json()).then(res => {
+                headers: {
+                    Authorization: `Bearer ${kn68AttendanceToken}`
+                }
+            }).then(r => r.json()).then(res => {
 
                 if (res.success && Array.isArray(res.data)) {
                     res.data.forEach(s => {
