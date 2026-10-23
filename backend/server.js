@@ -2740,6 +2740,68 @@ app.get("/api/schedules/next", authenticateToken, (req, res) => {
     }
 });
 
+/**
+ * KN-253: API xem lich hoc ca nhan trong tuan hien tai.
+ * Tuan tinh tu Thu Hai den Chu Nhat, theo gio Viet Nam.
+ */
+app.get(
+    "/api/schedules/my-week",
+    authenticateToken,
+    requireRole("student"),
+    (req, res) => {
+        try {
+            const parts = Object.fromEntries(
+                new Intl.DateTimeFormat("en-GB", {
+                    timeZone: "Asia/Ho_Chi_Minh",
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit"
+                })
+                    .formatToParts(new Date())
+                    .filter(part => part.type !== "literal")
+                    .map(part => [part.type, part.value])
+            );
+
+            const today = new Date(Date.UTC(
+                Number(parts.year),
+                Number(parts.month) - 1,
+                Number(parts.day)
+            ));
+
+            const dayOffset = (today.getUTCDay() + 6) % 7;
+
+            const monday = new Date(today);
+            monday.setUTCDate(today.getUTCDate() - dayOffset);
+
+            const sunday = new Date(monday);
+            sunday.setUTCDate(monday.getUTCDate() + 6);
+
+            const startDate = monday.toISOString().slice(0, 10);
+            const endDate = sunday.toISOString().slice(0, 10);
+
+            const { canSeeSession } = require("./businessRoutes");
+
+            const sessions = getSchedules({ startDate, endDate })
+                .filter(session => canSeeSession(req.user, session));
+
+            return res.status(200).json({
+                success: true,
+                startDate,
+                endDate,
+                total: sessions.length,
+                sessions
+            });
+        } catch (err) {
+            console.error("KN-253 weekly schedule error:", err);
+
+            return res.status(500).json({
+                success: false,
+                message: "Không thể lấy lịch học tuần hiện tại."
+            });
+        }
+    }
+);
+
 // API Lấy thời khóa biểu chi tiết của một lớp học
 app.get("/api/schedules/:classId", authenticateToken, (req, res) => {
     try {
