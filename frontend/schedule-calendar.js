@@ -231,10 +231,13 @@
             this.attachEvents();
             await this.loadData();
 
-            // KN-254: Học viên mặc định xem tuần có buổi học sắp tới.
             const isStudent = String(
                 localStorage.getItem('tms_current_role') || ''
             ).trim().toLowerCase() === 'student';
+
+            // undefined: chưa kiểm tra được
+            // null: đã kiểm tra và không có buổi sắp tới
+            let nextSession;
 
             if (isStudent && !this.loadError) {
                 const token = localStorage.getItem('tms_token') ||
@@ -250,25 +253,64 @@
 
                         if (res.ok) {
                             const result = await res.json();
-                            const nextDate = result?.success
-                                ? result.session?.date
-                                : null;
 
-                            if (/^\d{4}-\d{2}-\d{2}$/.test(nextDate || '')) {
-                                const date = new Date(`${nextDate}T12:00:00`);
+                            if (result?.success === true) {
+                                nextSession = result.session || null;
 
-                                if (!Number.isNaN(date.getTime())) {
-                                    this.currentDate = date;
+                                if (
+                                    nextSession &&
+                                    /^\d{4}-\d{2}-\d{2}$/.test(nextSession.date || '')
+                                ) {
+                                    const date = new Date(
+                                        `${nextSession.date}T12:00:00`
+                                    );
+
+                                    if (!Number.isNaN(date.getTime())) {
+                                        this.currentDate = date;
+                                    }
                                 }
                             }
                         }
                     } catch (err) {
-                        console.warn('Không tải được buổi học kế tiếp:', err);
+                        console.warn('Lỗi lấy buổi học kế tiếp:', err);
                     }
                 }
             }
 
             this.render();
+
+            // KN-255: Hiển thị thông tin buổi học kế tiếp.
+            const content = this.container.querySelector(
+                '#sched-next-session-content'
+            );
+
+            if (content) {
+                if (this.loadError) {
+                    content.textContent =
+                        'Chưa thể kiểm tra buổi học kế tiếp vì lịch học tải thất bại.';
+                } else if (nextSession === null) {
+                    content.textContent =
+                        'Hiện bạn chưa có buổi học nào sắp tới.';
+                } else if (!nextSession) {
+                    content.textContent =
+                        'Chưa thể kiểm tra buổi học kế tiếp. Vui lòng thử lại.';
+                } else {
+                    const parts = nextSession.date.split('-');
+                    const displayDate =
+                        `${parts[2]}/${parts[1]}/${parts[0]}`;
+
+                    content.style.whiteSpace = 'pre-line';
+
+                    content.textContent = [
+                        `Ngày học: ${displayDate}`,
+                        `Giờ học: ${nextSession.startTime || '--:--'} - ${nextSession.endTime || '--:--'}`,
+                        `Môn/Bài học: ${nextSession.subjectName || nextSession.lessonTopic || 'Chưa cập nhật'}`,
+                        `Lớp: ${nextSession.className || nextSession.classCode || 'Chưa cập nhật'}`,
+                        `Giảng viên: ${nextSession.instructor || 'Chưa cập nhật'}`,
+                        `Phòng học: ${nextSession.room || 'Chưa cập nhật'}`
+                    ].join('\n');
+                }
+            }
         }
 
         buildDOM() {
@@ -321,6 +363,27 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- KN-255: Khu vực nổi bật buổi học kế tiếp -->
+                    ${isStudentSchedule ? `
+                        <section id="sched-next-session-card"
+                            style="margin: 16px 0; padding: 16px 20px;
+                                   border: 1px solid #bfdbfe;
+                                   background: #eff6ff;
+                                   border-radius: 12px;">
+                            <strong style="display:block;
+                                           margin-bottom:8px;
+                                           color:#1d4ed8;">
+                                📅 Buổi học kế tiếp
+                            </strong>
+                            <div id="sched-next-session-content"
+                                 role="status"
+                                 aria-live="polite"
+                                 style="color:#334155;">
+                                Đang kiểm tra lịch học sắp tới...
+                            </div>
+                        </section>
+                    ` : ''}
 
                     <!-- Filter Bar (Lọc theo Lớp, Giảng viên, Phòng) -->
                     <div class="sched-filter-bar">
