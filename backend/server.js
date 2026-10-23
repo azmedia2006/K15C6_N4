@@ -53,6 +53,8 @@ const {
 
 const {
     getAllClasses,
+    getClassMetrics,
+    getClassFilterOptions,
     getClassDetail,
     getEnrollmentsList,
     batchEnrollStudents,
@@ -1448,16 +1450,47 @@ app.put(
 // 3. Ghi nhận ngày ghi danh và người thực hiện
 // ========================================================
 
-// API Lấy danh sách toàn bộ lớp học kèm sĩ số động và trạng thái
+// API Lấy danh sách toàn bộ lớp học kèm sĩ số động, tiến độ buổi học và bộ lọc (KN-127)
 app.get(
     "/api/classes",
     authenticateToken,
     (req, res) => {
-        const list = getAllClasses();
+        const raw = getAllClasses(req.query);
+        const filtered = raw.filter(cls => require("./businessRoutes").canSeeClass(req.user, cls.id));
         return res.status(200).json({
             success: true,
-            total: list.length,
-            data: list
+            total: filtered.length,
+            totalRecords: raw.totalRecords || filtered.length,
+            page: raw.page || 1,
+            limit: raw.limit || filtered.length,
+            totalPages: raw.totalPages || 1,
+            data: filtered,
+            classes: filtered,
+            metrics: raw.metrics || getClassMetrics()
+        });
+    }
+);
+
+// API Lấy các chỉ số thống kê nhanh toàn hệ thống (Quick Metrics - KN-224)
+app.get(
+    "/api/classes/metrics",
+    authenticateToken,
+    (req, res) => {
+        return res.status(200).json({
+            success: true,
+            metrics: getClassMetrics()
+        });
+    }
+);
+
+// API Lấy danh mục dữ liệu cho các bộ lọc (KN-220)
+app.get(
+    "/api/classes/filter-options",
+    authenticateToken,
+    (req, res) => {
+        return res.status(200).json({
+            success: true,
+            data: getClassFilterOptions()
         });
     }
 );
