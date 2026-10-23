@@ -2687,6 +2687,59 @@ app.get("/api/schedules", authenticateToken, (req, res) => {
     }
 });
 
+/**
+ * KN-254: API lấy buổi học sắp diễn ra gần nhất.
+ * Chỉ trả về buổi học mà tài khoản được phép xem.
+ */
+app.get("/api/schedules/next", authenticateToken, (req, res) => {
+    try {
+        // Lấy ngày, giờ hiện tại theo múi giờ Việt Nam.
+        const parts = Object.fromEntries(
+            new Intl.DateTimeFormat("en-GB", {
+                timeZone: "Asia/Ho_Chi_Minh",
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                hourCycle: "h23"
+            })
+                .formatToParts(new Date())
+                .filter(part => part.type !== "literal")
+                .map(part => [part.type, part.value])
+        );
+
+        const now = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`;
+
+        const sessions = getSchedules({})
+            .filter(session =>
+                require("./businessRoutes").canSeeSession(req.user, session)
+            )
+            .filter(session =>
+                typeof session.date === "string" &&
+                typeof session.startTime === "string" &&
+                `${session.date}T${session.startTime}` > now
+            )
+            .sort((a, b) =>
+                `${a.date}T${a.startTime}`.localeCompare(
+                    `${b.date}T${b.startTime}`
+                )
+            );
+
+        return res.status(200).json({
+            success: true,
+            session: sessions[0] || null
+        });
+    } catch (err) {
+        console.error("KN-254 next schedule error:", err);
+
+        return res.status(500).json({
+            success: false,
+            message: "Không thể lấy buổi học kế tiếp."
+        });
+    }
+});
+
 // API Lấy thời khóa biểu chi tiết của một lớp học
 app.get("/api/schedules/:classId", authenticateToken, (req, res) => {
     try {
