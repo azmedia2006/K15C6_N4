@@ -69,6 +69,14 @@ async function runTests() {
         const studentToken = await login("student@tms.edu.vn", "student123");
         const accountantToken = await login("accountant@tms.edu.vn", "accountant123");
 
+        // Dọn dẹp tài khoản test cũ nếu còn sót lại từ lần chạy trước
+        ["student_test1@tms.edu.vn", "student_test2@tms.edu.vn", "student_test3@tms.edu.vn"].forEach(em => {
+            const existing = users.find(u => u.email === em);
+            if (existing) {
+                try { deleteUser(existing.id); } catch (_) {}
+            }
+        });
+
         // Tạo 3 học viên thử nghiệm cho bài test ghi danh hàng loạt
         const testStudent1 = createUser({
             name: "Học Viên Mẫu 1",

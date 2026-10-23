@@ -53,6 +53,8 @@ const {
 
 const {
     getAllClasses,
+    getClassMetrics,
+    getClassFilterOptions,
     getClassDetail,
     getEnrollmentsList,
     batchEnrollStudents,
@@ -113,6 +115,9 @@ const {
     deleteSubject,
     addSubjectToProgram,
     removeSubjectFromProgram,
+    setPrerequisiteSubject,
+    reorderProgramSubjects,
+    hasPrerequisiteCycle,
     getClassesBySubjectId,
     addClassForSubject
 } = require("./subjectService");
@@ -162,6 +167,12 @@ app.get(["/leads", "/lead-management"], (req, res) => {
 });
 app.get(["/schedules", "/schedule-management", "/ScheduleManagement.html"], (req, res) => {
     res.sendFile(path.join(__dirname, "../ScheduleManagement.html"));
+});
+app.get(["/curriculum", "/curriculum-management", "/CurriculumManagement.html"], (req, res) => {
+    res.sendFile(path.join(__dirname, "../CurriculumManagement.html"));
+});
+app.get(["/subjects", "/subject-management", "/SubjectManagement.html"], (req, res) => {
+    res.sendFile(path.join(__dirname, "../SubjectManagement.html"));
 });
 
 // KN-60: Middleware xác thực Token (Bearer Token)
@@ -1439,16 +1450,47 @@ app.put(
 // 3. Ghi nhận ngày ghi danh và người thực hiện
 // ========================================================
 
-// API Lấy danh sách toàn bộ lớp học kèm sĩ số động và trạng thái
+// API Lấy danh sách toàn bộ lớp học kèm sĩ số động, tiến độ buổi học và bộ lọc (KN-127)
 app.get(
     "/api/classes",
     authenticateToken,
     (req, res) => {
-        const list = getAllClasses();
+        const raw = getAllClasses(req.query);
+        const filtered = raw.filter(cls => require("./businessRoutes").canSeeClass(req.user, cls.id));
         return res.status(200).json({
             success: true,
-            total: list.length,
-            data: list
+            total: filtered.length,
+            totalRecords: raw.totalRecords || filtered.length,
+            page: raw.page || 1,
+            limit: raw.limit || filtered.length,
+            totalPages: raw.totalPages || 1,
+            data: filtered,
+            classes: filtered,
+            metrics: raw.metrics || getClassMetrics()
+        });
+    }
+);
+
+// API Lấy các chỉ số thống kê nhanh toàn hệ thống (Quick Metrics - KN-224)
+app.get(
+    "/api/classes/metrics",
+    authenticateToken,
+    (req, res) => {
+        return res.status(200).json({
+            success: true,
+            metrics: getClassMetrics()
+        });
+    }
+);
+
+// API Lấy danh mục dữ liệu cho các bộ lọc (KN-220)
+app.get(
+    "/api/classes/filter-options",
+    authenticateToken,
+    (req, res) => {
+        return res.status(200).json({
+            success: true,
+            data: getClassFilterOptions()
         });
     }
 );
@@ -2534,49 +2576,196 @@ app.delete("/api/subjects/:id",
     }
 );
 
-// API Gán môn học vào chương trình đào tạo (Tái sử dụng môn)
+// =============================================================
+// KN-71: GẮN MÔN VÀO CHƯƠNG TRÌNH, SẮP THỨ TỰ LỘ TRÌNH & MÔN TIÊN QUYẾT
+// "Là Quản lý đào tạo, tôi muốn gắn môn học vào chương trình và
+// sắp thứ tự học, để học viên học đúng lộ trình, không học môn
+// nâng cao trước môn nền tảng."
+// =============================================================
+
+// API Lấy danh sách môn học của chương trình theo thứ tự lộ trình kèm môn tiên quyết
+app.get("/api/programs/:programId/subjects", (req, res) => {
+    try {
+        const program = getProgramById(req.params.programId);
+        if (!program) {
+            return res.status(404).json({
+                success: false,
+                message: "Không tìm thấy chương trình đào tạo yêu cầu."
+            });
+        }
+        return res.status(200).json({
+            success: true,
+            programId: program.id,
+            programName: program.name,
+            totalSubjects: program.subjects.length,
+            subjects: program.subjects
+        });
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: "Lỗi khi lấy danh sách môn học trong lộ trình: " + err.message
+        });
+    }
+});
+
+// API Gán môn học vào chương trình đào tạo (KN-70 & KN-71)
 app.post("/api/programs/:programId/subjects",
     authenticateToken,
     requireRole("training_manager", "administrator"),
     (req, res) => {
         try {
-            const { subjectId } = req.body || {};
+            const { subjectId, orderIndex, prerequisiteSubjectId } = req.body || {};
             if (!subjectId) {
                 return res.status(400).json({
                     success: false,
                     message: "Vui lòng cung cấp mã định danh môn học (subjectId)."
                 });
             }
-            const updatedSubject = addSubjectToProgram(req.params.programId, subjectId);
+            const updatedSubject = addSubjectToProgram(req.params.programId, subjectId, {
+                orderIndex: orderIndex ? parseInt(orderIndex, 10) : undefined,
+                prerequisiteSubjectId
+            });
+
+            const program = getProgramById(req.params.programId);
+
+            recordAuditLog({
+                adminId: req.user ? req.user.id : "system",
+                targetUserId: null,
+                action: "ASSIGN_SUBJECT_TO_PROGRAM",
+                roleId: null,
+                status: "SUCCESS",
+                reason: `Gán môn học ${updatedSubject.name} vào chương trình ${program ? program.name : req.params.programId}.`
+            });
+
             return res.status(200).json({
                 success: true,
                 message: "Đã gán môn học vào chương trình đào tạo thành công!",
-                subject: updatedSubject
+                subject: updatedSubject,
+                program
             });
         } catch (err) {
             return res.status(err.statusCode || 400).json({
                 success: false,
+                code: err.code || "ASSIGN_SUBJECT_FAILED",
                 message: err.message
             });
         }
     }
 );
 
-// API Gỡ môn học khỏi chương trình đào tạo
+// API Gỡ môn học khỏi chương trình đào tạo (KN-70 & KN-71)
+// Chặn nếu có môn khác đang nhận môn này làm tiên quyết
 app.delete("/api/programs/:programId/subjects/:subjectId",
     authenticateToken,
     requireRole("training_manager", "administrator"),
     (req, res) => {
         try {
             const updatedSubject = removeSubjectFromProgram(req.params.programId, req.params.subjectId);
+            const program = getProgramById(req.params.programId);
+
+            recordAuditLog({
+                adminId: req.user ? req.user.id : "system",
+                targetUserId: null,
+                action: "REMOVE_SUBJECT_FROM_PROGRAM",
+                roleId: null,
+                status: "SUCCESS",
+                reason: `Đã gỡ môn học ${updatedSubject.name} khỏi chương trình ${program ? program.name : req.params.programId}.`
+            });
+
             return res.status(200).json({
                 success: true,
                 message: "Đã gỡ môn học khỏi chương trình đào tạo.",
-                subject: updatedSubject
+                subject: updatedSubject,
+                program
             });
         } catch (err) {
             return res.status(err.statusCode || 400).json({
                 success: false,
+                code: err.code || "REMOVE_SUBJECT_FAILED",
+                message: err.message,
+                dependentSubjects: err.dependentSubjects || []
+            });
+        }
+    }
+);
+
+// API Khai báo / Cập nhật môn tiên quyết cho môn học trong chương trình (KN-71)
+app.put("/api/programs/:programId/subjects/:subjectId/prerequisite",
+    authenticateToken,
+    requireRole("training_manager", "administrator"),
+    (req, res) => {
+        try {
+            const { prerequisiteSubjectId } = req.body || {};
+            const updatedProgram = setPrerequisiteSubject(
+                req.params.programId,
+                req.params.subjectId,
+                prerequisiteSubjectId
+            );
+
+            recordAuditLog({
+                adminId: req.user ? req.user.id : "system",
+                targetUserId: null,
+                action: "UPDATE_PREREQUISITE_SUBJECT",
+                roleId: null,
+                status: "SUCCESS",
+                reason: `Cập nhật môn tiên quyết cho môn ${req.params.subjectId} trong chương trình ${req.params.programId}.`
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: prerequisiteSubjectId
+                    ? "Cập nhật môn tiên quyết thành công!"
+                    : "Đã gỡ bỏ ràng buộc môn tiên quyết thành công!",
+                program: updatedProgram
+            });
+        } catch (err) {
+            return res.status(err.statusCode || 400).json({
+                success: false,
+                code: err.code || "UPDATE_PREREQUISITE_FAILED",
+                message: err.message
+            });
+        }
+    }
+);
+
+// API Sắp xếp lại thứ tự học các môn (Kéo thả reorder - KN-71)
+// Bắt buộc kiểm tra: Môn nâng cao không được học trước môn nền tảng (môn tiên quyết)
+app.put("/api/programs/:programId/subjects/reorder",
+    authenticateToken,
+    requireRole("training_manager", "administrator"),
+    (req, res) => {
+        try {
+            const { orders, subjectIds } = req.body || {};
+            const orderList = orders || subjectIds;
+            if (!orderList || !Array.isArray(orderList)) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Vui lòng cung cấp danh sách thứ tự môn học hợp lệ (orders hoặc subjectIds)."
+                });
+            }
+
+            const updatedProgram = reorderProgramSubjects(req.params.programId, orderList);
+
+            recordAuditLog({
+                adminId: req.user ? req.user.id : "system",
+                targetUserId: null,
+                action: "REORDER_PROGRAM_SUBJECTS",
+                roleId: null,
+                status: "SUCCESS",
+                reason: `Sắp xếp lại thứ tự lộ trình môn học cho chương trình ${req.params.programId}.`
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: "Cập nhật và lưu thứ tự lộ trình học tập thành công!",
+                program: updatedProgram
+            });
+        } catch (err) {
+            return res.status(err.statusCode || 400).json({
+                success: false,
+                code: err.code || "REORDER_SUBJECTS_FAILED",
+                violatingSubjectId: err.violatingSubjectId,
+                prerequisiteSubjectId: err.prerequisiteSubjectId,
                 message: err.message
             });
         }
@@ -2655,13 +2844,12 @@ app.post("/api/schedules/save",
     requireRole("training_manager", "administrator"),
     (req, res) => {
         try {
-            const { classId, sessions } = req.body || {};
-            const result = saveClassSchedule(classId, sessions, req.user);
+            const { classId, sessions, overrideConflicts } = req.body || {};
+            const result = saveClassSchedule(classId, sessions, req.user, { overrideConflicts: overrideConflicts === true });
             return res.status(200).json(result);
         } catch (err) {
             return res.status(err.status || 400).json({
                 success: false,
-                code: "SAVE_SCHEDULE_FAILED",
                 code: err.code || "SCHEDULE_ERROR",
                 message: err.status >= 500 ? "Không thể lưu dữ liệu. Thao tác chưa được áp dụng." : err.message,
                 details: err.details
