@@ -130,6 +130,9 @@
                 if (parts.length === 3) {
                     var base64Url = parts[1];
                     var base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+                    while (base64.length % 4) {
+                        base64 += "=";
+                    }
                     var payloadJson = decodeURIComponent(atob(base64).split("").map(function(c) {
                         return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
                     }).join(""));
@@ -177,9 +180,23 @@
                     var q = getRedirectQuery();
                     window.location.replace("/Login.html" + (q ? q + "&error=unauthorized" : "?error=unauthorized"));
                     return;
+                } else {
+                    // Trạng thái mạng tạm thời (status 0 hoặc 5xx): dùng dữ liệu người dùng đã lưu nếu có
+                    var cachedUser = localStorage.getItem("tms_current_user") || localStorage.getItem("tms_user");
+                    if (cachedUser) {
+                        try {
+                            currentUser = JSON.parse(cachedUser);
+                        } catch (e) {}
+                    }
                 }
             } catch (netErr) {
                 console.warn("TMS Access Guard: Kết nối máy chủ kiểm tra phiên gặp sự cố:", netErr);
+                var cachedUser = localStorage.getItem("tms_current_user") || localStorage.getItem("tms_user");
+                if (cachedUser) {
+                    try {
+                        currentUser = JSON.parse(cachedUser);
+                    } catch (e) {}
+                }
             }
         }
 

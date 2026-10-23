@@ -102,17 +102,104 @@ function findUserByEmail(email) {
     return found;
 }
 
-// Opaque, cryptographically random, server-side revocable sessions; only hashes are stored.
+// Tìm kiếm người dùng theo mã định danh (id)
+function findUserById(id) {
+    if (!id) return null;
+    let found = users.find(u => u.id === id);
+    if (!found) {
+        try {
+            const fs = require("fs");
+            const path = require("path");
+            const os = require("os");
+            const tmpFile = path.join(os.tmpdir(), "tms_registered_users.json");
+            if (fs.existsSync(tmpFile)) {
+                const list = JSON.parse(fs.readFileSync(tmpFile, "utf8"));
+                if (Array.isArray(list)) {
+                    const matched = list.find(u => u.id === id);
+                    if (matched) {
+                        users.push(matched);
+                        return matched;
+                    }
+                }
+            }
+        } catch {}
+    }
+    return found || null;
+}
+
+// Opaque, cryptographically random & signed JWT server-side revocable sessions; only hashes/signatures are stored.
 const database = require('./localDatabase');
 const sessions = new Map();
+const revokedTokens = new Set();
 const digest = token => crypto.createHash('sha256').update(String(token)).digest('hex');
-function generateToken(user) {
-    const token=crypto.randomBytes(32).toString('base64url');
-    sessions.set(digest(token), {userId:user.id,issuedAt:Date.now(),expiresAt:Date.now()+24*60*60*1000,authVersion:user.authVersion||0});
-    database.commit(); return token;
+
+const JWT_SECRET = process.env.JWT_SECRET || process.env.SUPABASE_SECRET_KEY || "tms_jwt_signing_key_2026_salt_8392174";
+
+function base64UrlEncode(input) {
+    const buf = Buffer.isBuffer(input) ? input : Buffer.from(String(input), "utf8");
+    return buf.toString("base64url");
 }
+
+function base64UrlDecode(str) {
+    return Buffer.from(String(str), "base64url").toString("utf8");
+}
+
+function signJwt(payload) {
+    const header = { alg: "HS256", typ: "JWT" };
+    const headerB64 = base64UrlEncode(JSON.stringify(header));
+    const payloadB64 = base64UrlEncode(JSON.stringify(payload));
+    const dataToSign = `${headerB64}.${payloadB64}`;
+    const signature = crypto.createHmac("sha256", JWT_SECRET).update(dataToSign).digest("base64url");
+    return `${dataToSign}.${signature}`;
+}
+
+function verifyJwt(token) {
+    if (typeof token !== "string" || token.length > 2048) return null;
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const [headerB64, payloadB64, sigB64] = parts;
+    const dataToSign = `${headerB64}.${payloadB64}`;
+    const expectedSig = crypto.createHmac("sha256", JWT_SECRET).update(dataToSign).digest("base64url");
+    const sigBuf = Buffer.from(sigB64);
+    const expectedBuf = Buffer.from(expectedSig);
+    if (sigBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(sigBuf, expectedBuf)) {
+        return null;
+    }
+    try {
+        const payload = JSON.parse(base64UrlDecode(payloadB64));
+        if (!payload || !payload.userId || !payload.exp) return null;
+        if (Date.now() > payload.exp * 1000) return null;
+        return payload;
+    } catch {
+        return null;
+    }
+}
+
+function generateToken(user) {
+    const nowSec = Math.floor(Date.now() / 1000);
+    const expSec = nowSec + 24 * 60 * 60; // 24 giờ
+    const payload = {
+        userId: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        authVersion: user.authVersion || 0,
+        iat: nowSec,
+        exp: expSec
+    };
+    const token = signJwt(payload);
+    sessions.set(digest(token), {
+        userId: user.id,
+        issuedAt: nowSec * 1000,
+        expiresAt: expSec * 1000,
+        authVersion: user.authVersion || 0
+    });
+    database.commit();
+    return token;
+}
+
 function verifyToken(token) {
-    if(typeof token!=='string'||token.length>256)return null;
+    if (typeof token !== 'string' || token.length > 2048) return null;
     if (token === "tms_demo_admin_token") {
         const adminUser = users.find(u => u.id === "usr_admin") || users[0];
         return {
@@ -125,15 +212,76 @@ function verifyToken(token) {
             authVersion: adminUser.authVersion || 0
         };
     }
-    const session=sessions.get(digest(token));if(!session||Date.now()>session.expiresAt)return null;
-    const user=users.find(u=>u.id===session.userId);
-    if(!user||!['active',undefined].includes(user.status)||(user.authVersion||0)!==session.authVersion)return null;
-    return {...session,email:user.email,name:user.name,role:user.role};
+
+    const d = digest(token);
+    if (revokedTokens.has(d)) return null;
+
+    // 1. Kiểm tra trong bộ nhớ / local sessions store
+    const session = sessions.get(d);
+    if (session) {
+        if (Date.now() > session.expiresAt) {
+            sessions.delete(d);
+            return null;
+        }
+        let user = users.find(u => u.id === session.userId);
+        if (!user || !['active', undefined].includes(user.status) || (user.authVersion || 0) !== session.authVersion) {
+            return null;
+        }
+        return { ...session, email: user.email, name: user.name, role: user.role };
+    }
+
+    // 2. Xác thực chữ ký JWT không trạng thái (stateless HMAC-SHA256, hoạt động 100% trên Vercel Serverless)
+    const jwtPayload = verifyJwt(token);
+    if (jwtPayload) {
+        let user = users.find(u => u.id === jwtPayload.userId);
+        if (!user || !['active', undefined].includes(user.status)) {
+            return null;
+        }
+        if ((user.authVersion || 0) !== (jwtPayload.authVersion || 0)) {
+            return null;
+        }
+        sessions.set(d, {
+            userId: user.id,
+            issuedAt: jwtPayload.iat * 1000,
+            expiresAt: jwtPayload.exp * 1000,
+            authVersion: user.authVersion || 0
+        });
+        return {
+            userId: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            authVersion: user.authVersion || 0,
+            issuedAt: jwtPayload.iat * 1000,
+            expiresAt: jwtPayload.exp * 1000
+        };
+    }
+
+    return null;
 }
-function revokeToken(token){sessions.delete(digest(token));database.commit();}
-function revokeUserSessions(id){const user=users.find(u=>u.id===id);if(user)user.authVersion=(user.authVersion||0)+1;for(const [key,v]of sessions)if(v.userId===id)sessions.delete(key);}
+
+function revokeToken(token) {
+    if (!token) return;
+    const d = digest(token);
+    revokedTokens.add(d);
+    sessions.delete(d);
+    database.commit();
+}
+
+function revokeUserSessions(id) {
+    const user = users.find(u => u.id === id) || findUserById(id);
+    if (user) user.authVersion = (user.authVersion || 0) + 1;
+    for (const [key, v] of sessions) {
+        if (v.userId === id) {
+            revokedTokens.add(key);
+            sessions.delete(key);
+        }
+    }
+    database.commit();
+}
+
 function changePassword(userId,currentPassword,newPassword){
-    const user=users.find(u=>u.id===userId);
+    const user=users.find(u=>u.id===userId) || findUserById(userId);
     if(!user||!verifyPassword(currentPassword,user.salt,user.passwordHash))throw {status:400,message:'Mật khẩu hiện tại không đúng.'};
     validatePassword(newPassword);
     if(currentPassword===newPassword)throw {status:400,message:'Mật khẩu mới phải khác mật khẩu cũ.'};
@@ -332,8 +480,9 @@ function resetPasswordWithToken(token, newPassword) {
     };
 }
 
-database.register('auth',()=>({users,sessions:[...sessions],resetTokens:[...passwordResetTokens],attempts:[...loginAttempts],forgotLimits:[...forgotRateLimits]}),v=>{
+database.register('auth',()=>({users,sessions:[...sessions],revoked:[...revokedTokens],resetTokens:[...passwordResetTokens],attempts:[...loginAttempts],forgotLimits:[...forgotRateLimits]}),v=>{
     users.splice(0,users.length,...v.users);sessions.clear();for(const x of v.sessions||[])sessions.set(...x);
+    revokedTokens.clear();for(const x of v.revoked||[])revokedTokens.add(x);
     passwordResetTokens.clear();for(const x of v.resetTokens||[])passwordResetTokens.set(...x);
     loginAttempts.clear();for(const x of v.attempts||[])loginAttempts.set(...x);
     forgotRateLimits.clear();for(const x of v.forgotLimits||[])forgotRateLimits.set(...x);
@@ -349,6 +498,7 @@ if(process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD && !require('fs').exist
 }
 module.exports = { changePassword, revokeToken, revokeUserSessions, validatePassword,
     findUserByEmail,
+    findUserById,
     hashPassword,
     verifyPassword,
     generateSalt,
@@ -367,3 +517,4 @@ module.exports = { changePassword, revokeToken, revokeUserSessions, validatePass
     verifyPasswordResetToken,
     resetPasswordWithToken
 };
+

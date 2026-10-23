@@ -55,8 +55,7 @@
         }
     });
 
-    // HTTP 401 từ API phụ không nhất thiết là phiên đăng nhập hết hạn.
-    // Chỉ đăng xuất khi Backend xác nhận token không còn hợp lệ.
+    // Global 401 Interceptor: Bắt mọi phản hồi HTTP 401 trên toàn trang để tự động thu hồi phiên
     if (window.fetch) {
         var _originalFetch = window.fetch;
         window.fetch = function () {
@@ -73,6 +72,8 @@
                     return response;
                 }
 
+                // Xác minh phiên trước khi quyết định đăng xuất.
+                // Dùng fetch gốc để tránh gọi lặp interceptor.
                 _originalFetch.call(window, "/api/auth/me", {
                     method: "GET",
                     headers: {
@@ -129,6 +130,9 @@
                 if (parts.length === 3) {
                     var base64Url = parts[1];
                     var base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+                    while (base64.length % 4) {
+                        base64 += "=";
+                    }
                     var payloadJson = decodeURIComponent(atob(base64).split("").map(function(c) {
                         return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
                     }).join(""));
@@ -176,9 +180,23 @@
                     var q = getRedirectQuery();
                     window.location.replace("/Login.html" + (q ? q + "&error=unauthorized" : "?error=unauthorized"));
                     return;
+                } else {
+                    // Trạng thái mạng tạm thời (status 0 hoặc 5xx): dùng dữ liệu người dùng đã lưu nếu có
+                    var cachedUser = localStorage.getItem("tms_current_user") || localStorage.getItem("tms_user");
+                    if (cachedUser) {
+                        try {
+                            currentUser = JSON.parse(cachedUser);
+                        } catch (e) {}
+                    }
                 }
             } catch (netErr) {
                 console.warn("TMS Access Guard: Kết nối máy chủ kiểm tra phiên gặp sự cố:", netErr);
+                var cachedUser = localStorage.getItem("tms_current_user") || localStorage.getItem("tms_user");
+                if (cachedUser) {
+                    try {
+                        currentUser = JSON.parse(cachedUser);
+                    } catch (e) {}
+                }
             }
         }
 
