@@ -44,12 +44,15 @@ after(async () => {
     fs.rmSync(dir, { recursive: true, force: true });
 });
 
-test('TECH-01: Technical Manager can read SMTP status', async () => {
+test('TECH-01: Technical Manager can read SMTP status with default tino configuration', async () => {
     const res = await request('/api/admin/smtp/status', 'GET', undefined, 'usr_tech');
     assert.equal(res.status, 200);
     assert.equal(res.data.success, true);
     assert.ok(res.data.smtp);
-    assert.equal(typeof res.data.smtp.enabled, 'boolean');
+    assert.equal(res.data.smtp.host, 'mx.tino.vn');
+    assert.equal(res.data.smtp.port, 587);
+    assert.equal(res.data.smtp.user, 'daotaotms@tuoitre24h.com');
+    assert.equal(res.data.smtp.hasPassword, true);
 });
 
 test('TECH-02: Technical Manager can update SMTP configuration', async () => {

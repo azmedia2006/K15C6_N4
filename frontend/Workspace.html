@@ -2961,14 +2961,14 @@
                             </div>
                             <div class="form-group" style="margin-top: 0;">
                                 <label for="smtp-from-email">Địa chỉ email gửi (From Email)</label>
-                                <input type="email" class="form-control" id="smtp-from-email" name="fromEmail" placeholder="ví dụ: daotaotms@tuoitre24h.com">
+                                <input type="text" class="form-control" id="smtp-from-email" name="fromEmail" placeholder="ví dụ: ĐÀO TẠO TMS hoặc daotaotms@tuoitre24h.com">
                             </div>
                         </div>
 
                         <!-- Checkbox & Switches -->
                         <div style="display: flex; gap: 24px; flex-wrap: wrap; padding: 12px 16px; background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-md); align-items: center;">
                             <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin: 0; font-size: 0.875rem; font-weight: 500;">
-                                <input type="checkbox" id="smtp-enabled" name="enabled" checked style="width: 16px; height: 16px; accent-color: var(--primary);">
+                                <input type="checkbox" id="smtp-enabled" name="enabled" style="width: 16px; height: 16px; accent-color: var(--primary);">
                                 <span>Kích hoạt dịch vụ gửi mail qua SMTP</span>
                             </label>
 
@@ -5417,10 +5417,16 @@
             } else if (preset === "tino") {
                 if (hostInput) hostInput.value = "mx.tino.vn";
                 if (portInput) portInput.value = "587";
+                const userInput = document.getElementById("smtp-user");
+                if (userInput) userInput.value = "daotaotms@tuoitre24h.com";
+                const passInput = document.getElementById("smtp-pass");
+                if (passInput) passInput.value = "Quan2006@";
+                const fromEmailInput = document.getElementById("smtp-from-email");
+                if (fromEmailInput) fromEmailInput.value = "ĐÀO TẠO TMS";
                 if (secureCheck) secureCheck.checked = false;
                 if (tlsCheck) tlsCheck.checked = true;
-                if (fromNameInput && !fromNameInput.value) fromNameInput.value = "Đào tạo TMS";
-                showToast("Đã áp dụng cấu hình mặc định TinoHost.", "info");
+                if (fromNameInput) fromNameInput.value = "Đào tạo TMS";
+                showToast("Đã áp dụng đúng toàn bộ cấu hình máy chủ TinoHost.", "info");
             }
         }
         window.applySmtpPreset = applySmtpPreset;

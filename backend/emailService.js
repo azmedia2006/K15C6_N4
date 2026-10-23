@@ -10,22 +10,38 @@ require("dotenv").config({
     path: [path.join(__dirname, ".env"), path.join(__dirname, "../.env")]
 });
 
-// Cấu hình SMTP
+// Cấu hình SMTP mặc định chuẩn hệ thống
+const defaultSmtpHost = "mx.tino.vn";
+const defaultSmtpPort = 587;
+const defaultSmtpUser = "daotaotms@tuoitre24h.com";
+const defaultSmtpPass = "Quan2006@";
+const defaultSmtpFromName = "Đào tạo TMS";
+const defaultSmtpFromEmail = "ĐÀO TẠO TMS";
+
 const isEnabled = process.env.SMTP_ENABLED === "true";
-const isConfigured = Boolean(isEnabled && (process.env.SMTP_HOST || "") && (process.env.SMTP_USER || "") && (process.env.SMTP_PASSWORD || process.env.SMTP_PASS || ""));
+const host = process.env.SMTP_HOST || defaultSmtpHost;
+const port = parseInt(process.env.SMTP_PORT || String(defaultSmtpPort), 10);
+const user = process.env.SMTP_USER || defaultSmtpUser;
+const pass = process.env.SMTP_PASSWORD || process.env.SMTP_PASS || defaultSmtpPass;
+const fromEmail = process.env.SMTP_FROM_EMAIL || defaultSmtpFromEmail;
+const fromName = process.env.SMTP_FROM_NAME || defaultSmtpFromName;
+const secure = process.env.SMTP_SECURE === "true" || process.env.SMTP_PORT === "465";
+const tls = process.env.SMTP_TLS !== "false";
+
+const isConfigured = Boolean(isEnabled && host && user && pass);
 
 const SMTP_CONFIG = {
     enabled: isEnabled,
     configured: isConfigured,
     configError: !isEnabled ? "SMTP is disabled. Set SMTP_ENABLED=true to enable email delivery." : !isConfigured ? "SMTP configuration is incomplete." : null,
-    host: process.env.SMTP_HOST || "",
-    port: parseInt(process.env.SMTP_PORT || "587", 10),
-    user: process.env.SMTP_USER || "",
-    pass: process.env.SMTP_PASSWORD || process.env.SMTP_PASS || "",
-    fromEmail: process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER || "",
-    fromName: process.env.SMTP_FROM_NAME || "Đào tạo TMS",
-    secure: process.env.SMTP_SECURE === "true" || process.env.SMTP_PORT === "465",
-    tls: process.env.SMTP_TLS !== "false"
+    host,
+    port,
+    user,
+    pass,
+    fromEmail,
+    fromName,
+    secure,
+    tls
 };
 
 // Khởi tạo nodemailer transporter
@@ -375,7 +391,17 @@ function deliver(message){
     const record={id:require('crypto').randomUUID(),to:message.to,subject:message.subject,createdAt:new Date().toISOString(),status:transporter?'QUEUED':'NOT_CONFIGURED'};
     sentEmails.push(record);
     const completion=(async()=>{if(!transporter)return record;
-        try{const info=await transporter.sendMail({...message,from:{name:SMTP_CONFIG.fromName,address:SMTP_CONFIG.fromEmail}});record.status='ACCEPTED';record.messageId=info.messageId;record.acceptedAt=new Date().toISOString();}
+        try {
+            const senderName = SMTP_CONFIG.fromName || "Đào tạo TMS";
+            const senderAddress = (SMTP_CONFIG.fromEmail && SMTP_CONFIG.fromEmail.includes("@")) ? SMTP_CONFIG.fromEmail.trim() : (SMTP_CONFIG.user || "daotaotms@tuoitre24h.com").trim();
+            const info = await transporter.sendMail({
+                ...message,
+                from: { name: senderName, address: senderAddress }
+            });
+            record.status = 'ACCEPTED';
+            record.messageId = info.messageId;
+            record.acceptedAt = new Date().toISOString();
+        }
         catch(e){record.status='FAILED';record.error='SMTP không chấp nhận thư. Kiểm tra cấu hình, TLS và kết nối.';}
         require('./localDatabase').commit();return record;})();
     Object.defineProperty(record,'completion',{value:completion,enumerable:false});
