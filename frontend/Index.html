@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Điều hướng Hệ Thống TMS</title>
+    <script>
+        (function() {
+            var token = localStorage.getItem("tms_token") || localStorage.getItem("token");
+            var user = localStorage.getItem("tms_current_user") || localStorage.getItem("tms_user");
+            if (token && user) {
+                window.location.replace("./Dashboard.html");
+            } else {
+                window.location.replace("./Login.html");
+            }
+        })();
+    </script>
+</head>
+<body style="margin: 0; background: #f8fafc; font-family: 'Inter', system-ui, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh;">
+    <div style="text-align: center; color: #64748b; padding: 24px;">
+        <div style="width: 48px; height: 48px; border: 3px solid #e2e8f0; border-top-color: #10b981; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px;"></div>
+        <p style="font-size: 15px; font-weight: 500;">Đang kiểm tra phiên làm việc...</p>
+        <p style="font-size: 13px;"><a href="./Login.html" style="color: #10b981; text-decoration: none;">Bấm vào đây nếu không tự chuyển hướng</a></p>
+    </div>
+    <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</body>
+</html>

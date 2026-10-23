@@ -37,6 +37,9 @@ async function startServer() {
 async function stopServer() {
     return new Promise((resolve) => {
         if (server) {
+            if (typeof server.closeAllConnections === "function") {
+                server.closeAllConnections();
+            }
             server.close(() => resolve());
         } else {
             resolve();
@@ -230,8 +233,8 @@ async function runTests() {
 }
 
 runTests().then(() => {
-    process.exit(0);
+    process.exitCode = 0;
 }).catch((err) => {
     console.error("❌ TEST FAILED:", err);
-    process.exit(1);
+    process.exitCode = 1;
 });

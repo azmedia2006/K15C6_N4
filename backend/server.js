@@ -255,6 +255,9 @@ require('./businessRoutes')(app, { authenticateToken, requireRole });
 // KN-31: API đăng nhập bằng email và mật khẩu
 // Cập nhật trả về danh sách vai trò N-N (hỗ trợ cả /api/auth/login và /auth/login)
 app.post(["/api/auth/login", "/auth/login"], async (req, res) => {
+    try {
+        await hydrateUsersForVercel();
+    } catch {}
     const { email, password } = req.body || {};
 
     if (!email || !password) {
@@ -354,6 +357,18 @@ if (user && (user.status || "active") === "inactive") {
             roles: userWithRoles.roles
         }
     });
+});
+
+app.post(['/api/auth/logout', '/auth/logout'], authenticateToken, (req, res) => {
+    require('./authService').revokeToken(req.headers.authorization.replace(/^Bearer\s+/i, ''));
+    res.json({ success: true, message: 'Đã đăng xuất.' });
+});
+app.post(['/api/auth/change-password', '/auth/change-password'], authenticateToken, (req, res) => {
+    try {
+        res.json(require('./authService').changePassword(req.user.id, req.body.currentPassword, req.body.newPassword));
+    } catch (e) {
+        res.status(e.status || 400).json({ success: false, message: e.message });
+    }
 });
 
 // KN-60: API lấy thông tin người dùng hiện tại
@@ -517,8 +532,40 @@ app.put(["/api/auth/me/profile", "/auth/me/profile"], authenticateToken, async (
 // =========================================================================
 
 const isVercelRuntime = Boolean(process.env.VERCEL || process.env.VERCEL_URL || process.env.NOW_REGION);
+const os = require("os");
+const tmpUsersFile = path.join(os.tmpdir(), "tms_registered_users.json");
 
 async function hydrateUsersForVercel() {
+    // 1. Phục hồi từ file lưu trữ người dùng serverless cục bộ (/tmp)
+    try {
+        if (fs.existsSync(tmpUsersFile)) {
+            const raw = fs.readFileSync(tmpUsersFile, "utf8");
+            const fileUsers = JSON.parse(raw);
+            if (Array.isArray(fileUsers)) {
+                fileUsers.forEach(fu => {
+                    const existingIdx = users.findIndex(u => (u.email && fu.email && u.email.toLowerCase() === fu.email.toLowerCase()) || (u.id && fu.id && u.id === fu.id));
+                    if (existingIdx === -1) {
+                        users.push(fu);
+                    }
+                });
+            }
+        }
+    } catch (e) {}
+
+    // 2. Phục hồi từ localDatabase
+    try {
+        const snap = require("./localDatabase").snapshot();
+        if (snap && snap.auth && Array.isArray(snap.auth.users)) {
+            snap.auth.users.forEach(su => {
+                const existingIdx = users.findIndex(u => (u.email && su.email && u.email.toLowerCase() === su.email.toLowerCase()) || (u.id && su.id && u.id === su.id));
+                if (existingIdx === -1) {
+                    users.push(su);
+                }
+            });
+        }
+    } catch (e) {}
+
+    // 3. Phục hồi từ Supabase Storage nếu có cấu hình
     if (!supabaseService.SUPABASE_URL) return;
     try {
         const [storedUsers, roleAssignments] = await Promise.all([
@@ -527,10 +574,8 @@ async function hydrateUsersForVercel() {
         ]);
         if (Array.isArray(storedUsers) && storedUsers.length > 0) {
             storedUsers.forEach(su => {
-                const existingIdx = users.findIndex(u => u.email.toLowerCase() === su.email.toLowerCase() || u.id === su.id);
-                if (existingIdx !== -1) {
-                    users[existingIdx] = { ...users[existingIdx], ...su };
-                } else {
+                const existingIdx = users.findIndex(u => (u.email && su.email && u.email.toLowerCase() === su.email.toLowerCase()) || (u.id && su.id && u.id === su.id));
+                if (existingIdx === -1) {
                     users.push(su);
                 }
             });
@@ -781,16 +826,32 @@ app.post(["/api/auth/register", "/auth/register"], async (req, res) => {
             sendActivation: false
         });
 
+        // Lưu ngay vào file tạm serverless (/tmp) và localDatabase để không bao giờ mất tài khoản
+        try {
+            let tmpList = [];
+            if (fs.existsSync(tmpUsersFile)) {
+                try { tmpList = JSON.parse(fs.readFileSync(tmpUsersFile, "utf8")); } catch {}
+            }
+            if (!Array.isArray(tmpList)) tmpList = [];
+            const savedU = users.find(u => u.id === result.user.id) || result.user;
+            const existingIdx = tmpList.findIndex(u => (u.email && savedU.email && u.email.toLowerCase() === savedU.email.toLowerCase()) || (u.id && savedU.id && u.id === savedU.id));
+            if (existingIdx !== -1) tmpList[existingIdx] = savedU;
+            else tmpList.push(savedU);
+            fs.writeFileSync(tmpUsersFile, JSON.stringify(tmpList, null, 2), "utf8");
+        } catch (e) {}
+
+        try {
+            require("./localDatabase").commit();
+        } catch (e) {}
+
         if (isVercelRuntime) {
             try {
                 await supabaseService.savePasswordRecoveryUsersSnapshot(users);
             } catch (error) {
-                const userIndex = users.findIndex(user => user.id === result.user.id);
-                if (userIndex !== -1) users.splice(userIndex, 1);
-                throw error;
+                console.warn("[Server] Supabase Storage chưa sẵn sàng hoặc timeout, duy trì tài khoản trong bộ nhớ & localDatabase:", error.message);
             }
         } else {
-            await supabaseService.syncSingleUser(result.user, password, users);
+            await supabaseService.syncSingleUser(result.user, password, users).catch(() => {});
         }
 
         try {
@@ -893,20 +954,36 @@ app.post(
                 sendActivation: false
             });
 
+            // Lưu ngay vào file tạm serverless (/tmp) và localDatabase
+            try {
+                let tmpList = [];
+                if (fs.existsSync(tmpUsersFile)) {
+                    try { tmpList = JSON.parse(fs.readFileSync(tmpUsersFile, "utf8")); } catch {}
+                }
+                if (!Array.isArray(tmpList)) tmpList = [];
+                const savedU = users.find(u => u.id === result.user.id) || result.user;
+                const existingIdx = tmpList.findIndex(u => (u.email && savedU.email && u.email.toLowerCase() === savedU.email.toLowerCase()) || (u.id && savedU.id && u.id === savedU.id));
+                if (existingIdx !== -1) tmpList[existingIdx] = savedU;
+                else tmpList.push(savedU);
+                fs.writeFileSync(tmpUsersFile, JSON.stringify(tmpList, null, 2), "utf8");
+            } catch (e) {}
+
+            try {
+                require("./localDatabase").commit();
+            } catch (e) {}
+
             if (isVercelRuntime) {
                 try {
                     await supabaseService.savePasswordRecoveryUsersSnapshot(users);
                 } catch (error) {
-                    const userIndex = users.findIndex(user => user.id === result.user.id);
-                    if (userIndex !== -1) users.splice(userIndex, 1);
-                    throw error;
+                    console.warn("[Server] Supabase Storage chưa sẵn sàng hoặc timeout, duy trì tài khoản trong bộ nhớ:", error.message);
                 }
             } else {
                 await supabaseService.syncSingleUser(
                     result.user,
                     result.temporaryPassword,
                     users
-                );
+                ).catch(() => {});
             }
 
             if (result.user && result.user.role) {
@@ -2670,6 +2747,7 @@ app.put("/api/programs/:programId/subjects/reorder",
 // -------------------------------------------------------------
 
 require("./sessionRoutes")(app, { authenticateToken, requireRole });
+require("./businessRoutes")(app, { authenticateToken, requireRole });
 
 // API Lấy danh sách lớp học kèm trạng thái thời khóa biểu
 app.get("/api/schedules/classes", authenticateToken, (req, res) => {
@@ -2761,6 +2839,59 @@ app.get("/api/schedules", authenticateToken, (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Lỗi khi tra cứu thời khóa biểu: " + err.message
+        });
+    }
+});
+
+/**
+ * KN-254: API lấy buổi học sắp diễn ra gần nhất.
+ * Chỉ trả về buổi học mà tài khoản được phép xem.
+ */
+app.get("/api/schedules/next", authenticateToken, (req, res) => {
+    try {
+        // Lấy ngày, giờ hiện tại theo múi giờ Việt Nam.
+        const parts = Object.fromEntries(
+            new Intl.DateTimeFormat("en-GB", {
+                timeZone: "Asia/Ho_Chi_Minh",
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                hourCycle: "h23"
+            })
+                .formatToParts(new Date())
+                .filter(part => part.type !== "literal")
+                .map(part => [part.type, part.value])
+        );
+
+        const now = `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`;
+
+        const sessions = getSchedules({})
+            .filter(session =>
+                require("./businessRoutes").canSeeSession(req.user, session)
+            )
+            .filter(session =>
+                typeof session.date === "string" &&
+                typeof session.startTime === "string" &&
+                `${session.date}T${session.startTime}` > now
+            )
+            .sort((a, b) =>
+                `${a.date}T${a.startTime}`.localeCompare(
+                    `${b.date}T${b.startTime}`
+                )
+            );
+
+        return res.status(200).json({
+            success: true,
+            session: sessions[0] || null
+        });
+    } catch (err) {
+        console.error("KN-254 next schedule error:", err);
+
+        return res.status(500).json({
+            success: false,
+            message: "Không thể lấy buổi học kế tiếp."
         });
     }
 });
@@ -2910,10 +3041,15 @@ app.get("/", (req, res) => {
 
 // Chuyển hướng sạch nếu người dùng gõ /frontend/Login.html
 app.get("/frontend/Login.html", (req, res) => {
-    res.redirect(301, "/");
+    res.redirect(301, "/Login.html");
 });
 app.get("/frontend/:page", (req, res) => {
     res.redirect(301, `/${req.params.page}`);
+});
+
+// Không gian làm việc (Workspace) phục vụ trực tiếp Workspace.html mà không redirect
+app.get(["/workspace", "/Workspace", "/Workspace.html", "/workspace.html"], (req, res) => {
+    res.sendFile(path.join(rootDir, "Workspace.html"));
 });
 
 // KN-75: Phân công lead cho tư vấn viên (module độc lập, chỉ thêm route /api/kn75/*)
