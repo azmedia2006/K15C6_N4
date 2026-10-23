@@ -15,6 +15,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Schedule Calendar Styles -->
+    <link rel="stylesheet" href="schedule-calendar.css">
 
     <style>
         :root {
@@ -2255,47 +2257,8 @@
 
             <!-- VIEW 4: SCHEDULE VIEW -->
             <div id="view-schedule" class="view-section">
-                <div class="ui-card">
-                    <div class="card-head">
-                        <h2>Thời khóa biểu toàn hệ thống (Tuần này)</h2>
-                        <div style="display:flex; gap:8px;">
-                            <button class="btn btn-secondary" onclick="showToast('Đang xem tuần hiện tại')">Tuần này</button>
-                            <button class="btn btn-primary" onclick="exportScheduleReport()">Xuất lịch</button>
-                        </div>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Ca học</th>
-                                    <th>Thứ 2</th>
-                                    <th>Thứ 3</th>
-                                    <th>Thứ 4</th>
-                                    <th>Thứ 5</th>
-                                    <th>Thứ 6</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><strong>Sáng (08:00 - 11:30)</strong></td>
-                                    <td><div class="course-title">PMP K15</div><small>Phòng A2 • GV Trần Minh</small></td>
-                                    <td><span class="badge badge-neutral">Trống phòng</span></td>
-                                    <td><div class="course-title">Data BI K15</div><small>Phòng B1 • GV Lê Hoa</small></td>
-                                    <td><span class="badge badge-neutral">Trống phòng</span></td>
-                                    <td><div class="course-title">PMP K15</div><small>Phòng A2 • GV Trần Minh</small></td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Chiều (13:30 - 17:00)</strong></td>
-                                    <td><div class="course-title">Web Dev K16</div><small>Lab C1 • GV Phạm Quân</small></td>
-                                    <td><div class="course-title">Tiếng Anh K15</div><small>Online Zoom</small></td>
-                                    <td><div class="course-title">Web Dev K16</div><small>Lab C1 • GV Phạm Quân</small></td>
-                                    <td><div class="course-title">Kỹ năng mềm</div><small>Hội trường 1</small></td>
-                                    <td><div class="course-title">Thực hành Lab</div><small>Trợ giảng Thu Hà</small></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                <!-- TMS Interactive Schedule Calendar (Chuyển đổi tuần/tháng, Lọc lớp/GV/phòng, Chi tiết buổi học, Responsive Mobile) -->
+                <div id="dashboard-schedule-container"></div>
             </div>
 
             <!-- VIEW 5: ATTENDANCE VIEW -->
@@ -3687,6 +3650,13 @@
             }
             if (viewName === "classes") {
                 loadClasses();
+            }
+            if (viewName === "schedule") {
+                if (!window.dashboardCalendar && typeof initScheduleCalendar === "function") {
+                    window.dashboardCalendar = initScheduleCalendar("#dashboard-schedule-container");
+                } else if (window.dashboardCalendar) {
+                    window.dashboardCalendar.render();
+                }
             }
         }
 
@@ -6172,33 +6142,35 @@
             }
 
             // Đồng bộ dữ liệu điểm danh học viên
+
             const kn68AttendanceRole = String(
                 localStorage.getItem("tms_current_role") || ""
-            ).trim().toLowerCase().replace(/^role_/, "");
+                ).trim().toLowerCase().replace(/^role_/, "");
 
             const kn68AttendanceToken =
                 localStorage.getItem("tms_token") ||
                 localStorage.getItem("token");
 
-            kn68AttendanceToken &&
+                kn68AttendanceToken &&
                 ["administrator", "training_manager", "instructor", "teaching_assistant"]
                     .includes(kn68AttendanceRole) &&
-                fetch("/api/attendance/students", {
-                    headers: {
-                        Authorization: `Bearer ${kn68AttendanceToken}`
+            fetch("/api/attendance/students", {
+            headers: {
+            Authorization: `Bearer ${kn68AttendanceToken}`
                     }
                 }).then(r => r.json()).then(res => {
-                    if (res.success && Array.isArray(res.data)) {
-                        res.data.forEach(s => {
-                            if (s.studentCode === "SV001" && s.thumbnail) {
-                                const thumb = document.getElementById("attendance-thumb-sv001");
-                                const large = document.getElementById("attendance-large-sv001");
-                                if (thumb) thumb.src = s.thumbnail;
-                                if (large) large.src = s.avatar || s.thumbnail;
-                            }
-                        });
-                    }
-                }).catch(() => {});
+
+                if (res.success && Array.isArray(res.data)) {
+                    res.data.forEach(s => {
+                        if (s.studentCode === "SV001" && s.thumbnail) {
+                            const thumb = document.getElementById("attendance-thumb-sv001");
+                            const large = document.getElementById("attendance-large-sv001");
+                            if (thumb) thumb.src = s.thumbnail;
+                            if (large) large.src = s.avatar || s.thumbnail;
+                        }
+                    });
+                }
+            }).catch(() => {});
         }, 150);
 
         // Đảm bảo tất cả hàm điều hướng, mở modal và tác vụ được gắn vào window để mọi nút bấm hoạt động 100%
@@ -6244,6 +6216,18 @@
         window.submitNewConsultation = submitNewConsultation;
         window.loadDashboardLeads = loadDashboardLeads;
         window.handleGlobalSearch = handleGlobalSearch;
+    </script>
+    <!-- TMS Schedule Calendar Script (Week/Month switch, Filters, Details modal, Mobile responsive) -->
+    <script src="schedule-calendar.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            if (typeof initScheduleCalendar === "function") {
+                const schedContainer = document.getElementById("dashboard-schedule-container");
+                if (schedContainer && !window.dashboardCalendar) {
+                    window.dashboardCalendar = initScheduleCalendar("#dashboard-schedule-container");
+                }
+            }
+        });
     </script>
     <!-- Mobile Sidebar Backdrop Overlay -->
     <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleMobileSidebar(false)"></div>
