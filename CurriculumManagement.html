@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#10b981">
-    <title>Hệ Thống Đào Tạo TMS | Lộ Trình Chương Trình & Môn Tiên Quyết (KN-71)</title>
+    <title>Hệ Thống Đào Tạo TMS | Lộ Trình Chương Trình & Môn Tiên Quyết</title>
 
     <!-- Client-Side Access Guard: Bảo vệ màn hình cho Quản lý đào tạo & Administrator (KN-48) -->
     <script src="/authGuard.js" data-required="training_manager,administrator"></script>
@@ -177,16 +177,6 @@
             font-weight: 600;
         }
 
-        .nav-badge {
-            margin-left: auto;
-            font-size: 0.6875rem;
-            font-weight: 700;
-            padding: 2px 7px;
-            border-radius: 999px;
-            background-color: rgba(255, 255, 255, 0.15);
-            color: #ffffff;
-        }
-
         .sidebar-user {
             padding: 16px;
             border-top: 1px solid rgba(255, 255, 255, 0.06);
@@ -235,20 +225,7 @@
         .header-title-wrap {
             display: flex;
             align-items: center;
-            gap: 12px;
-        }
-
-        .badge-sprint {
-            background-color: var(--primary-soft);
-            color: var(--primary);
-            border: 1px solid var(--primary-border);
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 999px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
 
         .header-actions {
@@ -348,7 +325,7 @@
             background-color: var(--bg-surface);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
-            padding: 20px 24px;
+            padding: 18px 24px;
             box-shadow: var(--shadow-subtle);
             display: flex;
             align-items: center;
@@ -375,7 +352,7 @@
             font-size: 0.9375rem;
             font-weight: 600;
             flex: 1;
-            max-width: 460px;
+            max-width: 480px;
             cursor: pointer;
             transition: all 0.2s ease;
         }
@@ -399,10 +376,10 @@
             font-size: 0.8125rem;
         }
 
-        /* KPI Cards Grid */
+        /* KPI Cards Grid: 3 clean cards */
         .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 16px;
         }
 
@@ -410,7 +387,7 @@
             background-color: var(--bg-surface);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
-            padding: 20px;
+            padding: 20px 24px;
             box-shadow: var(--shadow-subtle);
             display: flex;
             align-items: flex-start;
@@ -418,7 +395,7 @@
         }
 
         .kpi-value {
-            font-size: 1.75rem;
+            font-size: 1.875rem;
             font-weight: 800;
             color: var(--text-heading);
             margin-top: 4px;
@@ -428,11 +405,12 @@
             font-size: 0.8125rem;
             font-weight: 600;
             color: var(--text-muted);
+            letter-spacing: 0.02em;
         }
 
         .kpi-icon-box {
-            width: 44px;
-            height: 44px;
+            width: 46px;
+            height: 46px;
             border-radius: var(--radius-sm);
             display: grid;
             place-items: center;
@@ -440,9 +418,8 @@
         }
 
         .icon-emerald { background-color: var(--primary-soft); color: var(--primary); }
-        .icon-blue { background-color: var(--blue-soft); color: var(--blue); }
-        .icon-amber { background-color: var(--amber-soft); color: var(--amber); }
         .icon-purple { background-color: var(--purple-soft); color: var(--purple); }
+        .icon-blue { background-color: var(--blue-soft); color: var(--blue); }
 
         /* Toolbar */
         .toolbar-card {
@@ -496,16 +473,6 @@
         }
         .btn-blue:hover { background-color: #1d4ed8; }
 
-        .btn-danger {
-            background-color: var(--red-soft);
-            color: var(--red);
-            border: 1px solid var(--red-border);
-        }
-        .btn-danger:hover {
-            background-color: var(--red);
-            color: #ffffff;
-        }
-
         /* Roadmap Table & Drag and Drop */
         .table-card {
             background-color: var(--bg-surface);
@@ -537,7 +504,7 @@
         }
 
         .data-table td {
-            padding: 16px 18px;
+            padding: 14px 18px;
             border-bottom: 1px solid var(--border-subtle);
             color: var(--text-body);
             vertical-align: middle;
@@ -548,7 +515,7 @@
             background-color: var(--bg-page);
         }
 
-        /* Drag handle & Drag styling */
+        /* Drag row styling */
         .drag-row {
             cursor: grab;
         }
@@ -570,8 +537,8 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 28px;
-            height: 28px;
+            width: 26px;
+            height: 26px;
             border-radius: 4px;
             color: var(--text-light);
             cursor: grab;
@@ -583,7 +550,7 @@
             background-color: var(--border-color);
         }
 
-        .order-badge {
+        .order-badge-box {
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -591,44 +558,43 @@
             height: 32px;
             padding: 0 8px;
             border-radius: var(--radius-sm);
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            background: #0f172a;
             color: #ffffff;
             font-weight: 800;
             font-size: 0.8125rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
-        [data-theme="dark"] .order-badge {
-            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        [data-theme="dark"] .order-badge-box {
+            background: #1e293b;
         }
 
-        .order-controls {
+        /* Sleek Up/Down Shift Buttons */
+        .order-shift-group {
             display: flex;
-            align-items: center;
-            gap: 4px;
+            flex-direction: column;
+            gap: 2px;
         }
 
-        .btn-order-shift {
-            width: 24px;
-            height: 24px;
-            border-radius: 4px;
+        .btn-shift-order {
+            width: 20px;
+            height: 15px;
+            border-radius: 3px;
             border: 1px solid var(--border-color);
             background-color: var(--bg-surface);
             color: var(--text-muted);
             display: grid;
             place-items: center;
-            font-size: 0.6875rem;
             transition: all 0.15s ease;
         }
 
-        .btn-order-shift:hover:not(:disabled) {
+        .btn-shift-order:hover:not(:disabled) {
             background-color: var(--primary-soft);
             color: var(--primary);
             border-color: var(--primary-border);
         }
 
-        .btn-order-shift:disabled {
-            opacity: 0.3;
+        .btn-shift-order:disabled {
+            opacity: 0.25;
             cursor: not-allowed;
         }
 
@@ -636,7 +602,7 @@
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
             font-size: 0.8125rem;
             font-weight: 700;
-            padding: 3px 8px;
+            padding: 4px 8px;
             border-radius: 4px;
             background-color: var(--bg-page);
             border: 1px solid var(--border-color);
@@ -659,40 +625,53 @@
             text-overflow: ellipsis;
         }
 
-        /* Prerequisite Badges */
-        .prereq-badge {
+        /* Sleek Prerequisite Interactive Pill Buttons */
+        .prereq-pill {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 5px 12px;
+            gap: 8px;
+            padding: 6px 14px;
             border-radius: 999px;
             font-size: 0.8125rem;
             font-weight: 600;
-            max-width: 280px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            max-width: 300px;
         }
 
-        .prereq-badge.foundation {
+        .prereq-pill:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+        }
+
+        .prereq-pill.foundation {
             background-color: var(--primary-soft);
             color: var(--primary);
             border: 1px solid var(--primary-border);
         }
+        .prereq-pill.foundation:hover {
+            background-color: #d1fae5;
+        }
 
-        .prereq-badge.has-prereq {
+        .prereq-pill.has-prereq {
             background-color: var(--blue-soft);
             color: var(--blue);
             border: 1px solid var(--blue-border);
         }
+        .prereq-pill.has-prereq:hover {
+            background-color: #dbeafe;
+        }
 
-        .prereq-badge.error-order {
+        .prereq-pill.error-order {
             background-color: var(--red-soft);
             color: var(--red);
-            border: 1px solid var(--red-border);
+            border: 1.5px solid var(--red);
             animation: pulseWarning 1.5s infinite;
         }
 
         @keyframes pulseWarning {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+            50% { opacity: 0.65; }
         }
 
         .status-dot {
@@ -700,6 +679,54 @@
             height: 8px;
             border-radius: 50%;
             background-color: currentColor;
+        }
+
+        /* Action Buttons */
+        .btn-action-delete {
+            height: 32px;
+            padding: 0 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--red-border);
+            background-color: var(--red-soft);
+            color: var(--red);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s ease;
+        }
+
+        .btn-action-delete:hover {
+            background-color: var(--red);
+            color: #ffffff;
+            border-color: var(--red);
+        }
+
+        /* Unsaved Changes Banner */
+        .unsaved-banner {
+            background: linear-gradient(135deg, #fffbeb, #fef3c7);
+            border: 1px solid #fde68a;
+            color: #92400e;
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 0.875rem;
+            animation: fadeIn 0.2s ease;
+        }
+
+        [data-theme="dark"] .unsaved-banner {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: rgba(245, 158, 11, 0.3);
+            color: #fde68a;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Modals */
@@ -728,11 +755,11 @@
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
             width: 100%;
-            max-width: 620px;
+            max-width: 580px;
             max-height: 90vh;
             overflow-y: auto;
             box-shadow: var(--shadow-modal);
-            transform: scale(0.95);
+            transform: scale(0.96);
             transition: transform 0.2s ease;
         }
 
@@ -754,11 +781,22 @@
             color: var(--text-heading);
         }
 
+        .modal-icon-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            background-color: var(--blue-soft);
+            color: var(--blue);
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+        }
+
         .modal-body {
             padding: 24px;
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 20px;
         }
 
         .modal-footer {
@@ -786,7 +824,7 @@
         .form-label .req { color: var(--red); }
 
         .form-control {
-            height: 40px;
+            height: 42px;
             padding: 0 14px;
             border: 1px solid var(--border-color);
             border-radius: var(--radius-sm);
@@ -801,6 +839,60 @@
             border-color: var(--primary);
             background-color: var(--bg-surface);
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+        }
+
+        /* Target Subject Card in Modal */
+        .target-subject-card {
+            background-color: var(--bg-page);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .target-subject-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .order-badge-pill {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 999px;
+            background-color: #0f172a;
+            color: #ffffff;
+        }
+
+        [data-theme="dark"] .order-badge-pill {
+            background-color: #334155;
+        }
+
+        .target-subject-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-heading);
+        }
+
+        .helper-info-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 14px;
+            border-radius: var(--radius-sm);
+            background-color: var(--blue-soft);
+            border: 1px solid var(--blue-border);
+            color: var(--blue);
+            font-size: 0.8125rem;
+            line-height: 1.4;
+        }
+
+        .helper-info-box svg {
+            flex-shrink: 0;
+            margin-top: 1px;
         }
 
         /* Flowchart / Tree preview */
@@ -865,40 +957,10 @@
             to { transform: translateX(0); opacity: 1; }
         }
 
-        /* Unsaved Changes Banner */
-        .unsaved-banner {
-            background: linear-gradient(135deg, #fffbeb, #fef3c7);
-            border: 1px solid #fde68a;
-            color: #92400e;
-            padding: 12px 20px;
-            border-radius: var(--radius-md);
-            display: none;
-            align-items: center;
-            justify-content: space-between;
-            font-weight: 600;
-            font-size: 0.875rem;
-            animation: fadeIn 0.2s ease;
-        }
-
-        [data-theme="dark"] .unsaved-banner {
-            background: rgba(245, 158, 11, 0.15);
-            border-color: rgba(245, 158, 11, 0.3);
-            color: #fde68a;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
         /* Responsive */
         @media (max-width: 1024px) {
             .app-layout { grid-template-columns: 1fr; }
             aside.sidebar { display: none; }
-            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        @media (max-width: 640px) {
             .kpi-grid { grid-template-columns: 1fr; }
         }
     </style>
@@ -932,17 +994,14 @@
                 <a href="/ScheduleManagement.html" class="nav-item">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     <span>Sinh Thời khóa biểu</span>
-                    <span class="nav-badge" style="background:#2563eb;">KN-154</span>
                 </a>
                 <a href="/SubjectManagement.html" class="nav-item">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                     <span>Quản lý Môn học</span>
-                    <span class="nav-badge" style="background:#10b981;">KN-70</span>
                 </a>
                 <a href="/CurriculumManagement.html" class="nav-item active">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
                     <span>Lộ trình đào tạo</span>
-                    <span class="nav-badge" style="background:#7c3aed;">KN-71</span>
                 </a>
                 <a href="/Index.html#courses" class="nav-item">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -978,18 +1037,19 @@
 
         <!-- Main Workspace -->
         <main class="main-content">
-            <!-- Top Header -->
+            <!-- Top Header (Clean, no sprint badge) -->
             <header class="top-header">
                 <div class="header-title-wrap">
-                    <span class="badge-sprint">🎯 KN Sprint 2 • User Story KN-71</span>
-                    <span style="color: var(--text-muted); font-size: 0.8125rem;">Hệ thống Quản lý Đào tạo TMS</span>
+                    <span style="font-weight: 700; color: var(--text-heading); font-size: 0.9375rem;">Hệ thống Quản lý Đào tạo TMS</span>
+                    <span style="color: var(--text-light); font-size: 0.8125rem;">/</span>
+                    <span style="color: var(--text-muted); font-size: 0.8125rem;">Lộ Trình Đào Tạo</span>
                 </div>
                 <div class="header-actions">
                     <button class="action-icon-btn" id="theme-toggle" onclick="toggleTheme()" title="Chuyển chế độ Sáng / Tối">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
                     </button>
                     <a href="/SubjectManagement.html" class="btn btn-secondary" style="height:36px;">
-                        <span>Sang Danh Mục Môn Học (KN-70)</span>
+                        <span>Sang Danh Mục Môn Học</span>
                     </a>
                 </div>
             </header>
@@ -999,11 +1059,11 @@
                 <nav class="tabs-nav">
                     <a href="/SubjectManagement.html" class="tab-btn">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-                        <span>Danh mục Môn học (KN-70)</span>
+                        <span>Danh mục Môn học</span>
                     </a>
                     <a href="/CurriculumManagement.html" class="tab-btn active">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
-                        <span>Lộ Trình & Môn Tiên Quyết (KN-71)</span>
+                        <span>Lộ Trình & Môn Tiên Quyết</span>
                     </a>
                 </nav>
 
@@ -1014,9 +1074,10 @@
                         <p>Gắn môn học vào chương trình đào tạo và sắp xếp thứ tự học chuẩn hóa bằng <strong>kéo thả trực quan</strong>. Khai báo môn tiên quyết chặt chẽ nhằm đảm bảo học viên học đúng lộ trình: <strong>không học môn nâng cao trước môn nền tảng</strong>.</p>
                     </div>
                     <div style="display:flex; gap:10px;">
+                        <!-- Fixed: Single '+' icon only, no duplicate '+' -->
                         <button class="btn btn-primary" onclick="openAddSubjectModal()">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                            <span>+ Gắn Môn Vào Chương Trình</span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            <span>Gắn Môn Vào Chương Trình</span>
                         </button>
                     </div>
                 </section>
@@ -1025,7 +1086,7 @@
                 <div class="unsaved-banner" id="unsaved-banner">
                     <div style="display:flex; align-items:center; gap:10px;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                        <span>Bạn vừa thay đổi thứ tự lộ trình học. Vui lòng bấm <strong>"Lưu Thứ Tự Lộ Trình"</strong> để áp dụng vĩnh viễn!</span>
+                        <span>Bạn vừa thay đổi thứ tự lộ trình học. Vui lòng bấm <strong>"Lưu Thứ Tự Lộ Trình"</strong> để áp dụng!</span>
                     </div>
                     <div style="display:flex; gap:8px;">
                         <button class="btn btn-secondary" style="height:32px; padding:0 12px; font-size:0.8125rem;" onclick="loadProgramCurriculum()">Hủy thay đổi</button>
@@ -1037,7 +1098,7 @@
                 <section class="program-selector-card">
                     <div class="program-picker-group">
                         <label for="program-select" style="font-weight: 700; color: var(--text-heading); white-space: nowrap;">
-                            Chọn Chương Trình:
+                            Chương Trình Đào Tạo:
                         </label>
                         <select id="program-select" class="program-select" onchange="handleProgramChange()">
                             <option value="">Đang tải danh mục chương trình...</option>
@@ -1050,7 +1111,7 @@
                     </div>
                 </section>
 
-                <!-- KPI Overview Grid -->
+                <!-- KPI Overview Grid: 3 Clean, Non-redundant Metric Cards -->
                 <section class="kpi-grid">
                     <div class="kpi-card">
                         <div>
@@ -1058,7 +1119,7 @@
                             <div class="kpi-value" id="kpi-total-subjects">0</div>
                         </div>
                         <div class="kpi-icon-box icon-emerald">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                         </div>
                     </div>
                     <div class="kpi-card">
@@ -1067,7 +1128,7 @@
                             <div class="kpi-value" id="kpi-total-sessions">0</div>
                         </div>
                         <div class="kpi-icon-box icon-purple">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                         </div>
                     </div>
                     <div class="kpi-card">
@@ -1076,25 +1137,17 @@
                             <div class="kpi-value" id="kpi-prereq-subjects">0</div>
                         </div>
                         <div class="kpi-icon-box icon-blue">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                        </div>
-                    </div>
-                    <div class="kpi-card">
-                        <div>
-                            <div class="kpi-label">TRẠNG THÁI LỘ TRÌNH</div>
-                            <div class="kpi-value" style="font-size:1.25rem; color:var(--primary);" id="kpi-roadmap-status">Chuẩn Hóa 100%</div>
-                        </div>
-                        <div class="kpi-icon-box icon-amber">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                         </div>
                     </div>
                 </section>
 
                 <!-- Action Toolbar -->
                 <section class="toolbar-card">
-                    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-                        <span style="font-weight:700; color:var(--text-heading);">
-                            💡 Mẹo: Kéo thả hàng hoặc dùng nút ▲ / ▼ để sắp xếp thứ tự học
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        <span style="font-weight:600; color:var(--text-heading); font-size:0.875rem;">
+                            Kéo thả biểu tượng <strong>⋮⋮</strong> hoặc bấm nút <strong>▲ / ▼</strong> để sắp xếp thứ tự học
                         </span>
                     </div>
 
@@ -1122,19 +1175,18 @@
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 110px;">Thứ Tự</th>
+                                    <th style="width: 130px;">Thứ Tự</th>
                                     <th>Mã Môn</th>
                                     <th>Tên Môn Học</th>
                                     <th>Số Buổi</th>
                                     <th>Trọng Số</th>
                                     <th>Môn Tiên Quyết (Prerequisite)</th>
-                                    <th>Đánh Giá Lộ Trình</th>
                                     <th style="text-align: right;">Hành Động</th>
                                 </tr>
                             </thead>
                             <tbody id="curriculum-tbody">
                                 <tr>
-                                    <td colspan="8" style="text-align:center; padding: 40px; color: var(--text-muted);">
+                                    <td colspan="7" style="text-align:center; padding: 40px; color: var(--text-muted);">
                                         Đang tải lộ trình môn học...
                                     </td>
                                 </tr>
@@ -1150,7 +1202,15 @@
     <div class="modal-overlay" id="modal-add-subject">
         <div class="modal-container">
             <div class="modal-header">
-                <h3>+ Gắn Môn Học Vào Chương Trình</h3>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div class="modal-icon-badge" style="background-color:var(--primary-soft); color:var(--primary);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    </div>
+                    <div>
+                        <h3>Gắn Môn Học Vào Chương Trình</h3>
+                        <p style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Chọn môn học từ danh mục chung để đưa vào lộ trình đào tạo</p>
+                    </div>
+                </div>
                 <button class="action-icon-btn" onclick="closeModal('modal-add-subject')">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
@@ -1173,26 +1233,39 @@
                     <div class="form-group">
                         <label class="form-label">Môn Tiên Quyết Bắt Buộc (Nếu có)</label>
                         <select id="add-prereq-id" class="form-control">
-                            <option value="">-- Không có (Môn nền tảng) --</option>
+                            <option value="">-- Không có môn tiên quyết (Môn nền tảng) --</option>
                         </select>
-                        <span style="font-size:0.75rem; color:var(--text-muted);">
-                            Học viên bắt buộc phải học xong môn tiên quyết này trước khi học môn mới.
-                        </span>
+                    </div>
+
+                    <div class="helper-info-box">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        <span>Học viên bắt buộc phải học xong môn tiên quyết này trước khi học môn mới.</span>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-add-subject')">Đóng</button>
-                    <button type="submit" class="btn btn-primary" id="btn-submit-add">Xác Nhận Gắn Môn</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-add-subject')">Hủy bỏ</button>
+                    <button type="submit" class="btn btn-primary" id="btn-submit-add">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Xác Nhận Gắn Môn</span>
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL 2: Cấu Hình Môn Tiên Quyết -->
+    <!-- MODAL 2: Cấu Hình Môn Tiên Quyết (Hoàn toàn mới, thiết kế cao cấp) -->
     <div class="modal-overlay" id="modal-prereq">
         <div class="modal-container">
             <div class="modal-header">
-                <h3>Cấu Hình Môn Tiên Quyết</h3>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div class="modal-icon-badge">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    </div>
+                    <div>
+                        <h3>Cấu Hình Môn Tiên Quyết</h3>
+                        <p style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Thiết lập điều kiện môn học nền tảng bắt buộc trước khi học môn này</p>
+                    </div>
+                </div>
                 <button class="action-icon-btn" onclick="closeModal('modal-prereq')">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
@@ -1200,24 +1273,33 @@
             <form id="form-prereq" onsubmit="handlePrereqSubmit(event)">
                 <input type="hidden" id="edit-prereq-subject-id">
                 <div class="modal-body">
-                    <div style="background-color: var(--bg-page); padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-                        <div style="font-weight:700; color:var(--text-heading); margin-bottom: 4px;" id="prereq-target-name">Môn học</div>
-                        <div style="font-size:0.8125rem; color:var(--text-muted);" id="prereq-target-order">Thứ tự hiện tại: #2</div>
+                    <!-- Target Subject Info Card -->
+                    <div class="target-subject-card">
+                        <div class="target-subject-header">
+                            <span class="subject-code-tag" id="prereq-target-code">JS_CORE</span>
+                            <span class="order-badge-pill" id="prereq-target-order">Vị trí #2 trong lộ trình</span>
+                        </div>
+                        <div class="target-subject-title" id="prereq-target-name">Lập trình JavaScript Nâng cao & ES6+</div>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Chọn Môn Tiên Quyết Trong Chương Trình</label>
+                        <label class="form-label">Chọn Môn Tiên Quyết Bắt Buộc</label>
                         <select id="edit-prereq-select" class="form-control">
                             <option value="">-- Không có môn tiên quyết (Môn nền tảng) --</option>
                         </select>
-                        <span style="font-size:0.75rem; color:var(--text-muted);">
-                            Lưu ý: Môn tiên quyết phải có thứ tự học đứng trước môn hiện tại trong lộ trình đào tạo.
-                        </span>
+                    </div>
+
+                    <div class="helper-info-box">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        <span>Môn tiên quyết bắt buộc phải được học trước môn này. Hệ thống sẽ tự động kiểm tra và ngăn chặn học môn nâng cao trước môn nền tảng.</span>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-prereq')">Hủy</button>
-                    <button type="submit" class="btn btn-primary">Lưu Môn Tiên Quyết</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modal-prereq')">Hủy bỏ</button>
+                    <button type="submit" class="btn btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Lưu Cấu Hình</span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -1225,17 +1307,22 @@
 
     <!-- MODAL 3: Sơ Đồ Cây Lộ Trình Trực Quan (Roadmap Visualizer) -->
     <div class="modal-overlay" id="modal-tree">
-        <div class="modal-container" style="max-width: 720px;">
+        <div class="modal-container" style="max-width: 680px;">
             <div class="modal-header">
-                <h3>Sơ Đồ Lộ Trình Đào Tạo Trực Quan</h3>
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div class="modal-icon-badge" style="background-color:var(--purple-soft); color:var(--purple);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+                    </div>
+                    <div>
+                        <h3>Sơ Đồ Lộ Trình Đào Tạo</h3>
+                        <p style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">Thứ tự học tập và chuỗi liên kết môn tiên quyết</p>
+                    </div>
+                </div>
                 <button class="action-icon-btn" onclick="closeModal('modal-tree')">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
             </div>
             <div class="modal-body">
-                <p style="color:var(--text-muted); font-size:0.875rem;">
-                    Sơ đồ trực quan thể hiện thứ tự học từ trên xuống dưới và mối quan hệ ràng buộc môn tiên quyết của chương trình:
-                </p>
                 <div class="roadmap-tree" id="visual-roadmap-tree">
                     <!-- Dynamic rendering -->
                 </div>
@@ -1353,7 +1440,7 @@
         // 4. Tải danh sách môn học của chương trình đang chọn
         async function loadProgramCurriculum() {
             const tbody = document.getElementById("curriculum-tbody");
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 40px; color: var(--text-muted);">Đang tải lộ trình môn học...</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 40px; color: var(--text-muted);">Đang tải lộ trình môn học...</td></tr>`;
 
             try {
                 const res = await fetch(`/api/programs/${currentProgramId}`);
@@ -1376,12 +1463,12 @@
                 setUnsavedChanges(false);
 
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 40px; color: var(--red);">Lỗi: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 40px; color: var(--red);">Lỗi: ${err.message}</td></tr>`;
                 showToast(err.message, "error");
             }
         }
 
-        // 5. Cập nhật các thẻ KPI
+        // 5. Cập nhật các thẻ KPI (Chỉ 3 thẻ cần thiết)
         function updateKPIs() {
             const total = currentCurriculumSubjects.length;
             const totalSessions = currentCurriculumSubjects.reduce((sum, s) => sum + (s.sessions || 0), 0);
@@ -1390,40 +1477,21 @@
             document.getElementById("kpi-total-subjects").textContent = total;
             document.getElementById("kpi-total-sessions").textContent = totalSessions;
             document.getElementById("kpi-prereq-subjects").textContent = prereqCount;
-
-            // Kiểm tra tính hợp lệ toàn vẹn của lộ trình: Môn tiên quyết PHẢI đứng trước môn hiện tại
-            let isValid = true;
-            for (let i = 0; i < currentCurriculumSubjects.length; i++) {
-                const sub = currentCurriculumSubjects[i];
-                if (sub.prerequisiteSubjectId) {
-                    const prereqIndex = currentCurriculumSubjects.findIndex(s => s.id === sub.prerequisiteSubjectId);
-                    if (prereqIndex >= i) {
-                        isValid = false;
-                        break;
-                    }
-                }
-            }
-
-            const statusEl = document.getElementById("kpi-roadmap-status");
-            if (isValid) {
-                statusEl.textContent = "Chuẩn Hóa 100%";
-                statusEl.style.color = "var(--primary)";
-            } else {
-                statusEl.textContent = "⚠️ Lỗi Thứ Tự";
-                statusEl.style.color = "var(--red)";
-            }
         }
 
-        // 6. Render bảng danh sách môn học hỗ trợ Kéo Thả (Drag & Drop)
+        // 6. Render bảng danh sách môn học hỗ trợ Kéo Thả & Thiết kế Nút Chuẩn Đẹp
         function renderCurriculumTable() {
             const tbody = document.getElementById("curriculum-tbody");
 
             if (!currentCurriculumSubjects || currentCurriculumSubjects.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="8" style="text-align:center; padding: 50px 20px;">
+                        <td colspan="7" style="text-align:center; padding: 50px 20px;">
                             <div style="color:var(--text-muted); font-size:1rem; margin-bottom:12px;">Chương trình đào tạo này chưa có môn học nào trong lộ trình.</div>
-                            <button class="btn btn-primary" onclick="openAddSubjectModal()">+ Gắn Môn Đầu Tiên Vào Lộ Trình</button>
+                            <button class="btn btn-primary" onclick="openAddSubjectModal()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                <span>Gắn Môn Đầu Tiên Vào Lộ Trình</span>
+                            </button>
                         </td>
                     </tr>
                 `;
@@ -1433,41 +1501,38 @@
             let html = "";
             currentCurriculumSubjects.forEach((sub, index) => {
                 const currentOrder = index + 1;
-                // Kiểm tra ràng buộc tiên quyết đối với môn này
-                let prereqBadgeHtml = "";
-                let statusBadgeHtml = "";
+                let prereqPillHtml = "";
 
                 if (!sub.prerequisiteSubjectId) {
-                    prereqBadgeHtml = `
-                        <span class="prereq-badge foundation">
+                    prereqPillHtml = `
+                        <button class="prereq-pill foundation" onclick="openPrereqModal('${sub.id}')" title="Bấm để cấu hình môn tiên quyết">
                             <span class="status-dot"></span>
                             <span>Môn nền tảng</span>
-                        </span>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                        </button>
                     `;
-                    statusBadgeHtml = `<span style="color:var(--primary); font-weight:600; font-size:0.8125rem;">✔ Hợp lệ</span>`;
                 } else {
                     const prereqIndex = currentCurriculumSubjects.findIndex(s => s.id === sub.prerequisiteSubjectId);
                     const prereqObj = currentCurriculumSubjects.find(s => s.id === sub.prerequisiteSubjectId) || sub.prerequisiteSubject;
-                    const prereqName = prereqObj ? `${prereqObj.code} - ${prereqObj.name}` : sub.prerequisiteSubjectId;
+                    const prereqCode = prereqObj ? prereqObj.code : 'Môn tiên quyết';
 
                     if (prereqIndex !== -1 && prereqIndex < index) {
                         // Hợp lệ: Môn tiên quyết đứng trước
-                        prereqBadgeHtml = `
-                            <span class="prereq-badge has-prereq" title="Yêu cầu tiên quyết: ${prereqName}">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                                <span>${prereqObj ? prereqObj.code : 'Tiên quyết'}</span>
-                            </span>
+                        prereqPillHtml = `
+                            <button class="prereq-pill has-prereq" onclick="openPrereqModal('${sub.id}')" title="Yêu cầu tiên quyết: ${prereqObj ? prereqObj.name : ''}. Bấm để thay đổi">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                                <span>Tiên quyết: <strong>${prereqCode}</strong> (#${prereqIndex + 1})</span>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                            </button>
                         `;
-                        statusBadgeHtml = `<span style="color:var(--primary); font-weight:600; font-size:0.8125rem;">✔ Hợp lệ (Học sau #${prereqIndex + 1})</span>`;
                     } else {
-                        // VI PHẠM LỘ TRÌNH: Môn tiên quyết bị xếp sau hoặc ngang hàng!
-                        prereqBadgeHtml = `
-                            <span class="prereq-badge error-order" title="Vi phạm: Môn tiên quyết phải được học trước!">
+                        // VI PHẠM: Xếp môn nâng cao trước môn nền tảng!
+                        prereqPillHtml = `
+                            <button class="prereq-pill error-order" onclick="openPrereqModal('${sub.id}')" title="Lỗi: Môn tiên quyết [${prereqCode}] đang bị xếp học sau!">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                                <span>Sai thứ tự: ${prereqObj ? prereqObj.code : ''}</span>
-                            </span>
+                                <span>Lỗi: Học trước <strong>${prereqCode}</strong></span>
+                            </button>
                         `;
-                        statusBadgeHtml = `<span style="color:var(--red); font-weight:700; font-size:0.8125rem;">⚠️ Lỗi: Học trước tiên quyết!</span>`;
                     }
                 }
 
@@ -1480,20 +1545,24 @@
                         ondrop="handleDrop(event, ${index})" 
                         ondragend="handleDragEnd(event)">
                         
-                        <!-- Order Column with Drag Handle and Up/Down Buttons -->
+                        <!-- Order Column: Drag Handle, Badge & Modern SVG Up/Down Buttons -->
                         <td>
                             <div style="display:flex; align-items:center; gap:8px;">
                                 <span class="drag-handle" title="Giữ chuột và kéo thả để đổi thứ tự">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                        <circle cx="9" cy="6" r="1.5"/><circle cx="15" cy="6" r="1.5"/>
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                                        <circle cx="9" cy="5" r="1.5"/><circle cx="15" cy="5" r="1.5"/>
                                         <circle cx="9" cy="12" r="1.5"/><circle cx="15" cy="12" r="1.5"/>
-                                        <circle cx="9" cy="18" r="1.5"/><circle cx="15" cy="18" r="1.5"/>
+                                        <circle cx="9" cy="19" r="1.5"/><circle cx="15" cy="19" r="1.5"/>
                                     </svg>
                                 </span>
-                                <span class="order-badge">#${currentOrder}</span>
-                                <div class="order-controls">
-                                    <button class="btn-order-shift" onclick="shiftOrder(${index}, -1)" ${index === 0 ? 'disabled' : ''} title="Chuyển lên trên">▲</button>
-                                    <button class="btn-order-shift" onclick="shiftOrder(${index}, 1)" ${index === currentCurriculumSubjects.length - 1 ? 'disabled' : ''} title="Chuyển xuống dưới">▼</button>
+                                <span class="order-badge-box">#${currentOrder}</span>
+                                <div class="order-shift-group">
+                                    <button class="btn-shift-order" onclick="shiftOrder(${index}, -1)" ${index === 0 ? 'disabled' : ''} title="Chuyển lên trên">
+                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"/></svg>
+                                    </button>
+                                    <button class="btn-shift-order" onclick="shiftOrder(${index}, 1)" ${index === currentCurriculumSubjects.length - 1 ? 'disabled' : ''} title="Chuyển xuống dưới">
+                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"/></svg>
+                                    </button>
                                 </div>
                             </div>
                         </td>
@@ -1519,26 +1588,16 @@
                             <span style="font-weight:600;">${sub.weight}</span>
                         </td>
 
-                        <!-- Prerequisite -->
+                        <!-- Prerequisite Pill Button -->
                         <td>
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                ${prereqBadgeHtml}
-                                <button class="btn-order-shift" style="width:24px; height:24px;" onclick="openPrereqModal('${sub.id}')" title="Đổi môn tiên quyết">
-                                    ✏️
-                                </button>
-                            </div>
+                            ${prereqPillHtml}
                         </td>
 
-                        <!-- Status Check -->
-                        <td>
-                            ${statusBadgeHtml}
-                        </td>
-
-                        <!-- Actions -->
+                        <!-- Action: Sleek Ghost Delete Button -->
                         <td style="text-align: right;">
-                            <button class="btn btn-danger" style="height:30px; padding:0 10px; font-size:0.75rem;" onclick="removeSubjectFromCurriculum('${sub.id}', '${sub.name.replace(/'/g, "\\'")}')">
+                            <button class="btn-action-delete" onclick="removeSubjectFromCurriculum('${sub.id}', '${sub.name.replace(/'/g, "\\'")}')" title="Gỡ môn học khỏi chương trình này">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                                <span>Gỡ</span>
+                                <span>Gỡ khỏi CT</span>
                             </button>
                         </td>
                     </tr>
@@ -1663,7 +1722,6 @@
         // 9. THÊM MÔN HỌC VÀO CHƯƠNG TRÌNH (MODAL 1)
         // ============================================================
         function openAddSubjectModal() {
-            // Lọc ra các môn trong catalog chưa có trong chương trình này
             const existingIds = new Set(currentCurriculumSubjects.map(s => s.id));
             const availableSubjects = catalogSubjects.filter(s => !existingIds.has(s.id));
 
@@ -1677,15 +1735,13 @@
                     `).join("");
             }
 
-            // Điền thứ tự mặc định là cuối lộ trình
             document.getElementById("add-order-index").value = currentCurriculumSubjects.length + 1;
             document.getElementById("add-subject-preview").textContent = "";
 
-            // Điền danh sách các môn hiện tại làm tùy chọn môn tiên quyết
             const selectPrereq = document.getElementById("add-prereq-id");
-            selectPrereq.innerHTML = `<option value="">-- Không có (Môn nền tảng) --</option>` +
-                currentCurriculumSubjects.map(s => `
-                    <option value="${s.id}">#${s.orderIndex}: [${s.code}] ${s.name}</option>
+            selectPrereq.innerHTML = `<option value="">-- Không có môn tiên quyết (Môn nền tảng) --</option>` +
+                currentCurriculumSubjects.map((s, idx) => `
+                    <option value="${s.id}">Môn #${idx + 1}: [${s.code}] ${s.name}</option>
                 `).join("");
 
             openModal("modal-add-subject");
@@ -1746,11 +1802,10 @@
         // 10. GỠ MÔN HỌC KHỎI CHƯƠNG TRÌNH
         // ============================================================
         async function removeSubjectFromCurriculum(subjectId, subjectName) {
-            // Kiểm tra xem môn này có đang làm tiên quyết cho môn nào khác trong chương trình không
             const dependents = currentCurriculumSubjects.filter(s => s.prerequisiteSubjectId === subjectId);
             if (dependents.length > 0) {
                 const depNames = dependents.map(d => `${d.code} (${d.name})`).join(", ");
-                alert(`KHÔNG THỂ GỠ MÔN HỌC!\nMôn "${subjectName}" đang làm môn tiên quyết cho: ${depNames}.\nVui lòng đổi hoặc gỡ ràng buộc tiên quyết của các môn này trước khi gỡ môn khỏi lộ trình.`);
+                alert(`KHÔNG THỂ GỠ MÔN HỌC!\nMôn "${subjectName}" đang làm môn tiên quyết cho: ${depNames}.\nVui lòng đổi hoặc gỡ ràng buộc tiên quyết của các môn này trước.`);
                 return;
             }
 
@@ -1788,23 +1843,23 @@
             if (!sub) return;
 
             document.getElementById("edit-prereq-subject-id").value = subjectId;
-            document.getElementById("prereq-target-name").textContent = `[${sub.code}] ${sub.name}`;
+            document.getElementById("prereq-target-code").textContent = sub.code;
+            document.getElementById("prereq-target-name").textContent = sub.name;
             const subIndex = currentCurriculumSubjects.findIndex(s => s.id === subjectId);
             document.getElementById("prereq-target-order").textContent = `Vị trí hiện tại: #${subIndex + 1} trong lộ trình`;
 
-            // Chỉ liệt kê các môn đứng trước nó trong lộ trình (hoặc cảnh báo nếu đứng sau)
             const select = document.getElementById("edit-prereq-select");
             let optionsHtml = `<option value="">-- Không có môn tiên quyết (Môn nền tảng) --</option>`;
 
             currentCurriculumSubjects.forEach((otherSub, idx) => {
-                if (otherSub.id === subjectId) return; // Không hiển thị chính nó
+                if (otherSub.id === subjectId) return;
                 const isSelected = sub.prerequisiteSubjectId === otherSub.id ? "selected" : "";
                 const isBefore = idx < subIndex;
-                const prefix = isBefore ? `✔ #${idx + 1}` : `⚠️ #${idx + 1} (Đứng sau)`;
+                const labelStatus = isBefore ? `Môn #${idx + 1}` : `Môn #${idx + 1} (Đứng sau)`;
 
                 optionsHtml += `
                     <option value="${otherSub.id}" ${isSelected}>
-                        ${prefix}: [${otherSub.code}] ${otherSub.name}
+                        ${labelStatus}: [${otherSub.code}] ${otherSub.name}
                     </option>
                 `;
             });
@@ -1859,7 +1914,7 @@
 
                     html += `
                         <div class="roadmap-step">
-                            <span class="order-badge">#${idx + 1}</span>
+                            <span class="order-badge-box">#${idx + 1}</span>
                             <div style="flex:1;">
                                 <div style="font-weight:700; color:var(--text-heading); font-size:0.9375rem;">
                                     [${sub.code}] ${sub.name}
@@ -1869,7 +1924,7 @@
                                 </div>
                             </div>
                             <div>
-                                ${prereqObj ? '<span class="prereq-badge has-prereq">Có tiên quyết</span>' : '<span class="prereq-badge foundation">Nền tảng</span>'}
+                                ${prereqObj ? '<span class="prereq-pill has-prereq" style="pointer-events:none; padding:4px 10px;">Có tiên quyết</span>' : '<span class="prereq-pill foundation" style="pointer-events:none; padding:4px 10px;">Nền tảng</span>'}
                             </div>
                         </div>
                     `;
