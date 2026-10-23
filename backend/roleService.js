@@ -11,7 +11,8 @@ const ROLES = [
     { id: "student", code: "student", name: "Học viên", description: "Học tập, nộp bài tập và xem kết quả học tập" },
     { id: "admissions", code: "admissions", name: "Tư vấn tuyển sinh", description: "Tiếp nhận lead, tư vấn khóa học và ghi danh" },
     { id: "accountant", code: "accountant", name: "Kế toán đào tạo", description: "Quản lý học phí, biên lai thu và đối soát công nợ" },
-    { id: "visitor", code: "visitor", name: "Khách truy cập", description: "Xem thông tin khóa học công khai và biểu phí tham khảo" }
+    { id: "visitor", code: "visitor", name: "Khách truy cập", description: "Xem thông tin khóa học công khai và biểu phí tham khảo" },
+    { id: "technical_manager", code: "technical_manager", name: "Quản lý kỹ thuật & Mail", description: "Quản trị kỹ thuật hệ thống, cấu hình máy chủ và nhật ký gửi Mail SMTP" }
 ];
 
 // 2. KN-57: Bảng nối quan hệ Nhiều - Nhiều (user_roles)
@@ -602,4 +603,15 @@ module.exports = {
     getAllUserRolesAssignments: () => userRoles
 };
 
-require('./localDatabase').register('roles',()=>({userRoles,auditLogs}),v=>{userRoles=v.userRoles;auditLogs=v.auditLogs;userRoleIndex.clear();for(const r of userRoles)userRoleIndex.add(`${r.userId}:${r.roleId}`);});
+require('./localDatabase').register('roles',()=>({userRoles,auditLogs}),v=>{
+    userRoles = v.userRoles || [];
+    auditLogs = v.auditLogs || [];
+    userRoleIndex.clear();
+    for(const r of userRoles) userRoleIndex.add(`${r.userId}:${r.roleId}`);
+    users.forEach(u => {
+        if (u.role && !userRoleIndex.has(`${u.id}:${u.role}`)) {
+            userRoleIndex.add(`${u.id}:${u.role}`);
+            userRoles.push({ userId: u.id, roleId: u.role, assignedBy: "system_init", assignedAt: new Date().toISOString() });
+        }
+    });
+});

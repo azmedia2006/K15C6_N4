@@ -103,7 +103,8 @@ INSERT INTO public.roles (id, code, name, description) VALUES
 ('student', 'student', 'Học viên', 'Học tập, nộp bài tập và xem kết quả học tập'),
 ('admissions', 'admissions', 'Tư vấn tuyển sinh', 'Tiếp nhận lead, tư vấn khóa học và ghi danh'),
 ('accountant', 'accountant', 'Kế toán đào tạo', 'Quản lý học phí, biên lai thu và đối soát công nợ'),
-('visitor', 'visitor', 'Khách truy cập', 'Xem thông tin khóa học công khai và biểu phí tham khảo')
+('visitor', 'visitor', 'Khách truy cập', 'Xem thông tin khóa học công khai và biểu phí tham khảo'),
+('technical_manager', 'technical_manager', 'Quản lý kỹ thuật & Mail', 'Quản trị kỹ thuật hệ thống, cấu hình máy chủ và nhật ký gửi Mail SMTP')
 ON CONFLICT (id) DO NOTHING;
 
 -- 9. Enable Row Level Security (RLS)

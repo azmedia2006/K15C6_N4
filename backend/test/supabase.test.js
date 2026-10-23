@@ -62,8 +62,8 @@ async function runTests() {
         const logs = getAuditLogs();
         await supabaseService.syncRolesDatabase(roles, ur, logs);
         const storedRoles = await supabaseService.loadFromStorage("roles.json");
-        assert.strictEqual(storedRoles.length, 8, "8 vai trò chuẩn phải được lưu trên Supabase");
-        logPass("Đồng bộ danh mục 8 vai trò và quan hệ phân quyền N-N lên Supabase thành công");
+        assert.strictEqual(storedRoles.length, 9, "9 vai trò chuẩn phải được lưu trên Supabase");
+        logPass("Đồng bộ danh mục 9 vai trò và quan hệ phân quyền N-N lên Supabase thành công");
 
         logGroup("3. KIỂM THỬ CÁC ENDPOINT API SUPABASE TRÊN SERVER");
         const statusRes = await fetch(`${baseUrl}/api/supabase/status`);

@@ -1505,6 +1505,7 @@
                     <select id="role-filter" class="filter-select" onchange="applyFilters()">
                         <option value="all">Tất cả vai trò</option>
                         <option value="administrator">Quản trị viên (Admin)</option>
+                        <option value="technical_manager">Quản lý kỹ thuật & Mail</option>
                         <option value="training_manager">Quản lý đào tạo</option>
                         <option value="instructor">Giảng viên</option>
                         <option value="teaching_assistant">Trợ giảng</option>
@@ -1604,6 +1605,7 @@
                         <option value="instructor">Giảng viên (Instructor)</option>
                         <option value="teaching_assistant">Trợ giảng (Teaching Assistant)</option>
                         <option value="training_manager">Quản lý đào tạo (Training Manager)</option>
+                        <option value="technical_manager">Quản lý kỹ thuật & Mail (Technical Manager)</option>
                         <option value="admissions">Tư vấn tuyển sinh (Admissions)</option>
                         <option value="accountant">Kế toán (Accountant)</option>
                         <option value="student">Học viên (Student)</option>
@@ -1715,6 +1717,7 @@
                     <label>Vai trò đảm nhiệm <span class="required">*</span></label>
                     <select id="edit-role" required>
                         <option value="administrator">Quản trị viên (Administrator)</option>
+                        <option value="technical_manager">Quản lý kỹ thuật & Mail (Technical Manager)</option>
                         <option value="training_manager">Quản lý đào tạo (Training Manager)</option>
                         <option value="instructor">Giảng viên (Instructor)</option>
                         <option value="teaching_assistant">Trợ giảng (Teaching Assistant)</option>
@@ -2021,6 +2024,7 @@
 
     const roleLabels = {
         "administrator": { name: "Quản trị viên", color: "#7c3aed", dot: "#8b5cf6" },
+        "technical_manager": { name: "Quản lý kỹ thuật & Mail", color: "#0891b2", dot: "#06b6d4" },
         "training_manager": { name: "Quản lý đào tạo", color: "#0284c7", dot: "#0ea5e9" },
         "instructor": { name: "Giảng viên", color: "#059669", dot: "#10b981" },
         "teaching_assistant": { name: "Trợ giảng", color: "#d97706", dot: "#f59e0b" },
@@ -2032,6 +2036,7 @@
 
     let usersData = [
         { id: "usr_admin", email: "admin@tms.edu.vn", name: "Lý Phi Thăng", role: "administrator", phone: "0912345678", status: "active", createdAt: "2026-01-15T08:00:00Z" },
+        { id: "usr_tech", email: "tech@tms.edu.vn", name: "Kỹ thuật & Mail TMS", role: "technical_manager", phone: "0933445566", status: "active", createdAt: "2026-01-15T08:00:00Z" },
         { id: "usr_manager", email: "manager@tms.edu.vn", name: "Đỗ Quốc Bảo", role: "training_manager", phone: "0987654321", status: "active", createdAt: "2026-01-15T08:00:00Z" },
         { id: "usr_teacher", email: "teacher@tms.edu.vn", name: "ThS. Trần Minh", role: "instructor", phone: "0901122334", status: "active", createdAt: "2026-01-16T09:00:00Z" },
         { id: "usr_ta", email: "ta@tms.edu.vn", name: "Nguyễn Thu Hà", role: "teaching_assistant", phone: "0934567890", status: "active", createdAt: "2026-01-18T10:00:00Z" },
@@ -2164,7 +2169,7 @@
             if (currentGroupFilter === "instructor_group") {
                 matchesGroup = (u.role === "instructor" || u.role === "teaching_assistant");
             } else if (currentGroupFilter === "staff_group") {
-                matchesGroup = ["administrator", "training_manager", "admissions", "accountant"].includes(u.role);
+                matchesGroup = ["administrator", "technical_manager", "training_manager", "admissions", "accountant"].includes(u.role);
             } else if (currentGroupFilter === "student") {
                 matchesGroup = (u.role === "student");
             }
@@ -2278,7 +2283,7 @@
         const instructors = usersData.filter(u => u.role === "instructor" || u.role === "teaching_assistant").length;
         document.getElementById("stat-instructors").textContent = instructors;
 
-        const staff = usersData.filter(u => ["administrator", "training_manager", "admissions", "accountant"].includes(u.role)).length;
+        const staff = usersData.filter(u => ["administrator", "technical_manager", "training_manager", "admissions", "accountant"].includes(u.role)).length;
         document.getElementById("stat-staff").textContent = staff;
 
         const active = usersData.filter(u => u.status !== "locked").length;
@@ -2740,6 +2745,12 @@
             "giảng viên": "instructor", "giang vien": "instructor", "instructor": "instructor",
             "trợ giảng": "teaching_assistant", "tro giang": "teaching_assistant", "teaching_assistant": "teaching_assistant",
             "quản lý đào tạo": "training_manager", "quan ly dao tao": "training_manager", "training_manager": "training_manager",
+            "quản lý kỹ thuật": "technical_manager", "quan ly ky thuat": "technical_manager",
+            "quản lý kĩ thuật": "technical_manager", "quan ly ki thuat": "technical_manager",
+            "quản lý kĩ thuật mail": "technical_manager", "quan ly ki thuat mail": "technical_manager",
+            "quản lý kỹ thuật mail": "technical_manager", "quan ly ky thuat mail": "technical_manager",
+            "kỹ thuật mail": "technical_manager", "ky thuat mail": "technical_manager",
+            "technical_manager": "technical_manager", "mail_manager": "technical_manager",
             "tư vấn tuyển sinh": "admissions", "tuyển sinh": "admissions", "admissions": "admissions",
             "kế toán": "accountant", "accountant": "accountant",
             "quản trị viên": "administrator", "administrator": "administrator", "admin": "administrator"

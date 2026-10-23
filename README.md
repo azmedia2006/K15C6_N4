@@ -18,13 +18,14 @@ Mở **http://localhost:3000/Login.html**. Lần đầu có tài khoản mẫu �
 | 1 | **Quản trị hệ thống (Administrator)** | Nguyễn Văn Anh | `admin@tms.edu.vn` | `admin123` | Toàn quyền cấu hình, tài khoản, phân quyền, môn học, sinh lịch |
 | 2 | **Quản trị hệ thống (Admin dự phòng)** | Đào tạo TMS | `daotaotms@tuoitre24h.com` | `Quan2006@` | Toàn quyền quản trị, nhận email hệ thống & SMTP |
 | 3 | **Quản trị viên kỹ thuật** | Thạch Minh Quân | `dtc245200761@ictu.edu.vn` | `Quan2006@` | Toàn quyền kỹ thuật và quản trị vận hành |
-| 4 | **Quản lý đào tạo (Training Manager)** | Đỗ Quốc Bảo | `manager@tms.edu.vn` | `manager123` | Quản lý khung đào tạo, môn học, lớp học, duyệt đề nghị |
-| 5 | **Giảng viên (Instructor)** | ThS. Trần Minh | `teacher@tms.edu.vn` | `teacher123` | Xem lịch dạy, điểm danh học viên, chấm bài, gửi thông báo |
-| 6 | **Trợ giảng (Teaching Assistant)** | Nguyễn Thu Hà | `ta@tms.edu.vn` | `ta123456` | Hỗ trợ điểm danh, chấm bài tập, trợ giảng lớp học phần |
-| 7 | **Học viên (Student / Learner)** | Lê Minh Tuấn | `student@tms.edu.vn` *(hoặc `sv001`)* | `student123` | Xem thời khóa biểu, điểm chuyên cần, nộp bài, xem học phí |
-| 8 | **Tư vấn tuyển sinh (Admissions)** | Vũ Hải Yến | `admissions@tms.edu.vn` | `admissions123` | Quản lý phễu Lead, nhật ký chăm sóc, đặt lịch gọi lại |
-| 9 | **Kế toán đào tạo (Accountant)** | Phạm Thanh Mai | `accountant@tms.edu.vn` | `accountant123` | Quản lý công nợ, học phí, xuất biên lai thu tiền |
-| 10 | **Khách tham quan (Visitor)** | Khách tham quan | `visitor@tms.edu.vn` | `visitor123` | Xem thông tin công khai và danh mục chương trình đào tạo |
+| 4 | **Quản lý kỹ thuật & Mail (Technical Manager)** | Kỹ thuật & Mail TMS | `tech@tms.edu.vn` | `tech123` | Quản trị kỹ thuật hệ thống, cấu hình máy chủ, giám sát nhật ký gửi Mail SMTP |
+| 5 | **Quản lý đào tạo (Training Manager)** | Đỗ Quốc Bảo | `manager@tms.edu.vn` | `manager123` | Quản lý khung đào tạo, môn học, lớp học, duyệt đề nghị |
+| 6 | **Giảng viên (Instructor)** | ThS. Trần Minh | `teacher@tms.edu.vn` | `teacher123` | Xem lịch dạy, điểm danh học viên, chấm bài, gửi thông báo |
+| 7 | **Trợ giảng (Teaching Assistant)** | Nguyễn Thu Hà | `ta@tms.edu.vn` | `ta123456` | Hỗ trợ điểm danh, chấm bài tập, trợ giảng lớp học phần |
+| 8 | **Học viên (Student / Learner)** | Lê Minh Tuấn | `student@tms.edu.vn` *(hoặc `sv001`)* | `student123` | Xem thời khóa biểu, điểm chuyên cần, nộp bài, xem học phí |
+| 9 | **Tư vấn tuyển sinh (Admissions)** | Vũ Hải Yến | `admissions@tms.edu.vn` | `admissions123` | Quản lý phễu Lead, nhật ký chăm sóc, đặt lịch gọi lại |
+| 10 | **Kế toán đào tạo (Accountant)** | Phạm Thanh Mai | `accountant@tms.edu.vn` | `accountant123` | Quản lý công nợ, học phí, xuất biên lai thu tiền |
+| 11 | **Khách tham quan (Visitor)** | Khách tham quan | `visitor@tms.edu.vn` | `visitor123` | Xem thông tin công khai và danh mục chương trình đào tạo |
 
 Chỉ dùng tài khoản này để thử trên máy cá nhân. Không công khai máy chủ với mật khẩu mẫu. Server mặc định chỉ lắng nghe `127.0.0.1`. Cần Internet cho `npm run setup` để tải thư viện; ZIP không chứa `node_modules`.
 

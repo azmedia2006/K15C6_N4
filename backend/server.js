@@ -2234,7 +2234,7 @@ app.get("/api/supabase/status", async (req, res) => {
 });
 
 // API Kích hoạt đồng bộ thủ công toàn bộ dữ liệu TMS lên Supabase
-app.post('/api/supabase/sync',authenticateToken,requireRole('administrator'),async(req,res)=>{
+app.post('/api/supabase/sync',authenticateToken,requireRole('administrator', 'technical_manager'),async(req,res)=>{
     if(process.env.TMS_OFFLINE==='true'||!process.env.SUPABASE_URL||!process.env.SUPABASE_SECRET_KEY)return res.status(503).json({success:false,message:'Chưa cấu hình chế độ tích hợp Supabase. Dữ liệu cục bộ vẫn được lưu.'});
     const state=require('./localDatabase').snapshot();const ok=await supabaseService.saveToStorage('tms-canonical-backup.json',state);
     return res.status(ok?200:502).json({success:!!ok,message:ok?'Đã sao lưu snapshot lên Supabase Storage. Đây không phải đồng bộ các bảng quan hệ.':'Supabase không xác nhận lưu bản sao; không báo đồng bộ thành công.'});
@@ -2264,10 +2264,10 @@ app.get("/api/health", async (req, res) => {
     });
 });
 
-// KN-11 & KN-86: API Kiểm tra trạng thái SMTP và gửi email thử nghiệm (Chỉ Quản trị viên)
+// KN-11 & KN-86: API Kiểm tra trạng thái SMTP và gửi email thử nghiệm (Chỉ Quản trị viên & Kỹ thuật Mail)
 app.get("/api/admin/smtp/status",
     authenticateToken,
-    requireRole("administrator"),
+    requireRole("administrator", "technical_manager"),
     async (req, res) => {
         const smtpStatus = await verifySmtp();
         return res.status(200).json({
@@ -2291,7 +2291,7 @@ app.get("/api/admin/smtp/status",
 
 app.post("/api/admin/smtp/test",
     authenticateToken,
-    requireRole("administrator"),
+    requireRole("administrator", "technical_manager"),
     async (req, res) => {
         const targetEmail = (req.body && req.body.to) ? req.body.to : (req.user ? req.user.email : SMTP_CONFIG.user);
         try {

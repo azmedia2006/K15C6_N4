@@ -32,7 +32,8 @@ const users = [
     { id: "usr_student2", email: "sv001", name: "Lê Minh Tuấn", role: "student", salt: "s6", passwordHash: "" },
     { id: "usr_admissions", email: "admissions@tms.edu.vn", name: "Vũ Hải Yến", role: "admissions", salt: "s7", passwordHash: "" },
     { id: "usr_accountant", email: "accountant@tms.edu.vn", name: "Phạm Thanh Mai", role: "accountant", salt: "s8", passwordHash: "" },
-    { id: "usr_visitor", email: "visitor@tms.edu.vn", name: "Khách tham quan", role: "visitor", salt: "s9", passwordHash: "" }
+    { id: "usr_visitor", email: "visitor@tms.edu.vn", name: "Khách tham quan", role: "visitor", salt: "s9", passwordHash: "" },
+    { id: "usr_tech", email: "tech@tms.edu.vn", name: "Kỹ thuật & Mail TMS", role: "technical_manager", salt: "s10", passwordHash: "" }
 ];
 
 const passwords = {
@@ -46,7 +47,8 @@ const passwords = {
     "sv001": "student123",
     "admissions@tms.edu.vn": "admissions123",
     "accountant@tms.edu.vn": "accountant123",
-    "visitor@tms.edu.vn": "visitor123"
+    "visitor@tms.edu.vn": "visitor123",
+    "tech@tms.edu.vn": "tech123"
 };
 
 // Khởi tạo hash mật khẩu
@@ -481,7 +483,14 @@ function resetPasswordWithToken(token, newPassword) {
 }
 
 database.register('auth',()=>({users,sessions:[...sessions],revoked:[...revokedTokens],resetTokens:[...passwordResetTokens],attempts:[...loginAttempts],forgotLimits:[...forgotRateLimits]}),v=>{
-    users.splice(0,users.length,...v.users);sessions.clear();for(const x of v.sessions||[])sessions.set(...x);
+    const defaultSeedUsers = [...users];
+    users.splice(0,users.length,...(v.users || []));
+    defaultSeedUsers.forEach(du => {
+        if (!users.some(u => (u.id && du.id && u.id === du.id) || (u.email && du.email && u.email.toLowerCase() === du.email.toLowerCase()))) {
+            users.push(du);
+        }
+    });
+    sessions.clear();for(const x of v.sessions||[])sessions.set(...x);
     revokedTokens.clear();for(const x of v.revoked||[])revokedTokens.add(x);
     passwordResetTokens.clear();for(const x of v.resetTokens||[])passwordResetTokens.set(...x);
     loginAttempts.clear();for(const x of v.attempts||[])loginAttempts.set(...x);

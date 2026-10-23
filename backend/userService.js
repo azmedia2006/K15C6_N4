@@ -12,7 +12,7 @@ const {
     sentEmails
 } = require("./emailService");
 
-// 8 vai trò hợp lệ trong hệ thống TMS
+// Các vai trò hợp lệ trong hệ thống TMS
 const VALID_ROLES = [
     "administrator",
     "training_manager",
@@ -21,7 +21,8 @@ const VALID_ROLES = [
     "student",
     "admissions",
     "accountant",
-    "visitor"
+    "visitor",
+    "technical_manager"
 ];
 
 // Khởi tạo các trường bổ sung cho người dùng mặc định nếu chưa có
@@ -34,7 +35,8 @@ const defaultPhones = {
     "usr_student2": "0978123456",
     "usr_admissions": "0965432198",
     "usr_accountant": "0945678912",
-    "usr_visitor": "0922334455"
+    "usr_visitor": "0922334455",
+    "usr_tech": "0933445566"
 };
 
 // Dữ liệu ảnh đại diện & avatar thu nhỏ mặc định cho học viên (phục vụ giảng viên nhận diện khuôn mặt KN-68)
@@ -368,6 +370,27 @@ const ROLE_NAME_MAP = {
     "quan tri he thong": "administrator",
     "admin": "administrator",
     "administrator": "administrator",
+    "quản lý kỹ thuật": "technical_manager",
+    "quan ly ky thuat": "technical_manager",
+    "quản lý kĩ thuật": "technical_manager",
+    "quan ly ki thuat": "technical_manager",
+    "quản lý kỹ thuật mail": "technical_manager",
+    "quan ly ky thuat mail": "technical_manager",
+    "quản lý kĩ thuật mail": "technical_manager",
+    "quan ly ki thuat mail": "technical_manager",
+    "kỹ thuật mail": "technical_manager",
+    "ky thuat mail": "technical_manager",
+    "kĩ thuật mail": "technical_manager",
+    "ki thuat mail": "technical_manager",
+    "kỹ thuật": "technical_manager",
+    "kĩ thuật": "technical_manager",
+    "technical manager": "technical_manager",
+    "technical_manager": "technical_manager",
+    "mail manager": "technical_manager",
+    "mail_manager": "technical_manager",
+    "it": "technical_manager",
+    "it_support": "technical_manager",
+    "it_admin": "technical_manager",
     "khách": "visitor",
     "khach": "visitor",
     "khách tham quan": "visitor",
