@@ -20,6 +20,7 @@
     "test:import": "node test/user_import_kn66.test.js",
     "test:kn68": "node test/avatar_kn68.test.js",
     "test:kn70": "node test/subject_management_kn70.test.js",
+    "test:kn71": "node test/curriculum_prerequisite_kn71.test.js",
     "test:kn76": "node test/lead_filter_kn76.test.js",
     "test:kn122": "node test/lead_care_log_kn122.test.js",
     "test:kn124": "node test/student_profile_kn124.test.js",
