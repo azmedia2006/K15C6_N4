@@ -8,6 +8,8 @@ const cors = require("cors");
 const classroomService = require("./classroomService");
 const {
     verifySmtp,
+    updateSmtpConfig,
+    getSmtpConfigSummary,
     SMTP_CONFIG,
     sentEmails,
     sendActivationEmail,
@@ -2306,28 +2308,59 @@ app.get("/api/health", async (req, res) => {
     });
 });
 
-// KN-11 & KN-86: API Kiểm tra trạng thái SMTP và gửi email thử nghiệm (Chỉ Quản trị viên & Kỹ thuật Mail)
+// KN-11 & KN-86: API Kiểm tra trạng thái SMTP và cấu hình máy chủ (Quản trị viên & Kỹ thuật Mail)
 app.get("/api/admin/smtp/status",
     authenticateToken,
     requireRole("administrator", "technical_manager"),
     async (req, res) => {
         const smtpStatus = await verifySmtp();
+        const summary = typeof getSmtpConfigSummary === "function" ? getSmtpConfigSummary() : {
+            enabled: SMTP_CONFIG.enabled,
+            configured: SMTP_CONFIG.configured,
+            host: SMTP_CONFIG.host,
+            port: SMTP_CONFIG.port,
+            user: SMTP_CONFIG.user,
+            hasPassword: Boolean(SMTP_CONFIG.pass),
+            fromEmail: SMTP_CONFIG.fromEmail,
+            fromName: SMTP_CONFIG.fromName,
+            secure: SMTP_CONFIG.secure,
+            tls: SMTP_CONFIG.tls
+        };
         return res.status(200).json({
             success: true,
             smtp: {
-                enabled: SMTP_CONFIG.enabled,
-                configured: SMTP_CONFIG.configured,
-                host: SMTP_CONFIG.host,
-                port: SMTP_CONFIG.port,
-                user: SMTP_CONFIG.user,
-                fromEmail: SMTP_CONFIG.fromEmail,
-                fromName: SMTP_CONFIG.fromName,
-                secure: SMTP_CONFIG.secure,
+                ...summary,
                 connected: smtpStatus.success,
                 error: smtpStatus.error || SMTP_CONFIG.configError || null,
                 totalSentEmails: sentEmails.length
             }
         });
+    }
+);
+
+app.post("/api/admin/smtp/config",
+    authenticateToken,
+    requireRole("administrator", "technical_manager"),
+    async (req, res) => {
+        try {
+            const body = req.body || {};
+            const updated = updateSmtpConfig(body);
+            const smtpStatus = await verifySmtp();
+            return res.status(200).json({
+                success: true,
+                message: "Đã lưu và áp dụng cấu hình máy chủ SMTP thành công.",
+                smtp: {
+                    ...updated,
+                    connected: smtpStatus.success,
+                    error: smtpStatus.error || null
+                }
+            });
+        } catch (err) {
+            return res.status(500).json({
+                success: false,
+                message: "Lỗi lưu cấu hình SMTP: " + err.message
+            });
+        }
     }
 );
 

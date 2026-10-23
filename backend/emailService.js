@@ -30,23 +30,103 @@ const SMTP_CONFIG = {
 
 // Khởi tạo nodemailer transporter
 let transporter = null;
+
+function initTransporter() {
+    if (transporter && typeof transporter.close === "function") {
+        try { transporter.close(); } catch (e) {}
+    }
+    transporter = null;
+    SMTP_CONFIG.configured = Boolean(SMTP_CONFIG.enabled && SMTP_CONFIG.host && SMTP_CONFIG.user && SMTP_CONFIG.pass);
+    SMTP_CONFIG.configError = !SMTP_CONFIG.enabled ? "SMTP is disabled. Set SMTP_ENABLED=true to enable email delivery." : !SMTP_CONFIG.configured ? "SMTP configuration is incomplete." : null;
+
+    if (SMTP_CONFIG.enabled && SMTP_CONFIG.host && SMTP_CONFIG.user && SMTP_CONFIG.pass) {
+        try {
+            transporter = nodemailer.createTransport({
+                host: SMTP_CONFIG.host,
+                port: SMTP_CONFIG.port,
+                secure: SMTP_CONFIG.secure,
+                requireTLS: SMTP_CONFIG.tls && !SMTP_CONFIG.secure,
+                auth: {
+                    user: SMTP_CONFIG.user,
+                    pass: SMTP_CONFIG.pass
+                },
+                tls: {
+                    rejectUnauthorized: process.env.SMTP_REJECT_UNAUTHORIZED === "true" ? true : false
+                },
+                connectionTimeout: 8000, greetingTimeout: 8000, socketTimeout: 15000,
+                pool: false
+            });
+        } catch (err) {
+            SMTP_CONFIG.configError = "Không thể khởi tạo transporter: " + err.message;
+        }
+    }
+}
 try {
-    if (process.env.SMTP_ENABLED === "true" && SMTP_CONFIG.host && SMTP_CONFIG.user && SMTP_CONFIG.pass) transporter = nodemailer.createTransport({
+    initTransporter();
+} catch (err) {
+}
+
+function getSmtpConfigSummary() {
+    return {
+        enabled: SMTP_CONFIG.enabled,
+        configured: SMTP_CONFIG.configured,
         host: SMTP_CONFIG.host,
         port: SMTP_CONFIG.port,
+        user: SMTP_CONFIG.user,
+        hasPassword: Boolean(SMTP_CONFIG.pass),
+        fromEmail: SMTP_CONFIG.fromEmail,
+        fromName: SMTP_CONFIG.fromName,
         secure: SMTP_CONFIG.secure,
-        requireTLS: SMTP_CONFIG.tls && !SMTP_CONFIG.secure,
-        auth: {
-            user: SMTP_CONFIG.user,
-            pass: SMTP_CONFIG.pass
-        },
-        tls: {
-            rejectUnauthorized: process.env.SMTP_REJECT_UNAUTHORIZED === "true" ? true : false
-        },
-        connectionTimeout: 8000, greetingTimeout: 8000, socketTimeout: 15000,
-        pool: false
-    });
-} catch (err) {
+        tls: SMTP_CONFIG.tls,
+        error: SMTP_CONFIG.configError
+    };
+}
+
+function updateSmtpConfig(newConfig, shouldCommit = true) {
+    if (!newConfig || typeof newConfig !== "object") return getSmtpConfigSummary();
+    if (newConfig.enabled !== undefined) {
+        SMTP_CONFIG.enabled = Boolean(newConfig.enabled);
+        process.env.SMTP_ENABLED = String(SMTP_CONFIG.enabled);
+    }
+    if (newConfig.host !== undefined) {
+        SMTP_CONFIG.host = String(newConfig.host).trim();
+        process.env.SMTP_HOST = SMTP_CONFIG.host;
+    }
+    if (newConfig.port !== undefined) {
+        SMTP_CONFIG.port = parseInt(newConfig.port, 10) || 587;
+        process.env.SMTP_PORT = String(SMTP_CONFIG.port);
+    }
+    if (newConfig.user !== undefined) {
+        SMTP_CONFIG.user = String(newConfig.user).trim();
+        process.env.SMTP_USER = SMTP_CONFIG.user;
+    }
+    if (newConfig.pass !== undefined && String(newConfig.pass).trim() !== "") {
+        SMTP_CONFIG.pass = String(newConfig.pass);
+        process.env.SMTP_PASSWORD = SMTP_CONFIG.pass;
+    }
+    if (newConfig.fromEmail !== undefined) {
+        SMTP_CONFIG.fromEmail = String(newConfig.fromEmail).trim();
+        process.env.SMTP_FROM_EMAIL = SMTP_CONFIG.fromEmail;
+    }
+    if (newConfig.fromName !== undefined) {
+        SMTP_CONFIG.fromName = String(newConfig.fromName).trim();
+        process.env.SMTP_FROM_NAME = SMTP_CONFIG.fromName;
+    }
+    if (newConfig.secure !== undefined) {
+        SMTP_CONFIG.secure = Boolean(newConfig.secure);
+        process.env.SMTP_SECURE = String(SMTP_CONFIG.secure);
+    }
+    if (newConfig.tls !== undefined) {
+        SMTP_CONFIG.tls = Boolean(newConfig.tls);
+        process.env.SMTP_TLS = String(SMTP_CONFIG.tls);
+    }
+    initTransporter();
+    if (shouldCommit) {
+        try {
+            require("./localDatabase").commit();
+        } catch (e) {}
+    }
+    return getSmtpConfigSummary();
 }
 
 // Danh mục nhãn vai trò hiển thị tiếng Việt
@@ -303,6 +383,24 @@ function deliver(message){
     return record;
 }
 require('./localDatabase').register('mail',()=>sentEmails,v=>sentEmails.splice(0,sentEmails.length,...v));
+require('./localDatabase').register('smtp_config',
+    () => ({
+        enabled: SMTP_CONFIG.enabled,
+        host: SMTP_CONFIG.host,
+        port: SMTP_CONFIG.port,
+        user: SMTP_CONFIG.user,
+        pass: SMTP_CONFIG.pass,
+        fromEmail: SMTP_CONFIG.fromEmail,
+        fromName: SMTP_CONFIG.fromName,
+        secure: SMTP_CONFIG.secure,
+        tls: SMTP_CONFIG.tls
+    }),
+    (v) => {
+        if (v && typeof v === 'object') {
+            updateSmtpConfig(v, false);
+        }
+    }
+);
 
 /**
  * Kiểm tra kết nối SMTP
@@ -344,13 +442,17 @@ async function verifySmtp() {
     });
 }
 
-module.exports = { isConfigured: () => Boolean(transporter),
+module.exports = {
+    isConfigured: () => Boolean(transporter),
     SMTP_CONFIG,
     ROLE_NAMES,
     sendActivationEmail,
     sendPasswordResetEmail,
     sentEmails,
     verifySmtp,
+    updateSmtpConfig,
+    getSmtpConfigSummary,
     buildActivationEmailHtml,
     buildPasswordResetEmailHtml
 };
+
