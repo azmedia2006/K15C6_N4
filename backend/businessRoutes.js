@@ -7,8 +7,55 @@ db.register('business',()=>state,v=>state={...state,...v});
 const role=(u,...codes)=>codes.some(code=>u.role===code||(u.roles||[]).some(r=>(r.code||r.id)===code));
 const manager=u=>role(u,'administrator','training_manager');
 const studentIds=id=>[...new Set([...(schedule().getRoster(id)||[]).map(u=>u.id),...enrollment.getEnrollmentsList().filter(e=>e.classId===id).map(e=>e.studentId)])];
-function canSeeClass(u,id){if(manager(u)||role(u,'admissions','accountant'))return true;const cls=schedule().getClassesWithScheduleStatus().find(c=>c.id===id)||enrollment.findClass(id);if(!cls)return false;if(studentIds(id).includes(u.id))return true;if(cls.instructorId===u.id||cls.instructor===u.name||cls.instructorName===u.name)return true;return schedule().getClassSchedule(id).some(s=>s.instructorId===u.id||s.instructor===u.name);}
-function canSeeSession(u,s){if(manager(u))return true;return studentIds(s.classId).includes(u.id)||s.instructorId===u.id||s.instructor===u.name;}
+function canSeeClass(u, id) {
+    if (manager(u) || role(u, 'admissions', 'accountant')) {
+        return true;
+    }
+
+    const cls = schedule()
+        .getClassesWithScheduleStatus()
+        .find(c => c.id === id) || enrollment.findClass(id);
+
+    if (!cls) return false;
+
+    const belongsToClass = studentIds(id).includes(u.id);
+
+    // KN-252: Học viên chỉ xem lớp mình đang tham gia.
+    if (role(u, 'student')) {
+        return belongsToClass;
+    }
+
+    if (belongsToClass) return true;
+
+    // Giữ quyền xem lớp của giảng viên phụ trách.
+    if (
+        cls.instructorId === u.id ||
+        cls.instructor === u.name ||
+        cls.instructorName === u.name
+    ) {
+        return true;
+    }
+
+    return schedule().getClassSchedule(id).some(s =>
+        s.instructorId === u.id ||
+        s.instructor === u.name
+    );
+}
+function canSeeSession(u, s) {
+    if (manager(u)) return true;
+
+    const belongsToClass = studentIds(s.classId).includes(u.id);
+
+    // KN-252: Học viên chỉ xem lịch của lớp mình tham gia.
+    if (role(u, 'student')) {
+        return belongsToClass;
+    }
+
+    // Giữ cơ chế xem lịch hiện có cho các vai trò khác.
+    return belongsToClass ||
+        s.instructorId === u.id ||
+        s.instructor === u.name;
+}
 function must(ok,message,status=400){if(!ok)throw Object.assign(new Error(message),{status});}
 const text=(value,label,max=255)=>{must(typeof value==='string'&&value.trim()&&value.trim().length<=max,label+' không hợp lệ.');return value.trim()};
 function classExists(id){const cls=schedule().getClassesWithScheduleStatus().find(c=>c.id===id)||enrollment.findClass(id);must(cls,'Không tìm thấy lớp.',404);return cls;}
