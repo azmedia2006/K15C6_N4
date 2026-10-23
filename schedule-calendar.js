@@ -230,6 +230,44 @@
             this.buildDOM();
             this.attachEvents();
             await this.loadData();
+
+            // KN-254: Học viên mặc định xem tuần có buổi học sắp tới.
+            const isStudent = String(
+                localStorage.getItem('tms_current_role') || ''
+            ).trim().toLowerCase() === 'student';
+
+            if (isStudent && !this.loadError) {
+                const token = localStorage.getItem('tms_token') ||
+                              localStorage.getItem('token');
+
+                if (token) {
+                    try {
+                        const res = await fetch('/api/schedules/next', {
+                            headers: {
+                                Authorization: `Bearer ${token}`
+                            }
+                        });
+
+                        if (res.ok) {
+                            const result = await res.json();
+                            const nextDate = result?.success
+                                ? result.session?.date
+                                : null;
+
+                            if (/^\d{4}-\d{2}-\d{2}$/.test(nextDate || '')) {
+                                const date = new Date(`${nextDate}T12:00:00`);
+
+                                if (!Number.isNaN(date.getTime())) {
+                                    this.currentDate = date;
+                                }
+                            }
+                        }
+                    } catch (err) {
+                        console.warn('Không tải được buổi học kế tiếp:', err);
+                    }
+                }
+            }
+
             this.render();
         }
 
