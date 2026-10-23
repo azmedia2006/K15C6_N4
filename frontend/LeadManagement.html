@@ -1286,7 +1286,7 @@
                     <!-- Overdue Callback Warning KPI -->
                     <div class="kpi-card kpi-alert-overdue" onclick="setQuickPill('overdue')" title="Bấm để lọc danh sách Quá Hạn Gọi Lại">
                         <div>
-                            <div class="kpi-title" style="color:var(--red); font-weight:700;">⚠️ Quá hạn gọi lại</div>
+                            <div class="kpi-title" style="color:var(--red); font-weight:700;">Quá hạn gọi lại</div>
                             <div class="kpi-value" id="kpi-overdue-leads" style="color:var(--red);">1</div>
                             <div class="kpi-sub" style="color:var(--red);">Cần xử lý liên hệ ngay</div>
                         </div>
@@ -1298,7 +1298,7 @@
                     <!-- Today Callbacks KPI -->
                     <div class="kpi-card" onclick="setQuickPill('today')" title="Bấm để lọc danh sách Cần Gọi Hôm Nay">
                         <div>
-                            <div class="kpi-title" style="color:var(--amber);">🔔 Cần gọi hôm nay</div>
+                            <div class="kpi-title" style="color:var(--amber);">Cần gọi hôm nay</div>
                             <div class="kpi-value" id="kpi-today-leads" style="color:var(--amber);">1</div>
                             <div class="kpi-sub">Lịch hẹn trong ngày</div>
                         </div>
@@ -1310,7 +1310,7 @@
                     <!-- Next Week Callbacks KPI (KN-122 User Story) -->
                     <div class="kpi-card" onclick="setQuickPill('next_week')" title="Bấm để lọc Lời Hứa Gọi Lại Vào Tuần Sau">
                         <div>
-                            <div class="kpi-title" style="color:var(--blue);">📅 Hẹn gọi tuần sau</div>
+                            <div class="kpi-title" style="color:var(--blue);">Hẹn gọi tuần sau</div>
                             <div class="kpi-value" id="kpi-nextweek-leads" style="color:var(--blue);">2</div>
                             <div class="kpi-sub">Lời hứa gọi lại cho khách</div>
                         </div>
@@ -1339,19 +1339,19 @@
                         <span class="pill-badge" id="pill-badge-all">11</span>
                     </button>
                     <button class="filter-pill pill-overdue" id="pill-overdue" onclick="setQuickPill('overdue')">
-                        <span>⚠️ Quá hạn gọi lại</span>
+                        <span>Quá hạn gọi lại</span>
                         <span class="pill-badge" id="pill-badge-overdue">1</span>
                     </button>
                     <button class="filter-pill pill-today" id="pill-today" onclick="setQuickPill('today')">
-                        <span>🔔 Cần gọi hôm nay</span>
+                        <span>Cần gọi hôm nay</span>
                         <span class="pill-badge" id="pill-badge-today">1</span>
                     </button>
                     <button class="filter-pill pill-nextweek" id="pill-next_week" onclick="setQuickPill('next_week')">
-                        <span>📅 Hẹn gọi tuần sau</span>
+                        <span>Hẹn gọi tuần sau</span>
                         <span class="pill-badge" id="pill-badge-nextweek">2</span>
                     </button>
                     <button class="filter-pill" id="pill-last_month" onclick="setQuickPill('last_month')">
-                        <span>⭐ Trao đổi từ tháng trước</span>
+                        <span>Trao đổi từ tháng trước</span>
                     </button>
                 </div>
 
@@ -1377,9 +1377,9 @@
                         <!-- Interaction Type Filter (KN-122: Gọi, Nhắn, Gặp) -->
                         <select id="filter-interaction-type" class="select-filter" onchange="onFilterChange()">
                             <option value="">-- Hình thức tương tác --</option>
-                            <option value="call">📞 Gọi điện (Call)</option>
-                            <option value="message">💬 Nhắn tin (Zalo / SMS)</option>
-                            <option value="meeting">👥 Gặp trực tiếp (Meeting)</option>
+                            <option value="call">Gọi điện (Call)</option>
+                            <option value="message">Nhắn tin (Zalo / SMS)</option>
+                            <option value="meeting">Gặp trực tiếp (Meeting)</option>
                         </select>
 
                         <!-- Counselor/Assignee Filter -->
@@ -1401,7 +1401,7 @@
                                 <option value="today">Hôm nay</option>
                                 <option value="last_7_days">7 ngày gần nhất</option>
                                 <option value="this_month">Tháng này</option>
-                                <option value="last_month">⭐ Cuộc trao đổi từ tháng trước</option>
+                                <option value="last_month">Cuộc trao đổi từ tháng trước</option>
                                 <option value="custom">Tùy chọn khoảng ngày...</option>
                             </select>
                         </div>
@@ -1470,7 +1470,7 @@
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary);"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                     <span>Nhật Ký Chăm Sóc & Đặt Lịch Nhắc Gọi Lại</span>
                 </h3>
-                <button class="action-icon-btn" onclick="closeCareModal()">✕</button>
+                <button class="action-icon-btn" onclick="closeCareModal()">&times;</button>
             </div>
 
             <div class="modal-body">
@@ -1479,7 +1479,7 @@
                     <div>
                         <div class="summary-item-label">Khách hàng</div>
                         <div class="summary-item-value" id="modal-lead-name">Họ và tên</div>
-                        <div style="font-size:0.8125rem; color:var(--primary); font-weight:600; margin-top:2px;" id="modal-lead-phone">📞 0900 000 000</div>
+                        <div style="font-size:0.8125rem; color:var(--primary); font-weight:600; margin-top:2px;" id="modal-lead-phone">0900 000 000</div>
                     </div>
                     <div>
                         <div class="summary-item-label">Khóa học & Nguồn</div>
@@ -1505,13 +1505,13 @@
                         <label class="form-label">1. Loại hình tương tác <span class="req">*</span></label>
                         <div class="type-selector-grid">
                             <button type="button" class="type-select-btn selected" id="type-btn-call" onclick="selectInteractionType('call')">
-                                <span>📞 Gọi điện</span>
+                                <span>Gọi điện</span>
                             </button>
                             <button type="button" class="type-select-btn" id="type-btn-message" onclick="selectInteractionType('message')">
-                                <span>💬 Nhắn tin (Zalo/SMS)</span>
+                                <span>Nhắn tin (Zalo/SMS)</span>
                             </button>
                             <button type="button" class="type-select-btn" id="type-btn-meeting" onclick="selectInteractionType('meeting')">
-                                <span>👥 Gặp trực tiếp</span>
+                                <span>Gặp trực tiếp</span>
                             </button>
                         </div>
                     </div>
@@ -1548,13 +1548,13 @@
                         <div class="schedule-header">
                             <label class="schedule-toggle-label">
                                 <input type="checkbox" id="toggle-callback" onchange="toggleCallbackFields()" style="width:18px; height:18px; accent-color:var(--blue);" checked>
-                                <span>🔔 Đặt lịch nhắc gọi lại cho khách hàng</span>
+                                <span>Đặt lịch nhắc gọi lại cho khách hàng</span>
                             </label>
 
                             <div class="quick-presets-row" id="quick-presets-wrap">
                                 <button type="button" class="preset-chip" onclick="setCallbackPreset(1)">Ngày mai</button>
                                 <button type="button" class="preset-chip" onclick="setCallbackPreset(3)">3 ngày tới</button>
-                                <button type="button" class="preset-chip starred" onclick="setCallbackPreset(7)">⭐ Tuần sau (+7 ngày)</button>
+                                <button type="button" class="preset-chip starred" onclick="setCallbackPreset(7)">Tuần sau (+7 ngày)</button>
                                 <button type="button" class="preset-chip" onclick="setCallbackPreset(30)">Tháng sau</button>
                             </div>
                         </div>
@@ -2039,11 +2039,11 @@
 
             badge.textContent = 'Đang hiển thị: ' + filtered.length + '/' + allLeads.length;
             if (activeQuickPill === 'overdue') {
-                summaryText.innerHTML = '<span style="color:var(--red); font-weight:700;">⚠️ Đang lọc ' + filtered.length + ' Lead QUÁ HẠN GỌI LẠI</span>';
+                summaryText.innerHTML = '<span style="color:var(--red); font-weight:700;">Đang lọc ' + filtered.length + ' Lead QUÁ HẠN GỌI LẠI</span>';
             } else if (activeQuickPill === 'today') {
-                summaryText.innerHTML = '<span style="color:var(--amber); font-weight:700;">🔔 Đang lọc ' + filtered.length + ' Lead HẸN GỌI HÔM NAY</span>';
+                summaryText.innerHTML = '<span style="color:var(--amber); font-weight:700;">Đang lọc ' + filtered.length + ' Lead HẸN GỌI HÔM NAY</span>';
             } else if (activeQuickPill === 'next_week') {
-                summaryText.innerHTML = '<span style="color:var(--blue); font-weight:700;">📅 Đang lọc ' + filtered.length + ' Lead HẸN GỌI TUẦN SAU (Lời hứa gọi lại)</span>';
+                summaryText.innerHTML = '<span style="color:var(--blue); font-weight:700;">Đang lọc ' + filtered.length + ' Lead HẸN GỌI TUẦN SAU (Lời hứa gọi lại)</span>';
             } else {
                 summaryText.textContent = 'Tổng cộng ' + filtered.length + ' kết quả phù hợp';
             }
@@ -2052,7 +2052,7 @@
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="7" style="text-align:center; padding: 48px 20px; color: var(--text-muted);">
-                            <div style="font-size:1.75rem; margin-bottom:8px;">📋</div>
+                            <div style="margin-bottom:8px;"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
                             <div style="font-size:1rem; font-weight:700; color:var(--text-heading);">Không tìm thấy hồ sơ nào phù hợp</div>
                             <div style="font-size:0.875rem; margin-top:4px;">Thử chọn lại bộ lọc hoặc bấm "Đặt lại bộ lọc" để xem toàn bộ danh sách.</div>
                         </td>
@@ -2071,25 +2071,25 @@
                 if (isOverdue) {
                     reminderHtml = `
                         <div class="callback-alert-badge badge-overdue">
-                            <span>⚠️ QUÁ HẠN ${lead.overdueDays} NGÀY</span>
+                            <span>QUÁ HẠN ${lead.overdueDays} NGÀY</span>
                         </div>
                     `;
                 } else if (lead.callbackUrgency === 'today' && lead.callbackStatus === 'pending') {
                     reminderHtml = `
                         <div class="callback-alert-badge badge-today">
-                            <span>🔔 HẸN GỌI HÔM NAY</span>
+                            <span>HẸN GỌI HÔM NAY</span>
                         </div>
                     `;
                 } else if (lead.callbackUrgency === 'next_week' && lead.callbackStatus === 'pending') {
                     reminderHtml = `
                         <div class="callback-alert-badge badge-nextweek">
-                            <span>📅 HẸN GỌI TUẦN SAU</span>
+                            <span>HẸN GỌI TUẦN SAU</span>
                         </div>
                     `;
                 } else if (lead.callbackStatus === 'completed') {
                     reminderHtml = `
                         <div class="callback-alert-badge badge-completed">
-                            <span>✔ Đã gọi lại xong</span>
+                            <span>Đã gọi lại xong</span>
                         </div>
                     `;
                 }
@@ -2097,17 +2097,16 @@
                 // Ghi chú lời hẹn gọi lại
                 let callbackNoteHtml = '';
                 if (lead.callbackNote && lead.callbackStatus === 'pending') {
-                    callbackNoteHtml = `<div class="callback-note-snippet" title="${lead.callbackNote}">💬 Lời hẹn: ${lead.callbackNote}</div>`;
+                    callbackNoteHtml = `<div class="callback-note-snippet" title="${lead.callbackNote}">Lời hẹn: ${lead.callbackNote}</div>`;
                 }
 
                 // Lần tương tác gần nhất
                 let latestLogHtml = '<span style="color:var(--text-light); font-size:0.75rem;">Chưa có nhật ký</span>';
                 if (Array.isArray(lead.careLogs) && lead.careLogs.length > 0) {
                     const latest = lead.careLogs[0];
-                    const icon = latest.type === 'meeting' ? '👥' : (latest.type === 'message' ? '💬' : '📞');
                     latestLogHtml = `
                         <div class="latest-interaction-line" title="${latest.content}">
-                            <span>${icon} ${latest.typeLabel || 'Gọi điện'}:</span>
+                            <span>${latest.typeLabel || 'Gọi điện'}:</span>
                             <span style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${latest.content}</span>
                         </div>
                     `;
@@ -2125,7 +2124,7 @@
                 if (lead.callbackStatus === 'pending') {
                     quickDoneBtn = `
                         <button class="btn-quick-done" onclick="completeCallbackDirect('${lead.id}')" title="Đánh dấu đã hoàn thành cuộc gọi lại này">
-                            <span>✔ Đã gọi</span>
+                            <span>Đã gọi</span>
                         </button>
                     `;
                 }
@@ -2141,7 +2140,7 @@
                         <td>
                             <div class="customer-name">${lead.name}</div>
                             <div class="customer-phone">
-                                <span>📞 ${lead.phone}</span>
+                                <span>${lead.phone}</span>
                             </div>
                         </td>
                         <td>
@@ -2217,7 +2216,7 @@
             enrichLead(lead);
 
             document.getElementById('modal-lead-name').textContent = lead.name;
-            document.getElementById('modal-lead-phone').textContent = '📞 ' + lead.phone;
+            document.getElementById('modal-lead-phone').textContent = lead.phone;
             document.getElementById('modal-lead-course').textContent = lead.course || 'Chưa đăng ký khóa';
             document.getElementById('modal-lead-source').textContent = 'Nguồn: ' + (lead.source || 'Website');
 
@@ -2228,17 +2227,17 @@
             const alertWrap = document.getElementById('modal-lead-callback-alert');
             const quickActionWrap = document.getElementById('modal-quick-complete-action');
             if (lead.isOverdue) {
-                alertWrap.innerHTML = '<span class="callback-alert-badge badge-overdue">⚠️ Quá hạn gọi lại ' + lead.overdueDays + ' ngày!</span>';
+                alertWrap.innerHTML = '<span class="callback-alert-badge badge-overdue">Quá hạn gọi lại ' + lead.overdueDays + ' ngày!</span>';
                 quickActionWrap.innerHTML = `
                     <button type="button" class="btn-quick-done" onclick="completeCallbackDirect('${lead.id}', true)">
-                        <span>✔ Đã gọi lại xong (Xóa cảnh báo quá hạn)</span>
+                        <span>Đã gọi lại xong (Xóa cảnh báo quá hạn)</span>
                     </button>
                 `;
             } else if (lead.callbackUrgency === 'today' && lead.callbackStatus === 'pending') {
-                alertWrap.innerHTML = '<span class="callback-alert-badge badge-today">🔔 Cần gọi hôm nay!</span>';
+                alertWrap.innerHTML = '<span class="callback-alert-badge badge-today">Cần gọi hôm nay!</span>';
                 quickActionWrap.innerHTML = `
                     <button type="button" class="btn-quick-done" onclick="completeCallbackDirect('${lead.id}', true)">
-                        <span>✔ Đã gọi xong</span>
+                        <span>Đã gọi xong</span>
                     </button>
                 `;
             } else {
@@ -2280,14 +2279,13 @@
             timelineList.innerHTML = sorted.map(log => {
                 const logTime = new Date(log.interactedAt || log.timestamp);
                 const diffDays = Math.floor((now - logTime) / dayMs);
-                const icon = log.type === 'meeting' ? '👥' : (log.type === 'message' ? '💬' : '📞');
 
                 let callbackNotice = '';
                 if (log.callbackDate) {
                     const cbDate = new Date(log.callbackDate).toLocaleDateString('vi-VN');
                     callbackNotice = `
                         <div style="margin-top:6px; font-size:0.75rem; background:rgba(37, 99, 235, 0.08); color:var(--blue); padding:4px 8px; border-radius:4px; font-weight:600;">
-                            📅 Đã đặt lịch nhắc gọi lại: ${cbDate} ${log.callbackNote ? '— ' + log.callbackNote : ''}
+                            Đã đặt lịch nhắc gọi lại: ${cbDate} ${log.callbackNote ? '— ' + log.callbackNote : ''}
                         </div>
                     `;
                 }
@@ -2502,7 +2500,7 @@
                 const searchInput = document.getElementById('lead-search');
                 highlightElement(searchInput);
                 await typeText(searchInput, 'hoang nam', 100);
-                setDemoStatus("Bước 1/6: Tìm kiếm tên không dấu", "👉 Đã tìm thấy: Nguyễn Hoàng Nam (LD-202609-015)");
+                setDemoStatus("Bước 1/6: Tìm kiếm tên không dấu", "Đã tìm thấy: Nguyễn Hoàng Nam (LD-202609-015)");
                 await new Promise(r => setTimeout(r, 2500));
                 if (!isDemoRunning) return;
 
@@ -2515,7 +2513,7 @@
                 setDemoStatus("Bước 2/6: Tìm kiếm SĐT có khoảng trắng", "Đang tự động gõ '0977 889 900'...");
                 highlightElement(searchInput);
                 await typeText(searchInput, '0977 889 900', 100);
-                setDemoStatus("Bước 2/6: Tìm kiếm SĐT có khoảng trắng", "👉 Khớp chính xác hồ sơ SĐT: 0977889900");
+                setDemoStatus("Bước 2/6: Tìm kiếm SĐT có khoảng trắng", "Khớp chính xác hồ sơ SĐT: 0977889900");
                 await new Promise(r => setTimeout(r, 2500));
                 if (!isDemoRunning) return;
 
@@ -2525,11 +2523,11 @@
                 await new Promise(r => setTimeout(r, 1000));
 
                 // BƯỚC 3: Lọc cuộc trao đổi từ tháng trước (KN-76 User Story)
-                setDemoStatus("Bước 3/6: Lọc trao đổi tháng trước", "Bấm nút '⭐ Cuộc trao đổi từ tháng trước'...");
+                setDemoStatus("Bước 3/6: Lọc trao đổi tháng trước", "Bấm nút 'Cuộc trao đổi từ tháng trước'...");
                 const pillLastMonth = document.getElementById('pill-last_month');
                 highlightElement(pillLastMonth);
                 pillLastMonth.click();
-                setDemoStatus("Bước 3/6: Lọc trao đổi tháng trước", "👉 Đã lọc ra các lead có liên hệ từ tháng trước kèm badge!");
+                setDemoStatus("Bước 3/6: Lọc trao đổi tháng trước", "Đã lọc ra các lead có liên hệ từ tháng trước kèm badge!");
                 await new Promise(r => setTimeout(r, 3000));
                 if (!isDemoRunning) return;
 
@@ -2544,7 +2542,7 @@
                 highlightElement(statusSelect);
                 statusSelect.value = 'Đang tư vấn';
                 statusSelect.dispatchEvent(new Event('change', { bubbles: true }));
-                setDemoStatus("Bước 4/6: Lọc trạng thái 'Đang tư vấn'", "👉 Bảng dữ liệu lọc đúng các lead 'Đang tư vấn'");
+                setDemoStatus("Bước 4/6: Lọc trạng thái 'Đang tư vấn'", "Bảng dữ liệu lọc đúng các lead 'Đang tư vấn'");
                 await new Promise(r => setTimeout(r, 2500));
                 if (!isDemoRunning) return;
 
@@ -2568,7 +2566,7 @@
                 if (!isDemoRunning) return;
 
                 // BƯỚC 6: Ghi nhận cuộc gọi mới và hẹn tuần sau
-                setDemoStatus("Bước 6/6: Ghi nhận cuộc gọi & Đặt hẹn", "Chọn loại '📞 Gọi điện' và nhập ghi chú cuộc gọi...");
+                setDemoStatus("Bước 6/6: Ghi nhận cuộc gọi & Đặt hẹn", "Chọn loại 'Gọi điện' và nhập ghi chú cuộc gọi...");
                 const callBtn = document.getElementById('type-btn-call');
                 if (callBtn) callBtn.click();
                 await new Promise(r => setTimeout(r, 800));
@@ -2578,7 +2576,7 @@
                 await new Promise(r => setTimeout(r, 1200));
 
                 // Đặt preset tuần sau
-                setDemoStatus("Bước 6/6: Ghi nhận cuộc gọi & Đặt hẹn", "Bấm chọn lịch hẹn '⭐ Tuần sau (+7 ngày)'...");
+                setDemoStatus("Bước 6/6: Ghi nhận cuộc gọi & Đặt hẹn", "Bấm chọn lịch hẹn 'Tuần sau (+7 ngày)'...");
                 if (typeof setCallbackPreset === 'function') setCallbackPreset(7);
                 await new Promise(r => setTimeout(r, 1000));
 
@@ -2591,7 +2589,7 @@
                 if (typeof submitCareLog === 'function') submitCareLog();
                 await new Promise(r => setTimeout(r, 2000));
 
-                setDemoStatus("🎉 HOÀN TẤT DEMO 100%!", "Toàn bộ 6/6 kịch bản KN-76 & KN-122 đã kiểm thử tự động thành công!");
+                setDemoStatus("HOÀN TẤT DEMO 100%!", "Toàn bộ 6/6 kịch bản KN-76 & KN-122 đã kiểm thử tự động thành công!");
             } catch (err) {
                 setDemoStatus("Thông báo", err.message);
             } finally {
@@ -2657,7 +2655,7 @@
                 <span style="width:10px; height:10px; border-radius:50%; background:#10b981; box-shadow:0 0 10px #10b981;"></span>
                 <strong style="font-size:0.875rem; letter-spacing:0.02em; color:#fff;">DEMO TỰ ĐỘNG KN-76 & KN-122</strong>
             </div>
-            <button onclick="document.getElementById('kn76-demo-player').remove()" style="background:none; border:none; color:#94a3b8; font-size:1.1rem; cursor:pointer; line-height:1;" title="Đóng bảng demo">✕</button>
+            <button onclick="document.getElementById('kn76-demo-player').remove()" style="background:none; border:none; color:#94a3b8; font-size:1.1rem; cursor:pointer; line-height:1;" title="Đóng bảng demo">&times;</button>
         </div>
         <div id="demo-step-title" style="font-size:0.8125rem; color:#a7f3d0; font-weight:700; margin-bottom:4px;">Chuẩn bị khởi chạy...</div>
         <div id="demo-step-desc" style="font-size:0.75rem; color:#cbd5e1; line-height:1.4; min-height:34px; margin-bottom:12px;">Hệ thống đang tự động kiểm thử từng tính năng ngay trên giao diện này.</div>

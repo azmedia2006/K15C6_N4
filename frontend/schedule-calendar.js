@@ -374,7 +374,7 @@
                             <strong style="display:block;
                                            margin-bottom:8px;
                                            color:#1d4ed8;">
-                                📅 Buổi học kế tiếp
+                                Buổi học kế tiếp
                             </strong>
                             <div id="sched-next-session-content"
                                  role="status"
@@ -451,7 +451,7 @@
                                 <h4 id="sched-modal-title">Chi Tiết Buổi Học</h4>
                                 <div class="sub-code" id="sched-modal-class-code">Mã lớp: --</div>
                             </div>
-                            <button type="button" class="sched-modal-close" id="sched-modal-close-btn" aria-label="Đóng">✕</button>
+                            <button type="button" class="sched-modal-close" id="sched-modal-close-btn" aria-label="Đóng">&times;</button>
                         </div>
                         <div class="sched-modal-body" id="sched-modal-body-content">
                             <!-- Populated dynamically -->
@@ -845,7 +845,7 @@
             let mobileHtml = `
                 <div class="sched-mobile-single-day-view" style="display: none;">
                     <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:#f1f5f9; border-radius:10px; margin-bottom:8px;">
-                        <strong>📅 ${activeMobileDay.dowName}, ${activeMobileDay.dayNum}/${activeMobileDay.monthNum}/${activeMobileDay.date.getFullYear()}</strong>
+                        <strong>${activeMobileDay.dowName}, ${activeMobileDay.dayNum}/${activeMobileDay.monthNum}/${activeMobileDay.date.getFullYear()}</strong>
                         <span style="font-size:0.8125rem; font-weight:700; color:var(--sched-primary);">${mobileDaySessions.length} buổi học</span>
                     </div>
             `;
@@ -1025,7 +1025,7 @@
             codeEl.textContent = `Mã lớp: ${session.classCode || session.classId} • ${session.className || ''}`;
 
             const statusClass = session.status === 'completed' ? 'status-completed' : (session.status === 'cancelled' ? 'status-cancelled' : 'status-scheduled');
-            const statusText = session.status === 'completed' ? 'Đã điểm danh hoàn tất 🔒' : (session.status === 'cancelled' ? 'Đã hủy lịch' : 'Đã xếp lịch chính thức');
+            const statusText = session.status === 'completed' ? 'Đã điểm danh hoàn tất' : (session.status === 'cancelled' ? 'Đã hủy lịch' : 'Đã xếp lịch chính thức');
 
             // Date format in Vietnamese
             const d = new Date(session.date + 'T12:00:00');

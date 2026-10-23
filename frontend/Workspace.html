@@ -1979,7 +1979,7 @@
                         <div class="user-name" id="display-user-name">Đang tải...</div>
                         <div class="user-role" id="display-user-role">Đang xác thực...</div>
                         <div style="font-size: 10px; color: var(--primary); font-weight: 700; margin-top: 2px; display: flex; align-items: center; gap: 3px;">
-                            <span>📷 Bấm để đổi ảnh</span>
+                            <span>Bấm để đổi ảnh</span>
                         </div>
                     </div>
                 </div>
@@ -2018,7 +2018,7 @@
                         </div>
                         <div class="header-avatar-meta">
                             <span class="header-user-name" id="header-display-name">Quản trị viên</span>
-                            <span class="header-avatar-action">Đổi ảnh 📷</span>
+                            <span class="header-avatar-action">Đổi ảnh</span>
                         </div>
                     </div>
 
@@ -2656,7 +2656,7 @@
                         <!-- Hàng 1: Tìm nhanh theo Tên hoặc Số điện thoại + Trạng thái + Nguồn -->
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 10px;">
                             <div>
-                                <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">🔍 TÌM NHANH (TÊN HOẶC SỐ ĐIỆN THOẠI):</label>
+                                <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 4px;">TÌM NHANH (TÊN HOẶC SỐ ĐIỆN THOẠI):</label>
                                 <input type="text" id="lead-search-input" placeholder="Gõ tên hoặc số điện thoại..." oninput="filterLeadsTable()" style="width: 100%; box-sizing: border-box; padding: 7px 12px; font-size: 0.875rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg-main, #fff); color: var(--text-main);">
                             </div>
                             <div>
@@ -2701,7 +2701,7 @@
                                     <option value="today">Hôm nay</option>
                                     <option value="last_7_days">7 ngày qua</option>
                                     <option value="last_30_days">30 ngày qua</option>
-                                    <option value="last_month">📅 Tháng trước (Tra cứu cuộc gọi cũ)</option>
+                                    <option value="last_month">Tháng trước (Tra cứu cuộc gọi cũ)</option>
                                     <option value="this_month">Tháng này</option>
                                     <option value="custom">Tùy chọn khoảng ngày...</option>
                                 </select>
@@ -3268,7 +3268,7 @@
             <div style="padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:rgba(59, 130, 246, 0.05);">
                 <div>
                     <h3 style="margin:0; font-size:1.15rem; display:flex; align-items:center; gap:8px;">
-                        <span>📞 Hồ sơ Lead & Lịch sử Cuộc trao đổi</span>
+                        <span>Hồ sơ Lead & Lịch sử Cuộc trao đổi</span>
                         <span id="modal-lead-code-badge" class="badge" style="background:#3b82f6; color:#fff; font-size:0.75rem;">LD-XXXX</span>
                     </h3>
                     <p style="margin:4px 0 0 0; font-size:0.8125rem; color:var(--text-muted);" id="modal-lead-subtitle">
@@ -3382,7 +3382,7 @@
             <div style="padding:12px 20px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:10px; background:var(--bg-main, #f8fafc);">
                 <button type="button" class="btn btn-secondary" onclick="closeConsultationModal()">Đóng cửa sổ</button>
                 <button type="button" class="btn btn-primary" id="btn-save-consultation" onclick="submitNewConsultation()">
-                    <span>💾 Lưu cuộc trao đổi & Cập nhật</span>
+                    <span>Lưu cuộc trao đổi & Cập nhật</span>
                 </button>
             </div>
         </div>
@@ -4132,7 +4132,7 @@
                         <td data-label="Thao tác" style="text-align:center;">
                             <div style="display:inline-flex; gap:6px; flex-wrap:wrap; justify-content:center;">
                                 <button type="button" class="btn btn-secondary" style="padding:4px 8px; font-size:12px;" onclick="openClassStudentsModal('${escapeLeadHtml(cls.id)}')">
-                                    📋 Xem danh sách
+                                    Xem danh sách
                                 </button>
                                 <button type="button" class="btn btn-primary" style="padding:4px 8px; font-size:12px;" onclick="openBatchEnrollModal('${escapeLeadHtml(cls.id)}')" ${isFull ? "disabled title='Lớp đã đủ sĩ số'" : ""}>
                                     + Ghi danh
@@ -4253,7 +4253,7 @@
                 warningBox.style.background = "#fee2e2";
                 warningBox.style.border = "1px solid #fca5a5";
                 warningBox.style.color = "#991b1b";
-                warningBox.innerHTML = `⛔ <strong>Chặn ghi danh:</strong> Lớp học <strong>${escapeLeadHtml(cls.code)}</strong> đã đủ sĩ số tối đa (${cls.maxCapacity}/${cls.maxCapacity}). Không thể tiếp nhận thêm học viên.`;
+                warningBox.innerHTML = `<strong>Chặn ghi danh:</strong> Lớp học <strong>${escapeLeadHtml(cls.code)}</strong> đã đủ sĩ số tối đa (${cls.maxCapacity}/${cls.maxCapacity}). Không thể tiếp nhận thêm học viên.`;
                 submitBtn.disabled = true;
                 return;
             }
@@ -4264,7 +4264,7 @@
                 warningBox.style.background = "#fffbeb";
                 warningBox.style.border = "1px solid #fde68a";
                 warningBox.style.color = "#92400e";
-                warningBox.innerHTML = `⚠️ Vui lòng chọn ít nhất một học viên trong danh sách để ghi danh vào lớp <strong>${escapeLeadHtml(cls.code)}</strong> (còn ${remaining} chỗ trống).`;
+                warningBox.innerHTML = `Vui lòng chọn ít nhất một học viên trong danh sách để ghi danh vào lớp <strong>${escapeLeadHtml(cls.code)}</strong> (còn ${remaining} chỗ trống).`;
                 submitBtn.disabled = true;
                 return;
             }
@@ -4275,7 +4275,7 @@
                 warningBox.style.background = "#fee2e2";
                 warningBox.style.border = "1px solid #fca5a5";
                 warningBox.style.color = "#991b1b";
-                warningBox.innerHTML = `⚠️ <strong>Không đủ chỗ:</strong> Lớp học <strong>${escapeLeadHtml(cls.code)}</strong> chỉ còn <strong>${remaining} chỗ trống</strong> (${cls.enrolledCount}/${cls.maxCapacity}), không đủ cho <strong>${count} học viên</strong> đã chọn.`;
+                warningBox.innerHTML = `<strong>Không đủ chỗ:</strong> Lớp học <strong>${escapeLeadHtml(cls.code)}</strong> chỉ còn <strong>${remaining} chỗ trống</strong> (${cls.enrolledCount}/${cls.maxCapacity}), không đủ cho <strong>${count} học viên</strong> đã chọn.`;
                 submitBtn.disabled = true;
                 return;
             }
@@ -4297,7 +4297,7 @@
                 warningBox.style.background = "#fef2f2";
                 warningBox.style.border = "1px solid #fecaca";
                 warningBox.style.color = "#b91c1c";
-                warningBox.innerHTML = `⚠️ <strong>Học viên đã ở trong lớp:</strong> ${escapeLeadHtml(duplicateStudents.join(", "))} đã có tên trong danh sách lớp <strong>${escapeLeadHtml(cls.code)}</strong> rồi. Vui lòng bỏ chọn để tránh trùng lặp.`;
+                warningBox.innerHTML = `<strong>Học viên đã ở trong lớp:</strong> ${escapeLeadHtml(duplicateStudents.join(", "))} đã có tên trong danh sách lớp <strong>${escapeLeadHtml(cls.code)}</strong> rồi. Vui lòng bỏ chọn để tránh trùng lặp.`;
                 submitBtn.disabled = true;
                 return;
             }
@@ -4308,7 +4308,7 @@
             warningBox.style.border = "1px solid #bbf7d0";
             warningBox.style.color = "#166534";
             const newCount = cls.enrolledCount + count;
-            warningBox.innerHTML = `✅ <strong>Sẵn sàng ghi danh:</strong> ${count} học viên hợp lệ. Sĩ số lớp sau khi ghi danh: <strong>${newCount} / ${cls.maxCapacity}</strong> (còn lại ${cls.maxCapacity - newCount} chỗ).`;
+            warningBox.innerHTML = `<strong>Sẵn sàng ghi danh:</strong> ${count} học viên hợp lệ. Sĩ số lớp sau khi ghi danh: <strong>${newCount} / ${cls.maxCapacity}</strong> (còn lại ${cls.maxCapacity - newCount} chỗ).`;
             submitBtn.disabled = false;
         }
 
@@ -4365,7 +4365,7 @@
                     warningBox.style.background = "#fee2e2";
                     warningBox.style.border = "1px solid #fca5a5";
                     warningBox.style.color = "#991b1b";
-                    warningBox.innerHTML = `❌ <strong>Lỗi:</strong> ${escapeLeadHtml(err.message)}`;
+                    warningBox.innerHTML = `<strong>Lỗi:</strong> ${escapeLeadHtml(err.message)}`;
                 }
             } finally {
                 if (submitBtn) {
@@ -4423,10 +4423,10 @@
                     <td><strong>${escapeLeadHtml(s.studentCode || s.studentId)}</strong></td>
                     <td><strong>${escapeLeadHtml(s.studentName)}</strong></td>
                     <td>
-                        <span style="font-size:12.5px; color:var(--text-main); font-weight:500;">📅 ${formatEnrollmentDate(s.enrolledAt)}</span>
+                        <span style="font-size:12.5px; color:var(--text-main); font-weight:500;">${formatEnrollmentDate(s.enrolledAt)}</span>
                     </td>
                     <td>
-                        <span style="font-size:12.5px; color:#047857; font-weight:600;">👤 ${escapeLeadHtml(s.enrolledByName || "Ban Đào tạo")}</span>
+                        <span style="font-size:12.5px; color:#047857; font-weight:600;">${escapeLeadHtml(s.enrolledByName || "Ban Đào tạo")}</span>
                     </td>
                     <td style="text-align:center;">
                         <button type="button" class="btn btn-secondary" style="padding:4px 8px; font-size:11.5px; color:#b91c1c;" onclick="unenrollStudentFromCurrentClass('${escapeLeadHtml(s.studentId)}')">
@@ -4758,7 +4758,7 @@
                                 <span class="badge" style="background:#e0f2fe; color:#0369a1; font-size:0.75rem; font-weight:600; padding:2px 8px; border-radius:4px;">
                                     Kết quả: ${c.result || "Đang trao đổi"}
                                 </span>
-                                ${c.nextFollowUp ? `<span style="font-size:0.75rem; color:#b45309; margin-left:8px; font-weight:500;">📅 Hẹn gọi lại: ${new Date(c.nextFollowUp).toLocaleDateString("vi-VN")}</span>` : ''}
+                                ${c.nextFollowUp ? `<span style="font-size:0.75rem; color:#b45309; margin-left:8px; font-weight:500;">Hẹn gọi lại: ${new Date(c.nextFollowUp).toLocaleDateString("vi-VN")}</span>` : ''}
                             </div>
                             <div style="font-size:0.85rem; color:var(--text-main); line-height:1.4; background:var(--bg-main, #f8fafc); padding:6px 10px; border-radius:4px; margin-top:4px;">
                                 ${c.notes}
@@ -4830,7 +4830,7 @@
                 showToast("Lỗi kết nối: " + err.message, "error");
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = `<span>💾 Lưu cuộc trao đổi & Cập nhật</span>`;
+                btn.innerHTML = `<span>Lưu cuộc trao đổi & Cập nhật</span>`;
             }
         }
 
@@ -6375,7 +6375,7 @@
 
                 // Cập nhật DOM trực tiếp
                 applyAvatarToUI(targetId, avatarDataUrl, thumbDataUrl);
-                showToast("✅ Đã cập nhật ảnh đại diện và tạo bản thu nhỏ nhận diện khuôn mặt thành công!");
+                showToast("Đã cập nhật ảnh đại diện và tạo bản thu nhỏ nhận diện khuôn mặt thành công!", "success");
                 closeAvatarModal();
 
             } catch (err) {
@@ -6385,7 +6385,7 @@
                 localStorage.setItem(`tms_thumb_${targetId}`, thumbDataUrl);
 
                 applyAvatarToUI(targetId, avatarDataUrl, thumbDataUrl);
-                showToast("✅ Đã cập nhật ảnh đại diện thành công (Chế độ Demo)");
+                showToast("Đã cập nhật ảnh đại diện thành công (Chế độ Demo)", "success");
                 closeAvatarModal();
             } finally {
                 saveBtn.disabled = false;
@@ -6452,14 +6452,14 @@
                 localStorage.getItem("tms_token") ||
                 localStorage.getItem("token");
 
-            kn68AttendanceToken &&
-            ["administrator", "training_manager", "instructor", "teaching_assistant"]
-                .includes(kn68AttendanceRole) &&
+                kn68AttendanceToken &&
+                ["administrator", "training_manager", "instructor", "teaching_assistant"]
+                    .includes(kn68AttendanceRole) &&
             fetch("/api/attendance/students", {
-                headers: {
-                    Authorization: `Bearer ${kn68AttendanceToken}`
-                }
-            }).then(r => r.json()).then(res => {
+            headers: {
+            Authorization: `Bearer ${kn68AttendanceToken}`
+                    }
+                }).then(r => r.json()).then(res => {
 
                 if (res.success && Array.isArray(res.data)) {
                     res.data.forEach(s => {

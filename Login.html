@@ -553,6 +553,59 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        .demo-accounts-box {
+            margin-top: 1.5rem;
+            padding: 14px;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+        }
+
+        .demo-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .demo-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            border-radius: 99px;
+            background: #ffffff;
+            color: #1e293b;
+            cursor: pointer;
+            transition: all 0.15s ease-in-out;
+            user-select: none;
+        }
+
+        .demo-chip:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            color: var(--primary);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .demo-chip:active {
+            transform: scale(0.97);
+        }
+
+        .demo-chip svg {
+            width: 13px;
+            height: 13px;
+            color: #64748b;
+            flex-shrink: 0;
+            transition: color 0.15s ease-in-out;
+        }
+
+        .demo-chip:hover svg {
+            color: var(--primary);
+        }
     </style>
 </head>
 
@@ -678,23 +731,51 @@
                         </button>
                     </div>
 
-                    <div class="demo-accounts-box" style="margin-top: 1.5rem; padding: 14px; background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-md);">
+                    <div class="demo-accounts-box">
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                            <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">
-                                🔑 Tài khoản mẫu (9 vai trò)
+                            <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.725rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                Tài khoản mẫu (9 vai trò)
                             </span>
                             <span style="font-size: 0.7rem; color: var(--primary); font-weight: 600;">Chạm để điền</span>
                         </div>
-                        <div class="demo-chips" style="display: flex; flex-wrap: wrap; gap: 6px;">
-                            <button type="button" class="demo-chip" onclick="fillDemo('admin@tms.edu.vn', 'admin123')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">👑 Quản trị</button>
-                            <button type="button" class="demo-chip" onclick="fillDemo('tech@tms.edu.vn', 'tech123')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">⚙️ Kỹ thuật & Mail</button>
-                            <button type="button" class="demo-chip" onclick="fillDemo('manager@tms.edu.vn', 'manager123')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">📋 Đào tạo</button>
-                            <button type="button" class="demo-chip" onclick="fillDemo('teacher@tms.edu.vn', 'teacher123')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">👨‍🏫 Giảng viên</button>
-                            <button type="button" class="demo-chip" onclick="fillDemo('ta@tms.edu.vn', 'ta123456')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">🧑‍💻 Trợ giảng</button>
-                            <button type="button" class="demo-chip" onclick="fillDemo('student@tms.edu.vn', 'student123')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">🎓 Học viên</button>
-                            <button type="button" class="demo-chip" onclick="fillDemo('admissions@tms.edu.vn', 'admissions123')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">📞 Tuyển sinh</button>
-                            <button type="button" class="demo-chip" onclick="fillDemo('accountant@tms.edu.vn', 'accountant123')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">💰 Kế toán</button>
-                            <button type="button" class="demo-chip" onclick="fillDemo('visitor@tms.edu.vn', 'visitor123')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">👀 Khách</button>
+                        <div class="demo-chips">
+                            <button type="button" class="demo-chip" onclick="fillDemo('admin@tms.edu.vn', 'admin123')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                <span>Quản trị</span>
+                            </button>
+                            <button type="button" class="demo-chip" onclick="fillDemo('tech@tms.edu.vn', 'tech123')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+                                <span>Kỹ thuật & Mail</span>
+                            </button>
+                            <button type="button" class="demo-chip" onclick="fillDemo('manager@tms.edu.vn', 'manager123')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                                <span>Đào tạo</span>
+                            </button>
+                            <button type="button" class="demo-chip" onclick="fillDemo('teacher@tms.edu.vn', 'teacher123')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
+                                <span>Giảng viên</span>
+                            </button>
+                            <button type="button" class="demo-chip" onclick="fillDemo('ta@tms.edu.vn', 'ta123456')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                                <span>Trợ giảng</span>
+                            </button>
+                            <button type="button" class="demo-chip" onclick="fillDemo('student@tms.edu.vn', 'student123')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                                <span>Học viên</span>
+                            </button>
+                            <button type="button" class="demo-chip" onclick="fillDemo('admissions@tms.edu.vn', 'admissions123')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                                <span>Tuyển sinh</span>
+                            </button>
+                            <button type="button" class="demo-chip" onclick="fillDemo('accountant@tms.edu.vn', 'accountant123')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                                <span>Kế toán</span>
+                            </button>
+                            <button type="button" class="demo-chip" onclick="fillDemo('visitor@tms.edu.vn', 'visitor123')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                <span>Khách</span>
+                            </button>
                         </div>
                     </div>
                 </div>

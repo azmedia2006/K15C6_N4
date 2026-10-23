@@ -1306,7 +1306,7 @@
                                 <span>Khai Báo Mẫu Lặp Tự Động</span>
                             </h3>
                             <button class="btn btn-secondary btn-sm" onclick="resetFormTo60Sessions()" title="Nạp nhanh mẫu 60 buổi">
-                                ⚡ Mẫu 60 buổi
+                                Mẫu 60 buổi
                             </button>
                         </div>
 
@@ -1412,7 +1412,7 @@
                                 </label>
                                 <input type="number" id="input-total-sessions" class="form-input" required min="1" max="200" value="60">
                                 <div class="preset-group">
-                                    <span class="preset-chip active" onclick="setSessionsPreset(60)">⚡ Lớp Chuẩn 60 Buổi (KN-154)</span>
+                                    <span class="preset-chip active" onclick="setSessionsPreset(60)">Lớp Chuẩn 60 Buổi (KN-154)</span>
                                     <span class="preset-chip" onclick="setSessionsPreset(48)">48 Buổi</span>
                                     <span class="preset-chip" onclick="setSessionsPreset(30)">30 Buổi</span>
                                     <span class="preset-chip" onclick="setSessionsPreset(12)">12 Buổi</span>
@@ -1453,8 +1453,8 @@
 
                             <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                                 <div class="sched-mode-switcher" style="background:#f1f5f9; padding:3px; border-radius:8px;">
-                                    <button type="button" class="sched-mode-btn active" id="btn-view-preview-table" onclick="switchScheduleViewType('table')">📋 Bảng danh sách</button>
-                                    <button type="button" class="sched-mode-btn" id="btn-view-preview-calendar" onclick="switchScheduleViewType('calendar')">📅 Lịch Tuần / Tháng</button>
+                                    <button type="button" class="sched-mode-btn active" id="btn-view-preview-table" onclick="switchScheduleViewType('table')">Bảng danh sách</button>
+                                    <button type="button" class="sched-mode-btn" id="btn-view-preview-calendar" onclick="switchScheduleViewType('calendar')">Lịch Tuần / Tháng</button>
                                 </div>
                                 <button class="btn btn-secondary btn-sm" onclick="exportScheduleCSV()" title="Tải xuống CSV">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -1546,7 +1546,7 @@
         <div class="modal-container">
             <div class="modal-header">
                 <h4>Chỉnh Sửa Thông Tin Buổi Học</h4>
-                <button class="btn-icon" onclick="closeEditModal()">✕</button>
+                <button class="btn-icon" onclick="closeEditModal()">&times;</button>
             </div>
             <form id="edit-session-form" class="modal-body" onsubmit="handleSaveSessionEdit(event)">
                 <input type="hidden" id="edit-session-id">
@@ -1599,7 +1599,7 @@
         <div class="modal-container" style="max-width: 650px;">
             <div class="modal-header">
                 <h4>Quản Lý Danh Sách Ngày Nghỉ Lễ</h4>
-                <button class="btn-icon" onclick="closeHolidayModal()">✕</button>
+                <button class="btn-icon" onclick="closeHolidayModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <p style="font-size:0.875rem; color:var(--text-muted);">
@@ -1645,7 +1645,7 @@
         <div class="modal-container">
             <div class="modal-header">
                 <h4>Thêm Lớp Học Mới Để Xếp Lịch</h4>
-                <button class="btn-icon" onclick="closeCreateClassModal()">✕</button>
+                <button class="btn-icon" onclick="closeCreateClassModal()">&times;</button>
             </div>
             <form id="create-class-form" class="modal-body" onsubmit="handleCreateClass(event)">
                 <div class="form-group">
@@ -1769,7 +1769,7 @@
                     <td><span class="session-badge">${h.date || h.recurringMonthDay}</span></td>
                     <td><span class="status-badge holiday">${h.type === 'national' ? 'Quốc gia' : 'Trường học'}</span></td>
                     <td style="text-align: right;">
-                        <button class="btn-icon" onclick="deleteHolidayItem('${h.id}')" title="Xóa ngày lễ">🗑</button>
+                        <button class="btn-icon" onclick="deleteHolidayItem('${h.id}')" title="Xóa ngày lễ"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
                     </td>
                 </tr>
             `).join("");
@@ -2146,8 +2146,8 @@
                         <span class="status-badge scheduled">● Đã xếp lịch</span>
                     </td>
                     <td style="text-align: right;">
-                        <button class="btn-icon" onclick="openEditSessionModal('${s.id}')" title="Sửa buổi học">✏️</button>
-                        <button class="btn-icon" onclick="removeSessionFromPreview('${s.id}')" title="Xóa buổi này" style="color:var(--danger-500)">🗑</button>
+                        <button class="btn-icon" onclick="openEditSessionModal('${s.id}')" title="Sửa buổi học"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+                        <button class="btn-icon" onclick="removeSessionFromPreview('${s.id}')" title="Xóa buổi này" style="color:var(--danger-500)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
                     </td>
                 </tr>
             `).join("");
