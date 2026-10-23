@@ -1048,6 +1048,13 @@
             }
         } catch (e) {}
 
+        document.querySelector("#email")?.addEventListener("input", () => {
+            if (loginMessage && loginMessage.textContent) showMessage(loginMessage, "");
+        });
+        document.querySelector("#password")?.addEventListener("input", () => {
+            if (loginMessage && loginMessage.textContent) showMessage(loginMessage, "");
+        });
+
         // Register form logic
         const registerForm = document.querySelector("#register-form");
         const registerSubmit = document.querySelector("#register-submit");
@@ -1243,7 +1250,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             const redirectParam = urlParams.get("redirect");
             let destination = roleHome[cleanRole] || `./Dashboard.html?role=${cleanRole}`;
-            if (redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//")) {
+            if (redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//") && !redirectParam.toLowerCase().startsWith("/login")) {
                 destination = redirectParam;
             }
             showMessage(loginMessage, "Đăng nhập thành công! Đang chuyển hướng...", true);

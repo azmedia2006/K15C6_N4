@@ -30,8 +30,13 @@ module.exports = (req, res) => {
     }
 
     try {
-        if (req.headers && req.headers["x-matched-path"] && req.url === "/api/index.js") {
-            req.url = req.headers["x-matched-path"];
+        if (req.url === "/api/index.js" || req.url.startsWith("/api/index.js?")) {
+            const matched = (req.headers && (req.headers["x-matched-path"] || req.headers["x-vercel-matched-path"]));
+            if (matched) {
+                const queryIndex = req.url.indexOf("?");
+                const qs = queryIndex >= 0 ? req.url.slice(queryIndex) : "";
+                req.url = matched.includes("?") ? matched : (matched + qs);
+            }
         }
         return app(req, res);
     } catch (runtimeErr) {
