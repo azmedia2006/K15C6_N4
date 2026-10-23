@@ -2577,13 +2577,12 @@ app.post("/api/schedules/save",
     requireRole("training_manager", "administrator"),
     (req, res) => {
         try {
-            const { classId, sessions } = req.body || {};
-            const result = saveClassSchedule(classId, sessions, req.user);
+            const { classId, sessions, overrideConflicts } = req.body || {};
+            const result = saveClassSchedule(classId, sessions, req.user, { overrideConflicts: overrideConflicts === true });
             return res.status(200).json(result);
         } catch (err) {
             return res.status(err.status || 400).json({
                 success: false,
-                code: "SAVE_SCHEDULE_FAILED",
                 code: err.code || "SCHEDULE_ERROR",
                 message: err.status >= 500 ? "Không thể lưu dữ liệu. Thao tác chưa được áp dụng." : err.message,
                 details: err.details

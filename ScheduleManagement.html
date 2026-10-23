@@ -2120,7 +2120,7 @@
         // ========================================================
         // LƯU CHÍNH THỨC THỜI KHÓA BIỂU (KN-165)
         // ========================================================
-        async function handleSaveOfficialSchedule() {
+        async function handleSaveOfficialSchedule(overrideConflicts = false) {
             if (!currentSessionsList || currentSessionsList.length === 0) {
                 showToast("Chưa có buổi học nào để lưu!", "error");
                 return;
@@ -2139,13 +2139,39 @@
                     },
                     body: JSON.stringify({
                         classId: currentClassId,
-                        sessions: currentSessionsList
+                        sessions: currentSessionsList,
+                        overrideConflicts
                     })
                 });
 
                 const data = await res.json();
+                if (!overrideConflicts && res.status === 409 && data.code === "SCHEDULE_CONFLICT" && Array.isArray(data.details)) {
+                    const describeSession = session =>
+                        `Buổi ${session.sessionNumber ?? "?"} - ${session.className || session.classId} (${session.date} ${session.startTime}-${session.endTime}, phòng ${session.room}, GV ${session.instructor})`;
+                    const conflictLines = data.details.map(conflict => {
+                        const reasons = conflict.reasons.map(reason => ({
+                            same_class: "trùng lịch cùng lớp",
+                            room: "trùng phòng",
+                            instructor: "trùng giảng viên"
+                        }[reason] || reason)).join(", ");
+                        return `• ${describeSession(conflict.candidate)}\n  Xung đột với ${describeSession(conflict.conflicting)} (${reasons})`;
+                    }).join("\n");
+                    if (window.confirm(
+                        `Phát hiện ${data.details.length} xung đột lịch:\n\n${conflictLines}\n\nBạn xác nhận ghi đè các xung đột này và tiếp tục lưu?`
+                    )) {
+                        return await handleSaveOfficialSchedule(true);
+                    }
+                    showToast("Đã hủy lưu lịch do có xung đột.", "info");
+                    return;
+                }
+
                 if (res.ok && data.success) {
-                    showToast(`Lưu thành công thời khóa biểu ${data.totalSessions} buổi vào cơ sở dữ liệu!`, "success");
+                    showToast(
+                        overrideConflicts
+                            ? `Đã lưu ${data.totalSessions} buổi sau khi xác nhận ghi đè ${data.conflicts.length} xung đột.`
+                            : `Lưu thành công thời khóa biểu ${data.totalSessions} buổi vào cơ sở dữ liệu!`,
+                        overrideConflicts ? "info" : "success"
+                    );
                     await loadClasses();
                 } else {
                     showToast(data.message || "Lỗi khi lưu thời khóa biểu", "error");
