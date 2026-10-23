@@ -39,11 +39,13 @@ let isBucketReady = false;
  * Gửi HTTP request đến Supabase API với Header bảo mật Admin / Service Role
  */
 async function supabaseRequest(endpoint, options = {}) {
-    if (process.env.TMS_OFFLINE === "true" || !SUPABASE_URL || !SUPABASE_SECRET_KEY) return null;
-    const url = endpoint.startsWith("http") ? endpoint : `${SUPABASE_URL}${endpoint}`;
+    const urlBase = process.env.SUPABASE_URL || SUPABASE_URL;
+    const secretKey = process.env.SUPABASE_SECRET_KEY || SUPABASE_SECRET_KEY;
+    if ((process.env.TMS_OFFLINE === "true" && process.env.VERCEL !== "1") || !urlBase || !secretKey) return null;
+    const url = endpoint.startsWith("http") ? endpoint : `${urlBase}${endpoint}`;
     const headers = {
-        "apikey": SUPABASE_SECRET_KEY,
-        "Authorization": `Bearer ${SUPABASE_SECRET_KEY}`,
+        "apikey": secretKey,
+        "Authorization": `Bearer ${secretKey}`,
         ...(options.headers || {})
     };
 
@@ -134,6 +136,13 @@ async function loadFromStorage(filename) {
 }
 
 async function loadRequiredStorageSnapshot(filename) {
+    const urlBase = process.env.SUPABASE_URL || SUPABASE_URL;
+    const secretKey = process.env.SUPABASE_SECRET_KEY || SUPABASE_SECRET_KEY;
+    if (!urlBase || !secretKey) {
+        const error = new Error(`Không kết nối được Supabase Storage khi đọc ${filename}.`);
+        error.objectNotFound = true;
+        throw error;
+    }
     const response = await supabaseRequest(
         `/storage/v1/object/${BUCKET_NAME}/${filename}`
     );
@@ -157,6 +166,11 @@ async function loadRequiredStorageSnapshot(filename) {
 }
 
 async function saveRequiredStorageSnapshot(filename, data) {
+    const urlBase = process.env.SUPABASE_URL || SUPABASE_URL;
+    const secretKey = process.env.SUPABASE_SECRET_KEY || SUPABASE_SECRET_KEY;
+    if (!urlBase || !secretKey) {
+        return;
+    }
     const saved = await saveToStorage(filename, data);
 
     if (!saved) {

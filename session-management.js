@@ -109,7 +109,7 @@
     el('saved-refresh').onclick = refreshClasses; el('saved-class').onchange = refresh;
     const originalOfficialSave = handleSaveOfficialSchedule;
     handleSaveOfficialSchedule = async () => { await originalOfficialSave(); await refreshClasses(); };
-    document.addEventListener('DOMContentLoaded', async () => {
+    async function initSessionManagement() {
         try {
             people = (await request('/api/schedules/people')).people;
             const list = document.createElement('datalist'); list.id = 'schedule-teachers';
@@ -117,5 +117,10 @@
             document.body.appendChild(list); el('edit-instructor').setAttribute('list', list.id);
             await refreshClasses();
         } catch (error) { el('saved-message').textContent = error.message; }
-    });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSessionManagement);
+    } else {
+        initSessionManagement();
+    }
 })();

@@ -7,7 +7,7 @@
     <title>Hệ Thống Đào Tạo TMS | Quản Lý Lead, Nhật Ký Chăm Sóc & Đặt Lịch Nhắc Gọi Lại (KN-122 & KN-76)</title>
 
     <!-- Client-Side Access Guard -->
-    <script src="/authGuard.js" data-required="usr_admissions,admissions_officer,training_manager,administrator"></script>
+    <script src="/authGuard.js" data-required="admissions,admissions_officer,training_manager,administrator"></script>
 
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1082,6 +1082,99 @@
             margin-top: 6px;
             line-height: 1.5;
         }
+
+        /* 3-Bar Hamburger Menu Button & Navigation Drawer */
+        .mobile-menu-btn {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: transparent;
+            border: 1px solid var(--border-color, #e2e8f0);
+            border-radius: 8px;
+            width: 38px;
+            height: 38px;
+            color: var(--text-heading, #0f172a);
+            transition: all 0.2s ease;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .mobile-menu-btn:hover {
+            background: var(--bg-hover, rgba(0,0,0,0.05));
+            border-color: var(--primary, #10b981);
+            color: var(--primary, #10b981);
+        }
+
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(3px);
+            z-index: 150;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+        .sidebar-backdrop.active {
+            display: block;
+            opacity: 1;
+        }
+
+        .app-layout.sidebar-collapsed {
+            grid-template-columns: 80px 1fr !important;
+        }
+        .app-layout.sidebar-collapsed aside.sidebar {
+            width: 80px !important;
+        }
+        .app-layout.sidebar-collapsed aside.sidebar .sidebar-brand .brand-text,
+        .app-layout.sidebar-collapsed aside.sidebar .nav-item span,
+        .app-layout.sidebar-collapsed aside.sidebar .nav-section-title,
+        .app-layout.sidebar-collapsed aside.sidebar .sidebar-footer {
+            display: none !important;
+        }
+        .app-layout.sidebar-collapsed aside.sidebar .nav-item {
+            justify-content: center !important;
+            padding: 12px 0 !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .app-layout { grid-template-columns: 1fr; }
+            aside.sidebar {
+                display: flex !important;
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                width: 280px;
+                max-width: 85vw;
+                z-index: 200;
+                transform: translateX(-100%);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            aside.sidebar.mobile-open {
+                transform: translateX(0);
+            }
+        }
+
+        @media (max-width: 640px) {
+            main.main-content { padding: 14px 10px 40px; }
+            .page-banner { flex-direction: column; align-items: flex-start; gap: 12px; padding: 16px; }
+            .page-banner h1 { font-size: 1.25rem; }
+            .kpi-grid { grid-template-columns: 1fr; gap: 10px; }
+            .toolbar-card { flex-direction: column; align-items: stretch; padding: 12px; gap: 10px; }
+            .toolbar-left, .toolbar-right { width: 100%; flex-direction: column; align-items: stretch; }
+            .search-box { width: 100%; max-width: 100%; }
+            .filter-select { width: 100%; }
+            .quick-filter-pills { overflow-x: auto; width: 100%; white-space: nowrap; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+            .modal-overlay { padding: 8px; }
+            .modal-container { max-width: 100%; max-height: 94vh; border-radius: var(--radius-md); }
+            .modal-header { padding: 14px 16px; }
+            .modal-body { padding: 14px 16px; max-height: calc(94vh - 120px); overflow-y: auto; }
+            .modal-footer { padding: 12px 16px; flex-wrap: wrap; }
+            .modal-footer .btn { flex: 1; min-width: 110px; }
+            .form-control, input, select, textarea { font-size: 16px !important; }
+        }
     </style>
 </head>
 <body>
@@ -1099,7 +1192,7 @@
 
             <nav class="sidebar-nav">
                 <div class="nav-section-title">Nghiệp Vụ Tuyển Sinh</div>
-                <a href="/Index.html" class="nav-item">
+                <a href="/Dashboard.html" class="nav-item">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                     <span>Trang Chủ</span>
                 </a>
@@ -1129,6 +1222,10 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     <span>Sinh Thời Khóa Biểu (KN-154)</span>
                 </a>
+                <a href="/Notifications.html" class="nav-item">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    <span>Thông Báo Lịch Học (KN-156)</span>
+                </a>
             </nav>
 
             <div class="sidebar-footer">
@@ -1140,13 +1237,25 @@
             </div>
         </aside>
 
+        <!-- Mobile Drawer Backdrop -->
+        <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleMobileSidebar(false)"></div>
+
         <!-- Main Workspace -->
         <main class="main-content">
             <header class="top-header">
-                <div class="header-title-wrap">
-                    <span class="badge-sprint">KN Sprint 3</span>
-                    <span class="badge-sprint" style="background-color:var(--blue-soft); color:var(--blue); border-color:var(--blue-border);">KN-122 & KN-76</span>
-                    <h2 style="font-size:1.125rem; font-weight:700; color:var(--text-heading);">Nhật Ký Chăm Sóc & Đặt Lịch Nhắc Gọi Lại</h2>
+                <div style="display: flex; align-items: center;">
+                    <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Mở menu" title="Mở danh mục menu">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <div class="header-title-wrap">
+                        <span class="badge-sprint">KN Sprint 3</span>
+                        <span class="badge-sprint" style="background-color:var(--blue-soft); color:var(--blue); border-color:var(--blue-border);">KN-122 & KN-76</span>
+                        <h2 style="font-size:1.125rem; font-weight:700; color:var(--text-heading);">Nhật Ký Chăm Sóc & Đặt Lịch Nhắc Gọi Lại</h2>
+                    </div>
                 </div>
 
                 <div class="header-actions">
@@ -2243,7 +2352,7 @@
 
             // Gửi API nếu có backend
             try {
-                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                const token = localStorage.getItem('tms_token') || localStorage.getItem('token') || sessionStorage.getItem('token') || '';
                 const headers = { 'Content-Type': 'application/json' };
                 if (token) headers['Authorization'] = 'Bearer ' + token;
 
@@ -2296,7 +2405,7 @@
             if (!confirm('Xác nhận đã liên hệ gọi lại xong cho khách hàng ' + lead.name + '?')) return;
 
             try {
-                const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                const token = localStorage.getItem('tms_token') || localStorage.getItem('token') || sessionStorage.getItem('token') || '';
                 const headers = { 'Content-Type': 'application/json' };
                 if (token) headers['Authorization'] = 'Bearer ' + token;
 
@@ -2513,6 +2622,32 @@
                 }, 1500);
             }
         });
+
+        // Sidebar Toggle (Mobile Drawer & Desktop Collapse)
+        function toggleMobileSidebar(forceState) {
+            const sidebar = document.querySelector("aside.sidebar");
+            const backdrop = document.getElementById("sidebar-backdrop");
+            const appLayout = document.querySelector(".app-layout");
+            if (!sidebar) return;
+            if (window.innerWidth <= 1024) {
+                if (!backdrop) return;
+                const isOpen = (typeof forceState === "boolean") ? !forceState : sidebar.classList.contains("mobile-open");
+                if (isOpen) {
+                    sidebar.classList.remove("mobile-open");
+                    backdrop.classList.remove("active");
+                    document.body.style.overflow = "";
+                } else {
+                    sidebar.classList.add("mobile-open");
+                    backdrop.classList.add("active");
+                    document.body.style.overflow = "hidden";
+                }
+            } else {
+                if (appLayout) appLayout.classList.toggle("sidebar-collapsed");
+                else sidebar.classList.toggle("collapsed");
+            }
+        }
+        window.toggleMobileSidebar = toggleMobileSidebar;
+        window.toggleSidebar = toggleMobileSidebar;
     </script>
 
     <!-- Floating Live Demo Automation Player HTML Widget -->
@@ -2535,6 +2670,5 @@
             </button>
         </div>
     </div>
-    </script>
 </body>
 </html>

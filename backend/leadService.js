@@ -410,7 +410,7 @@ function buildDefaultLeads() {
             assignedTo: "usr_admissions",
             assignedToName: "Minh Quân",
             counselorNotes: "Gặp trực tiếp tại cơ sở đào tạo. Hẹn hôm nay gọi lại chốt thông tin đóng học phí.",
-            nextCallbackDate: new Date(now + 1000 * 60 * 60 * 2).toISOString(),
+            nextCallbackDate: new Date(now).toISOString(),
             callbackNote: "Gọi lại hôm nay hướng dẫn học viên đóng học phí đợt 1 và nhận tài liệu",
             callbackStatus: "pending",
             careLogs: [
@@ -425,7 +425,7 @@ function buildDefaultLeads() {
                     counselorId: "usr_admissions",
                     counselorName: "Minh Quân",
                     hasCallback: true,
-                    callbackDate: new Date(now + 1000 * 60 * 60 * 2).toISOString(),
+                    callbackDate: new Date(now).toISOString(),
                     callbackNote: "Gọi lại hôm nay hướng dẫn học viên đóng học phí đợt 1 và nhận tài liệu",
                     callbackStatus: "pending"
                 }

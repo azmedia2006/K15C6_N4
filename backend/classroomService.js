@@ -130,7 +130,7 @@ function deleteClassroom(id) {
 // Kiểm tra sức chứa phòng học so với sĩ số lớp
 function validateRoomCapacity(classroomId, studentCount) {
     const classroom = classrooms.find(c => c.id === Number(classroomId));
-    
+
     // Nếu chưa có/không tìm thấy phòng
     if (!classroom) {
         return {

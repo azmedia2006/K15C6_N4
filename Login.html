@@ -2,8 +2,17 @@
 <html lang="vi">
 
 <head>
+    <script>
+        // Xóa dữ liệu tài khoản cũ từng lưu mật khẩu trên trình duyệt.
+        try {
+            localStorage.removeItem("tms_registered_users");
+        } catch (e) {}
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta name="theme-color" content="#10b981">
     <title>Đăng nhập | TMS</title>
 
@@ -479,8 +488,8 @@
             }
 
             .left-panel {
-                min-height: 40vh;
-                padding: 3rem 2rem;
+                min-height: 30vh;
+                padding: 2.5rem 1.5rem;
                 justify-content: center;
             }
 
@@ -490,7 +499,7 @@
             }
 
             .right-panel {
-                padding: 3rem 1.5rem;
+                padding: 2.5rem 1.5rem;
                 align-items: flex-start;
             }
 
@@ -499,7 +508,47 @@
             }
         }
 
-        @media (max-width: 480px) {
+        @media (max-width: 600px) {
+            .left-panel {
+                min-height: auto;
+                padding: 1.25rem 1rem 0.75rem;
+            }
+
+            .left-panel .brand {
+                margin-bottom: 0.5rem;
+            }
+
+            .left-panel h1 {
+                font-size: 1.35rem;
+                line-height: 1.25;
+                margin-bottom: 0.25rem;
+            }
+
+            .left-panel p {
+                display: none;
+            }
+
+            .right-panel {
+                padding: 1.25rem 1rem 2rem;
+            }
+
+            .form-container {
+                width: 100%;
+                max-width: 100%;
+            }
+
+            input[type="text"],
+            input[type="email"],
+            input[type="password"],
+            input[type="tel"] {
+                font-size: 16px !important;
+                min-height: 44px;
+            }
+
+            .btn-primary {
+                min-height: 44px;
+            }
+
             .social-login {
                 grid-template-columns: 1fr;
             }
@@ -601,7 +650,7 @@
                     </div>
 
                     <div class="social-login">
-                        <button type="button" class="btn-social">
+                        <button type="button" class="btn-social" onclick="showSocialLoginNotice('Google')">
                             <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
                                 <path
                                     d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -618,7 +667,7 @@
                             </svg>
                             Google
                         </button>
-                        <button type="button" class="btn-social">
+                        <button type="button" class="btn-social" onclick="showSocialLoginNotice('Microsoft')">
                             <svg viewBox="0 0 21 21" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M10 0H0v10h10V0z" fill="#f25022" />
                                 <path d="M21 0H11v10h10V0z" fill="#7fba00" />
@@ -627,6 +676,25 @@
                             </svg>
                             Microsoft
                         </button>
+                    </div>
+
+                    <div class="demo-accounts-box" style="margin-top: 1.5rem; padding: 14px; background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-md);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">
+                                🔑 Tài khoản mẫu (8 vai trò)
+                            </span>
+                            <span style="font-size: 0.7rem; color: var(--primary); font-weight: 600;">Chạm để điền</span>
+                        </div>
+                        <div class="demo-chips" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                            <button type="button" class="demo-chip" onclick="fillDemo('admin@tms.edu.vn', 'admin123')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">👑 Quản trị</button>
+                            <button type="button" class="demo-chip" onclick="fillDemo('manager@tms.edu.vn', 'manager123')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">📋 Đào tạo</button>
+                            <button type="button" class="demo-chip" onclick="fillDemo('teacher@tms.edu.vn', 'teacher123')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">👨‍🏫 Giảng viên</button>
+                            <button type="button" class="demo-chip" onclick="fillDemo('ta@tms.edu.vn', 'ta123456')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">🧑‍💻 Trợ giảng</button>
+                            <button type="button" class="demo-chip" onclick="fillDemo('student@tms.edu.vn', 'student123')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">🎓 Học viên</button>
+                            <button type="button" class="demo-chip" onclick="fillDemo('admissions@tms.edu.vn', 'admissions123')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">📞 Tuyển sinh</button>
+                            <button type="button" class="demo-chip" onclick="fillDemo('accountant@tms.edu.vn', 'accountant123')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">💰 Kế toán</button>
+                            <button type="button" class="demo-chip" onclick="fillDemo('visitor@tms.edu.vn', 'visitor123')" style="padding: 5px 9px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border); border-radius: 99px; background: #ffffff; color: #1e293b; cursor: pointer; transition: all 0.15s;">👀 Khách</button>
+                        </div>
                     </div>
                 </div>
 
@@ -762,6 +830,24 @@
     </main>
 
     <script>
+        window.fillDemo = function(email, password) {
+            const emailEl = document.querySelector("#email");
+            const passEl = document.querySelector("#password");
+            if (emailEl) {
+                emailEl.value = email;
+                emailEl.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            if (passEl) {
+                passEl.value = password;
+                passEl.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            const msg = document.querySelector("#login-message");
+            if (msg) {
+                msg.textContent = `Đã chọn: ${email}`;
+                msg.classList.add("success");
+            }
+        };
+
         // Bảo mật: Xóa ngay lập tức thông tin đăng nhập nhạy cảm khỏi URL thanh địa chỉ
         if (window.location.search && (window.location.search.includes("password=") || window.location.search.includes("email="))) {
             const cleanUrl = window.location.origin + window.location.pathname + window.location.hash;
@@ -778,20 +864,20 @@
         let recoveryCooldownTimer = null;
         let recoveryCooldownMessage = "Bạn đã gửi quá nhiều yêu cầu.";
         const roleHome = {
-            visitor: "./Index.html?role=visitor",
-            student: "./Index.html?role=student",
-            learner: "./Index.html?role=student",
-            instructor: "./Index.html?role=instructor",
-            assistant: "./Index.html?role=teaching_assistant",
-            teaching_assistant: "./Index.html?role=teaching_assistant",
-            admissions: "./Index.html?role=admissions",
-            admissions_counselor: "./Index.html?role=admissions",
-            accountant: "./Index.html?role=accountant",
-            training_manager: "./Index.html?role=training_manager",
-            training_management: "./Index.html?role=training_manager",
-            administrator: "./Index.html?role=administrator",
-            system_administrator: "./Index.html?role=administrator",
-            admin: "./Index.html?role=administrator"
+            visitor: "./Dashboard.html?role=visitor",
+            student: "./Dashboard.html?role=student",
+            learner: "./Dashboard.html?role=student",
+            instructor: "./Dashboard.html?role=instructor",
+            assistant: "./Dashboard.html?role=teaching_assistant",
+            teaching_assistant: "./Dashboard.html?role=teaching_assistant",
+            admissions: "./Dashboard.html?role=admissions",
+            admissions_counselor: "./Dashboard.html?role=admissions",
+            accountant: "./Dashboard.html?role=accountant",
+            training_manager: "./Dashboard.html?role=training_manager",
+            training_management: "./Dashboard.html?role=training_manager",
+            administrator: "./Dashboard.html?role=administrator",
+            system_administrator: "./Dashboard.html?role=administrator",
+            admin: "./Dashboard.html?role=administrator"
         };
 
         function setBusy(button, busy, busyLabel, idleLabel) {
@@ -807,6 +893,14 @@
             element.textContent = text;
             element.classList.toggle("success", success);
         }
+
+        function showSocialLoginNotice(provider) {
+            const msg = document.getElementById("message");
+            if (msg) {
+                showMessage(msg, 'Tính năng đăng nhập Single Sign-On (SSO) qua ' + provider + ' đang được kết nối với cổng trường học. Vui lòng đăng nhập bằng tài khoản mẫu hoặc tài khoản đã đăng ký bên dưới.', false);
+            }
+        }
+        window.showSocialLoginNotice = showSocialLoginNotice;
 
         function formatRemaining(seconds) {
             const m = Math.floor(seconds / 60);
@@ -941,6 +1035,19 @@
             switchView("recovery");
         }
 
+        // Hiển thị thông báo trạng thái nếu được điều hướng từ Access Guard hoặc phiên hết hạn
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const errParam = urlParams.get("error");
+            if (errParam === "session_expired") {
+                showMessage(loginMessage, "Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.");
+            } else if (errParam === "unauthorized") {
+                showMessage(loginMessage, "Xác thực không hợp lệ. Vui lòng đăng nhập bằng tài khoản của bạn.");
+            } else if (errParam === "expired") {
+                showMessage(loginMessage, "Phiên đăng nhập đã quá hạn bảo mật. Vui lòng đăng nhập lại.");
+            }
+        } catch (e) {}
+
         // Register form logic
         const registerForm = document.querySelector("#register-form");
         const registerSubmit = document.querySelector("#register-submit");
@@ -1011,6 +1118,9 @@
 
                     showMessage(registerMessage, result.message || "Đăng ký thành công.", true);
                     document.querySelector("#email").value = regEmail;
+
+                    localStorage.removeItem("tms_registered_users");
+
                     setTimeout(() => {
                         switchView("login");
                         showMessage(loginMessage, "Đăng ký thành công. Vui lòng đăng nhập bằng tài khoản vừa tạo.", true);
@@ -1114,7 +1224,28 @@
                 localStorage.setItem("tms_token", token);
                 localStorage.setItem("token", token);
             }
-            const destination = "/Workspace.html";
+            const roleHome = {
+                visitor: "./Dashboard.html?role=visitor",
+                student: "./Dashboard.html?role=student",
+                learner: "./Dashboard.html?role=student",
+                instructor: "./Dashboard.html?role=instructor",
+                assistant: "./Dashboard.html?role=teaching_assistant",
+                teaching_assistant: "./Dashboard.html?role=teaching_assistant",
+                admissions: "./Dashboard.html?role=admissions",
+                admissions_counselor: "./Dashboard.html?role=admissions",
+                accountant: "./Dashboard.html?role=accountant",
+                training_manager: "./Dashboard.html?role=training_manager",
+                training_management: "./Dashboard.html?role=training_manager",
+                administrator: "./Dashboard.html?role=administrator",
+                system_administrator: "./Dashboard.html?role=administrator",
+                admin: "./Dashboard.html?role=administrator"
+            };
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirectParam = urlParams.get("redirect");
+            let destination = roleHome[cleanRole] || `./Dashboard.html?role=${cleanRole}`;
+            if (redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//")) {
+                destination = redirectParam;
+            }
             showMessage(loginMessage, "Đăng nhập thành công! Đang chuyển hướng...", true);
             setTimeout(() => {
                 window.location.assign(destination);
@@ -1166,7 +1297,7 @@
             } catch {
                 showMessage(
                     loginMessage,
-                    "Kh?ng th? k?t n?i m?y ch? ??ng nh?p. Vui l?ng ki?m tra k?t n?i v? th? l?i."
+                    "Không thể kết nối máy chủ đăng nhập. Vui lòng kiểm tra kết nối và thử lại."
                 );
             } finally {
                 // Luôn dọn dẹp trạng thái busy/spinner trước, sau đó kiểm tra và áp dụng lockout

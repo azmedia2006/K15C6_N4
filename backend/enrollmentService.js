@@ -16,28 +16,40 @@ const {
     ensureStudentProfiles
 } = require("./studentService");
 
-// 1. Danh sách lớp học chuẩn của hệ thống TMS kèm sĩ số tối đa
+// 1. Danh sách lớp học chuẩn của hệ thống TMS kèm sĩ số tối đa, chương trình và tiến độ buổi học (KN-127)
 const initialClasses = [
     {
         id: "cls_pmp_01",
         code: "K15-PM01",
         name: "Quản trị dự án PMP",
         courseName: "Quản trị dự án Chuyên nghiệp (PMP)",
+        programId: "prog_pmp",
+        instructorId: "usr_teacher",
         instructorName: "ThS. Trần Minh",
         room: "Phòng Lab A2",
         maxCapacity: 35,
         status: "Đang học",
+        startDate: "2026-02-01",
+        endDate: "2026-05-15",
+        totalSessions: 24,
+        completedSessions: 12,
         createdAt: "2026-02-01T08:00:00.000Z"
     },
     {
         id: "cls_da_02",
         code: "K15-DA02",
-        name: "Phân tích dữ liệu",
+        name: "Phân tích dữ liệu & AI",
         courseName: "Khoa học Dữ liệu & Trí tuệ Nhân tạo",
-        instructorName: "Lê Hoa",
+        programId: "prog_data_ai",
+        instructorId: "usr_teacher_hoa",
+        instructorName: "ThS. Lê Hoa",
         room: "Phòng B1",
         maxCapacity: 30,
         status: "Đang học",
+        startDate: "2026-02-05",
+        endDate: "2026-05-20",
+        totalSessions: 20,
+        completedSessions: 8,
         createdAt: "2026-02-05T08:00:00.000Z"
     },
     {
@@ -45,10 +57,16 @@ const initialClasses = [
         code: "K16-WEB01",
         name: "Lập trình Web Enterprise",
         courseName: "Lập trình Web Fullstack (NodeJS & React)",
-        instructorName: "Phạm Quân",
+        programId: "prog_fullstack",
+        instructorId: "usr_teacher_quan",
+        instructorName: "ThS. Phạm Quân",
         room: "Zoom Online",
         maxCapacity: 40,
-        status: "Khai giảng tuần sau",
+        status: "Sắp khai giảng",
+        startDate: "2026-04-10",
+        endDate: "2026-08-15",
+        totalSessions: 36,
+        completedSessions: 0,
         createdAt: "2026-02-10T08:00:00.000Z"
     },
     {
@@ -56,11 +74,51 @@ const initialClasses = [
         code: "WD-2026-01",
         name: "Lớp Fullstack Web K15 - Ca Sáng",
         courseName: "Lập trình Web Fullstack (NodeJS & React)",
+        programId: "prog_fullstack",
+        instructorId: "usr_teacher",
         instructorName: "ThS. Trần Minh",
         room: "Phòng Lab A1",
         maxCapacity: 25,
         status: "Đang học",
+        startDate: "2026-02-01",
+        endDate: "2026-04-30",
+        totalSessions: 25,
+        completedSessions: 22,
         createdAt: "2026-02-01T08:00:00.000Z"
+    },
+    {
+        id: "cls_completed_01",
+        code: "K14-WEB09",
+        name: "Lớp Web Frontend K14 (Đã tốt nghiệp)",
+        courseName: "Lập trình Web Fullstack (NodeJS & React)",
+        programId: "prog_fullstack",
+        instructorId: "usr_teacher",
+        instructorName: "ThS. Trần Minh",
+        room: "Phòng Lab A1",
+        maxCapacity: 30,
+        status: "Đã kết thúc",
+        startDate: "2025-09-01",
+        endDate: "2025-12-25",
+        totalSessions: 30,
+        completedSessions: 30,
+        createdAt: "2025-09-01T08:00:00.000Z"
+    },
+    {
+        id: "cls_fs_02",
+        code: "WD-2026-02",
+        name: "Lớp Fullstack Web K15 - Ca Tối",
+        courseName: "Lập trình Web Fullstack (NodeJS & React)",
+        programId: "prog_fullstack",
+        instructorId: "usr_teacher_quan",
+        instructorName: "ThS. Phạm Quân",
+        room: "Phòng Lab A2",
+        maxCapacity: 30,
+        status: "Sắp khai giảng",
+        startDate: "2026-04-01",
+        endDate: "2026-07-30",
+        totalSessions: 32,
+        completedSessions: 0,
+        createdAt: "2026-02-15T08:00:00.000Z"
     }
 ];
 
@@ -162,6 +220,66 @@ function createInitialEnrollments() {
         });
     }
 
+    // WD-2026-01: 22 / 25
+    for (let i = 1; i <= 22; i++) {
+        list.push({
+            id: `enr_sim_fs_${i}`,
+            classId: "cls_fs_01",
+            classCode: "WD-2026-01",
+            className: "Lớp Fullstack Web K15 - Ca Sáng",
+            courseName: "Lập trình Web Fullstack (NodeJS & React)",
+            studentId: `sim_fs_${i}`,
+            studentCode: `HV-FS${String(i).padStart(3, "0")}`,
+            studentName: `Học viên Fullstack ${i}`,
+            studentEmail: `hv.fs${i}@tms.edu.vn`,
+            enrolledAt: "2026-02-01T09:00:00.000Z",
+            enrolledBy: "usr_manager",
+            enrolledByName: "Đỗ Quốc Bảo",
+            status: "Đang học",
+            notes: "Ghi danh khóa học"
+        });
+    }
+
+    // K14-WEB09: 28 / 30 (Lớp đã hoàn thành)
+    for (let i = 1; i <= 28; i++) {
+        list.push({
+            id: `enr_sim_k14_${i}`,
+            classId: "cls_completed_01",
+            classCode: "K14-WEB09",
+            className: "Lớp Web Frontend K14 (Đã tốt nghiệp)",
+            courseName: "Lập trình Web Fullstack (NodeJS & React)",
+            studentId: `sim_k14_${i}`,
+            studentCode: `HV-K14-${String(i).padStart(3, "0")}`,
+            studentName: `Cựu học viên K14 - ${i}`,
+            studentEmail: `hv.k14_${i}@tms.edu.vn`,
+            enrolledAt: "2025-09-01T09:00:00.000Z",
+            enrolledBy: "usr_manager",
+            enrolledByName: "Đỗ Quốc Bảo",
+            status: "Đã tốt nghiệp",
+            notes: "Đã hoàn thành chương trình"
+        });
+    }
+
+    // WD-2026-02: 10 / 30 (Sắp khai giảng)
+    for (let i = 1; i <= 10; i++) {
+        list.push({
+            id: `enr_sim_fs2_${i}`,
+            classId: "cls_fs_02",
+            classCode: "WD-2026-02",
+            className: "Lớp Fullstack Web K15 - Ca Tối",
+            courseName: "Lập trình Web Fullstack (NodeJS & React)",
+            studentId: `sim_fs2_${i}`,
+            studentCode: `HV-FS2-${String(i).padStart(3, "0")}`,
+            studentName: `Học viên Ca Tối ${i}`,
+            studentEmail: `hv.fs2_${i}@tms.edu.vn`,
+            enrolledAt: "2026-03-01T09:00:00.000Z",
+            enrolledBy: "usr_admissions",
+            enrolledByName: "Vũ Hải Yến",
+            status: "Chờ khai giảng",
+            notes: "Đăng ký sớm đợt 1"
+        });
+    }
+
     return list;
 }
 
@@ -246,21 +364,188 @@ function isStudentEnrolledInClass(studentIdOrCode, classIdOrCode) {
 }
 
 /**
- * Lấy danh sách toàn bộ lớp học kèm sĩ số động và trạng thái đầy lớp
+ * Lấy danh sách toàn bộ lớp học kèm sĩ số động, tiến độ buổi học và hỗ trợ bộ lọc + phân trang (KN-127)
  */
-function getAllClasses() {
-    return classes.map(cls => {
+function getAllClasses(query = {}) {
+    // 1. Tính toán chi tiết sĩ số & tiến độ buổi học cho từng lớp
+    let list = classes.map(cls => {
         const enrolledCount = getEnrolledCount(cls.id);
-        const remainingSlots = Math.max(0, cls.maxCapacity - enrolledCount);
-        const isFull = enrolledCount >= cls.maxCapacity;
+        const maxCapacity = Number(cls.maxCapacity) || 35;
+        const remainingSlots = Math.max(0, maxCapacity - enrolledCount);
+        const isFull = enrolledCount >= maxCapacity;
+        const occupancyRate = maxCapacity > 0 ? Math.round((enrolledCount / maxCapacity) * 100) : 0;
+
+        // Tiến độ buổi học (KN-223)
+        const totalSessions = Number(cls.totalSessions) || 24;
+        const completedSessions = Math.min(totalSessions, Number(cls.completedSessions) || 0);
+        const progressPercent = totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0;
+
+        // Chuẩn hóa trạng thái hiển thị
+        let status = cls.status || "Đang học";
+        if (status === "active") status = "Đang học";
+        if (status === "upcoming" || status === "Khai giảng tuần sau" || status === "Chờ khai giảng") status = "Sắp khai giảng";
+        if (status === "completed" || status === "Đã tốt nghiệp") status = "Đã kết thúc";
+
         return {
             ...cls,
+            maxCapacity,
             enrolledCount,
+            currentCapacity: enrolledCount,
             remainingSlots,
             isFull,
-            capacityDisplay: `${enrolledCount} / ${cls.maxCapacity}`
+            occupancyRate,
+            capacityDisplay: `${enrolledCount} / ${maxCapacity}`,
+            totalSessions,
+            completedSessions,
+            progressPercent,
+            progressDisplay: `${completedSessions}/${totalSessions} buổi (${progressPercent}%)`,
+            status,
+            startDate: cls.startDate || "2026-02-01",
+            endDate: cls.endDate || "2026-05-30"
         };
     });
+
+    // 2. Tính toán Quick Metrics / Thống kê chỉ số nhanh toàn bộ hệ thống (KN-224)
+    const metrics = {
+        totalClasses: list.length,
+        activeClasses: list.filter(c => c.status === "Đang học").length,
+        upcomingClasses: list.filter(c => c.status === "Sắp khai giảng").length,
+        completedClasses: list.filter(c => c.status === "Đã kết thúc").length,
+        totalStudents: list.reduce((sum, c) => sum + (c.enrolledCount || 0), 0),
+        averageOccupancyRate: list.length > 0
+            ? Math.round(list.reduce((sum, c) => sum + (c.occupancyRate || 0), 0) / list.length)
+            : 0
+    };
+
+    // 3. Áp dụng các bộ lọc (Filters - KN-220 & KN-222)
+    let filtered = [...list];
+
+    // 3.1. Lọc theo trạng thái
+    if (query && query.status && query.status !== "all" && query.status !== "Tất cả") {
+        const qStatus = String(query.status).trim().toLowerCase();
+        filtered = filtered.filter(c => {
+            const s = c.status.toLowerCase();
+            if (qStatus === "active" || qStatus === "dang_hoc" || qStatus === "đang học") return s === "đang học" || s === "active";
+            if (qStatus === "upcoming" || qStatus === "sap_khai_giang" || qStatus === "sắp khai giảng") return s === "sắp khai giảng" || s === "upcoming" || s.includes("khai giảng");
+            if (qStatus === "completed" || qStatus === "da_ket_thuc" || qStatus === "đã kết thúc") return s === "đã kết thúc" || s === "completed";
+            return s === qStatus || s.includes(qStatus);
+        });
+    }
+
+    // 3.2. Lọc theo chương trình đào tạo
+    if (query && (query.programId || query.program) && (query.programId !== "all" && query.program !== "all")) {
+        const prog = String(query.programId || query.program).trim().toLowerCase();
+        filtered = filtered.filter(c => 
+            (c.programId && c.programId.toLowerCase() === prog) ||
+            (c.courseName && c.courseName.toLowerCase().includes(prog))
+        );
+    }
+
+    // 3.3. Lọc theo giảng viên
+    if (query && (query.instructorId || query.instructor) && (query.instructorId !== "all" && query.instructor !== "all")) {
+        const inst = String(query.instructorId || query.instructor).trim().toLowerCase();
+        filtered = filtered.filter(c =>
+            (c.instructorId && c.instructorId.toLowerCase() === inst) ||
+            (c.instructorName && c.instructorName.toLowerCase().includes(inst)) ||
+            (c.instructor && c.instructor.toLowerCase().includes(inst))
+        );
+    }
+
+    // 3.4. Lọc theo khoảng thời gian
+    if (query && query.startDate) {
+        filtered = filtered.filter(c => c.startDate >= query.startDate);
+    }
+    if (query && query.endDate) {
+        filtered = filtered.filter(c => c.endDate <= query.endDate);
+    }
+
+    // 3.5. Tìm kiếm theo từ khóa (Mã lớp, Tên lớp, Giảng viên, Phòng)
+    const search = query && (query.search || query.q || query.keyword || "");
+    if (search && String(search).trim()) {
+        const term = String(search).trim().toLowerCase();
+        filtered = filtered.filter(c =>
+            (c.code && c.code.toLowerCase().includes(term)) ||
+            (c.name && c.name.toLowerCase().includes(term)) ||
+            (c.courseName && c.courseName.toLowerCase().includes(term)) ||
+            (c.instructorName && c.instructorName.toLowerCase().includes(term)) ||
+            (c.room && c.room.toLowerCase().includes(term))
+        );
+    }
+
+    // 4. Phân trang (Pagination)
+    const totalRecords = filtered.length;
+    const page = Math.max(1, parseInt(query.page, 10) || 1);
+    const limit = parseInt(query.limit, 10);
+    let paginated = filtered;
+    let totalPages = 1;
+
+    if (limit && limit > 0) {
+        totalPages = Math.ceil(totalRecords / limit) || 1;
+        const startIndex = (page - 1) * limit;
+        paginated = filtered.slice(startIndex, startIndex + limit);
+    }
+
+    // Đính kèm metadata vào mảng trả về để tương thích cả array lẫn object
+    Object.assign(paginated, {
+        metrics,
+        total: totalRecords,
+        totalRecords,
+        page,
+        limit: limit || totalRecords,
+        totalPages,
+        classes: paginated,
+        data: paginated
+    });
+
+    return paginated;
+}
+
+/**
+ * Lấy chỉ số thống kê nhanh toàn hệ thống (KN-224)
+ */
+function getClassMetrics() {
+    const all = getAllClasses({});
+    return all.metrics || {
+        totalClasses: all.length,
+        activeClasses: all.filter(c => c.status === "Đang học").length,
+        upcomingClasses: all.filter(c => c.status === "Sắp khai giảng").length,
+        completedClasses: all.filter(c => c.status === "Đã kết thúc").length,
+        totalStudents: all.reduce((sum, c) => sum + (c.enrolledCount || 0), 0),
+        averageOccupancyRate: 0
+    };
+}
+
+/**
+ * Lấy danh mục dữ liệu phục vụ bộ lọc (KN-220)
+ */
+function getClassFilterOptions() {
+    const all = getAllClasses({});
+    const programsMap = new Map();
+    const instructorsMap = new Map();
+    const statusesSet = new Set(["Đang học", "Sắp khai giảng", "Đã kết thúc"]);
+
+    all.forEach(c => {
+        if (c.status) statusesSet.add(c.status);
+        if (c.programId || c.courseName) {
+            const pid = c.programId || c.courseName;
+            if (!programsMap.has(pid)) {
+                programsMap.set(pid, { id: pid, name: c.courseName || c.name });
+            }
+        }
+        if (c.instructorId || c.instructorName) {
+            const iid = c.instructorId || c.instructorName;
+            const iname = c.instructorName || iid;
+            if (!instructorsMap.has(iid)) {
+                instructorsMap.set(iid, { id: iid, name: iname });
+            }
+        }
+    });
+
+    return {
+        programs: Array.from(programsMap.values()),
+        instructors: Array.from(instructorsMap.values()),
+        statuses: Array.from(statusesSet)
+    };
 }
 
 /**
@@ -604,6 +889,8 @@ function unenrollStudent({ classId, studentId, performer = {} }) {
 
 module.exports = {
     getAllClasses,
+    getClassMetrics,
+    getClassFilterOptions,
     getClassDetail,
     getEnrollmentsList,
     batchEnrollStudents,

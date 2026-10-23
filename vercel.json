@@ -1,21 +1,32 @@
 {
   "version": 2,
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "backend/**"
+    }
+  },
   "redirects": [
-    { "source": "/frontend/Login.html", "destination": "/", "permanent": true },
-    { "source": "/frontend/Index.html", "destination": "/Dashboard.html", "permanent": true },
+    { "source": "/", "destination": "/Login.html", "permanent": false },
+    { "source": "/frontend/Login.html", "destination": "/Login.html", "permanent": true },
+    { "source": "/frontend/Index.html", "destination": "/Login.html", "permanent": true },
+    { "source": "/Index.html", "destination": "/Dashboard.html", "permanent": false },
     { "source": "/frontend/:path*", "destination": "/:path*", "permanent": true }
   ],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.js" },
     { "source": "/auth/(.*)", "destination": "/api/index.js" },
-    { "source": "/login", "destination": "/index.html" },
-    { "source": "/Login.html", "destination": "/index.html" },
+    { "source": "/login", "destination": "/Login.html" },
+    { "source": "/Login.html", "destination": "/Login.html" },
     { "source": "/forgot-password", "destination": "/ForgotPassword.html" },
     { "source": "/ForgotPassword.html", "destination": "/ForgotPassword.html" },
     { "source": "/reset-password", "destination": "/ResetPassword.html" },
     { "source": "/ResetPassword.html", "destination": "/ResetPassword.html" },
-    { "source": "/Index.html", "destination": "/Dashboard.html" },
     { "source": "/dashboard", "destination": "/Dashboard.html" },
+    { "source": "/workspace", "destination": "/Workspace.html" },
+    { "source": "/Workspace", "destination": "/Workspace.html" },
+    { "source": "/workspace.html", "destination": "/Workspace.html" },
+    { "source": "/Workspace.html", "destination": "/Workspace.html" },
+    { "source": "/frontend/Workspace.html", "destination": "/Workspace.html" },
     { "source": "/users", "destination": "/UserManagement.html" },
     { "source": "/roles", "destination": "/RoleManagement.html" },
     { "source": "/subjects", "destination": "/SubjectManagement.html" },
@@ -29,9 +40,38 @@
     { "source": "/lead", "destination": "/LeadForm.html" },
     { "source": "/consultation", "destination": "/LeadForm.html" },
     { "source": "/LeadForm.html", "destination": "/LeadForm.html" },
+    { "source": "/notifications", "destination": "/Notifications.html" },
+    { "source": "/Notifications.html", "destination": "/Notifications.html" },
     { "source": "/403", "destination": "/Error.html?code=403" },
     { "source": "/404", "destination": "/Error.html?code=404" },
     { "source": "/500", "destination": "/Error.html?code=500" },
     { "source": "/error", "destination": "/Error.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "X-XSS-Protection", "value": "1; mode=block" },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+      ]
+    },
+    {
+      "source": "/(.*)\\.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate, max-age=0" },
+        { "key": "Pragma", "value": "no-cache" },
+        { "key": "Expires", "value": "0" }
+      ]
+    },
+    {
+      "source": "/(dashboard|workspace|users|roles|subjects|schedules|schedule|leads|notifications|error)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate, max-age=0" },
+        { "key": "Pragma", "value": "no-cache" },
+        { "key": "Expires", "value": "0" }
+      ]
+    }
   ]
 }
